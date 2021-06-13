@@ -16,7 +16,7 @@
 
 declare(strict_types=1);
 
-namespace Minerware\database;
+namespace minerware\database;
 
 use RuntimeException;
 

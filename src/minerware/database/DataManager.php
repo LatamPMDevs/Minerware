@@ -16,22 +16,26 @@
 
 declare(strict_types=1);
 
-namespace Minerware;
+namespace minerware\database;
 
-use Minerware\command\CommandFactory;
-use Minerware\database\DataManager;
-use pocketmine\plugin\PluginBase;
+use minerware\Minerware;
+use pocketmine\utils\Config;
 use pocketmine\utils\SingletonTrait;
 
-final class Minerware extends PluginBase {
+final class DataManager {
     use SingletonTrait;
     
-    protected function onLoad(): void {
-        self::setInstance($this);
-        DataManager::getInstance();
-    }
+    private Minerware $plugin;
     
-    protected function onEnable(): void {
-        CommandFactory::getInstance();
+    private string $pluginPath;
+    
+    private Config $config;
+    
+    public function __construct() {
+        $this->plugin = Minerware::getInstance();
+        $this->pluginPath = $this->plugin->getDataFolder();
+        $this->config = $this->plugin->getConfig();
+        
+        @mkdir($this->pluginPath . DIRECTORY_SEPARATOR . "database" . DIRECTORY_SEPARATOR);
     }
 }

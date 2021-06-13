@@ -16,10 +16,10 @@
 
 declare(strict_types=1);
 
-namespace Minerware\command;
+namespace minerware\command;
 
-use Minerware\command\commands\MinerwareCommand;
-use Minerware\Minerware;
+use minerware\command\commands\MinerwareCommand;
+use minerware\Minerware;
 use pocketmine\utils\SingletonTrait;
 
 final class CommandFactory {

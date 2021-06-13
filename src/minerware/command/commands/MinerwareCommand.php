@@ -16,9 +16,9 @@
 
 declare(strict_types=1);
 
-namespace Minerware\command\commands;
+namespace minerware\command\commands;
 
-use Minerware\Minerware;
+use minerware\Minerware;
 use pocketmine\command\Command;
 use pocketmine\command\CommandSender;
 use pocketmine\player\Player;
