@@ -47,9 +47,21 @@ final class MinerwareCommand extends Command {
         }
         
         switch ($args[0]) {
-            case "help":
+            case "create":
+                $sender->sendMessage(T::RED . "This function is under development, please wait for it!");
+            break;
+
+            case 'credits':
+                $sender->sendMessage(
+                    "§a---- §6Minerware §bCredits §a----"."\n"."\n".
+                    "§eAuthors: §7JustJ0rd4n, IvanCraft623, TheModDev"."\n".
+                    "§eStatus: §7Private"
+                );
+            break;
+
             default:
                 $sender->sendMessage("SOON");
+            break;
         }
     }
 }
