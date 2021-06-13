@@ -1,0 +1,11 @@
+ parameters:
+    level: 7
+
+    checkMissingIterableValueType: false
+
+    ignoreErrors: []
+
+    paths:
+        - /source/src
+    bootstrapFiles:
+        - phar:///pocketmine/PocketMine-MP.phar/vendor/autoload.php

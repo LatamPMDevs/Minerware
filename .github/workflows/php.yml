@@ -1,0 +1,22 @@
+name: PHP CI
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  phpstan:
+    name: PHPStan analysis
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          ref: ${{ github.ref }}
+
+      - name: Run PHPStan
+        uses: larryTheCoder/pmmp-phpstan-action@master
+        with:
+          phpstan-config: phpstan.neon.dist

@@ -1,0 +1,9 @@
+name: Minerware
+version: 0.0.1
+main: Minerware\Minerware
+api: 4.0.0
+src-namespace-prefix: Minerware
+authors:
+  - TheModDev
+  - IvanCraft623
+  - JustJ0rd4n
