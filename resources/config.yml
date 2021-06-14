@@ -11,7 +11,7 @@
 # Copyright 2021 © Minerware
 
 #Settings
-language: english #English & Español
+language: english #English & Spanish
 
 storage-format:
   arena-data: json

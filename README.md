@@ -10,7 +10,6 @@ SOON
 - [ ] Add APIs
     - [ ] Form API
     - [ ] Scoreboard API
-    - [ ] Language API
     
 ## Project information:
 | Plugin version | Pocketmine version | PHP version | Status |

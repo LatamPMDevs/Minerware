@@ -16,26 +16,38 @@
 
 declare(strict_types=1);
 
-namespace minerware\database;
+namespace minerware\language;
 
 use minerware\Minerware;
-use pocketmine\utils\Config;
+use pocketmine\lang\Language;
+use pocketmine\lang\TranslationContainer;
 use pocketmine\utils\SingletonTrait;
 
-final class DataManager {
+final class Translator {
     use SingletonTrait;
     
     private Minerware $plugin;
     
-    private string $pluginPath;
-    
-    private Config $config;
+    private Language $language;
     
     public function __construct() {
         $this->plugin = Minerware::getInstance();
-        $this->pluginPath = $this->plugin->getDataFolder();
-        $this->config = $this->plugin->getConfig();
+        $this->loadLanguages();
         
-        @mkdir($this->pluginPath . "database" . DIRECTORY_SEPARATOR);
+        $language = $this->plugin->getConfig()->get("language");
+        $this->language = new Language($language, $this->plugin->getDataFolder() . "languages" . DIRECTORY_SEPARATOR, $language);
+    }
+    
+    private function loadLanguages(): void {
+        $this->plugin->saveResource(DIRECTORY_SEPARATOR . "languages" . DIRECTORY_SEPARATOR . "spanish.ini");
+        $this->plugin->saveResource(DIRECTORY_SEPARATOR . "languages" . DIRECTORY_SEPARATOR . "english.ini");
+    }
+    
+    public function changeLanguage(string $newLanguage): void {
+        $this->language = new Language("Spanish", $this->plugin->getDataFolder() . "languages" . DIRECTORY_SEPARATOR . $newLanguage . ".ini");
+    }
+    
+    public function translate(TranslationContainer $container): string {
+        return $this->language->translate($container);
     }
 }

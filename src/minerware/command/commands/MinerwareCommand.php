@@ -18,9 +18,11 @@ declare(strict_types=1);
 
 namespace minerware\command\commands;
 
+use minerware\language\Translator;
 use minerware\Minerware;
 use pocketmine\command\Command;
 use pocketmine\command\CommandSender;
+use pocketmine\lang\TranslationContainer;
 use pocketmine\player\Player;
 use pocketmine\utils\TextFormat as T;
 
@@ -33,7 +35,7 @@ final class MinerwareCommand extends Command {
     
     public function execute(CommandSender $sender, string $commandLabel, array $args): void {
         if (!$sender instanceof Player) {
-            $sender->sendMessage(T::RED . "In-game only command.");
+            $sender->sendMessage(T::RED . Translator::getInstance()->translate(new TranslationContainer("command.error.gameonly")));
             return;
         }
         
@@ -42,13 +44,13 @@ final class MinerwareCommand extends Command {
         }
         
         if (!isset($args[0])) {
-            $sender->sendMessage(T::RED . "Command not found! use " . T::WHITE . "/minerware help");
+            $sender->sendMessage(T::RED . Translator::getInstance()->translate(new TranslationContainer("command.error.notfound")));
             return;
         }
         
         switch ($args[0]) {
             case "create":
-                $sender->sendMessage(T::RED . "This function is under development, please wait for it!");
+                $sender->sendMessage(T::RED . Translator::getInstance()->translate(new TranslationContainer("extra.feature.underDevelopment")));
             break;
 
             case 'credits':
