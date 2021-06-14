@@ -2,6 +2,7 @@ name: Minerware
 version: 0.0.1
 main: minerware\Minerware
 api: 4.0.0
+prefix: "§gMinerware§r"
 authors:
   - TheModDev
   - IvanCraft623

@@ -32,9 +32,9 @@ final class DataManager {
     
     private Config $config;
     
-    private int $arenaStorageType = 1;
+    private int $arenaStorageType;
     
-    private int $playerStorageType = 1;
+    private int $playerStorageType;
     
     public function __construct() {
         $this->plugin = Minerware::getInstance();
@@ -57,7 +57,7 @@ final class DataManager {
      */
     public function getPlayerData(string|Player $player): ?DataHolder {
         $filePath = "players" . DIRECTORY_SEPARATOR . (($player instanceof Player) ? $player->getName() : $player) . ".json";
-        $path = $this->pluginPath . "database" . DIRECTORY_SEPARATOR . $path;
+        $path = $this->pluginPath . "database" . DIRECTORY_SEPARATOR . $filePath;
         if (file_exists($path)) {
             return new DataHolder((new Config($path, $this->playerStorageType))->getAll());
         }

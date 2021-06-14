@@ -52,17 +52,52 @@ final class MinerwareCommand extends Command {
             case "create":
                 $sender->sendMessage(T::RED . Translator::getInstance()->translate(new TranslationContainer("extra.feature.underDevelopment")));
             break;
-
-            case 'credits':
-                $sender->sendMessage(
-                    "§a---- §6Minerware §bCredits §a----"."\n"."\n".
-                    "§eAuthors: §7JustJ0rd4n, IvanCraft623, TheModDev"."\n".
-                    "§eStatus: §7Private"
-                );
+            
+            case "setlanguage":
+            case "setlang":
+                if (!isset($args[1])) {
+                    $sender->sendMessage(T::RED . "Usage: /minerware setlang <language>");
+                    return;
+                }
+                
+                $languages = [
+                    "English",
+                    "Spanish"
+                ];
+                
+                if ($args[1] == "list") {
+                    $sender->sendMessage(T::RED . Translator::getInstance()->translate(new TranslationContainer("command.arg.setlang.langList", $languages)));
+                    return;
+                }
+                
+                if (!in_array(ucfirst(strtolower($args[1])), $languages)) {
+                    $sender->sendMessage(T::RED . Translator::getInstance()->translate(new TranslationContainer("command.arg.setlang.langNotFound", [$args[1]])));
+                    return;
+                }
+                
+                Translator::getInstance()->changeLanguage($args[1]);
+                $sender->sendMessage(T::GREEN . Translator::getInstance()->translate(new TranslationContainer("command.arg.setlang.changed", [strtolower($args[1])])));
             break;
-
-            default:
+            
+            case 'credits':
+                $credits = [
+                    T::YELLOW . "---- {$this->plugin->getPrefix()} " . T::WHITE . "Credits " . T::YELLOW . "----",
+                    "\n",
+                    T::YELLOW . "Authors: " . T::WHITE . "JustJ0rd4n, IvanCraft623, TheModDev",
+                    T::YELLOW . "Status: " . T::WHITE . "§7Private"
+                ];
+                
+                foreach ($credits as $str) {
+                    $sender->sendMessage($str);
+                }
+            break;
+            
+            case "help":
                 $sender->sendMessage("SOON");
+            break;
+            
+            default:
+                $sender->sendMessage(T::RED . Translator::getInstance()->translate(new TranslationContainer("command.error.notfound")));
             break;
         }
     }

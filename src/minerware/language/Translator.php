@@ -39,12 +39,14 @@ final class Translator {
     }
     
     private function loadLanguages(): void {
-        $this->plugin->saveResource(DIRECTORY_SEPARATOR . "languages" . DIRECTORY_SEPARATOR . "spanish.ini");
-        $this->plugin->saveResource(DIRECTORY_SEPARATOR . "languages" . DIRECTORY_SEPARATOR . "english.ini");
+        $this->plugin->saveResource(DIRECTORY_SEPARATOR . "languages" . DIRECTORY_SEPARATOR . "spanish.ini", true);
+        $this->plugin->saveResource(DIRECTORY_SEPARATOR . "languages" . DIRECTORY_SEPARATOR . "english.ini", true);
     }
     
     public function changeLanguage(string $newLanguage): void {
-        $this->language = new Language("Spanish", $this->plugin->getDataFolder() . "languages" . DIRECTORY_SEPARATOR . $newLanguage . ".ini");
+        $this->language = new Language($newLanguage, $this->plugin->getDataFolder() . "languages" . DIRECTORY_SEPARATOR, $newLanguage);
+        $this->plugin->getConfig()->set("language", $this->language->getLang());
+        $this->plugin->getConfig()->save();
     }
     
     public function translate(TranslationContainer $container): string {
