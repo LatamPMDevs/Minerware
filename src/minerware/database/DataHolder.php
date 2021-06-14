@@ -55,6 +55,10 @@ final class DataHolder {
     }
     
     public function getJsonData(): string {
-        return (string) json_encode($this->data);
+        return json_encode($this->data);
+    }
+    
+    public function getAll(): array {
+        return $this->data;
     }
 }

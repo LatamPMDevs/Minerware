@@ -24,6 +24,7 @@ use pocketmine\utils\Config;
 use pocketmine\utils\SingletonTrait;
 
 final class DataManager {
+    
     use SingletonTrait;
     
     private Minerware $plugin;
@@ -50,6 +51,7 @@ final class DataManager {
         
         @mkdir($this->pluginPath . "database" . DIRECTORY_SEPARATOR);
         @mkdir($this->pluginPath . "database" . DIRECTORY_SEPARATOR . "players" . DIRECTORY_SEPARATOR);
+        @mkdir($this->pluginPath . "database" . DIRECTORY_SEPARATOR . "arenas" . DIRECTORY_SEPARATOR);
     }
     
     /**
@@ -63,5 +65,21 @@ final class DataManager {
         }
         
         return null;
+    }
+    
+    public function getArenaData(string $arena): ?DataHolder {
+        $filePath = "arenas" . DIRECTORY_SEPARATOR . $arena . ".json";
+        $path = $this->pluginPath . "database" . DIRECTORY_SEPARATOR . $filePath;
+        if (file_exists($path)) {
+            return new DataHolder((new Config($path, $this->arenaStorageType))->getAll());
+        }
+        
+        return null;
+    }
+    
+    public function saveArenaData(DataHolder $dataHolder): void {
+        $filePath = "arenas" . DIRECTORY_SEPARATOR . $dataHolder->getString("id") . ".json";
+        $path = $this->pluginPath . "database" . DIRECTORY_SEPARATOR . $filePath;
+        (new Config($path, $this->arenaStorageType, $dataHolder->getAll()))->save();
     }
 }

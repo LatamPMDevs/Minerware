@@ -18,6 +18,7 @@ declare(strict_types=1);
 
 namespace minerware\command\commands;
 
+//use minerware\arena\ArenaCreator;
 use minerware\language\Translator;
 use minerware\Minerware;
 use pocketmine\command\Command;
@@ -27,6 +28,8 @@ use pocketmine\player\Player;
 use pocketmine\utils\TextFormat as T;
 
 final class MinerwareCommand extends Command {
+
+//    private static $creating = [];
     
     public function __construct(private Minerware $plugin) {
         parent::__construct("minerware", "Minerware main command.");
@@ -51,6 +54,11 @@ final class MinerwareCommand extends Command {
         switch ($args[0]) {
             case "create":
                 $sender->sendMessage(T::RED . Translator::getInstance()->translate(new TranslationContainer("extra.feature.underDevelopment")));
+    
+                /**
+                 * TODO:: Check if arena and world exist.
+                 */
+                //self::$creating[strtolower($sender->getName())] = new ArenaCreator($sender, $args[1]);
             break;
             
             case "setlanguage":
