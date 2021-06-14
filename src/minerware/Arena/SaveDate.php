@@ -9,7 +9,7 @@ use pocketmine\utils\Config;
 class SaveDate {
     private static $world;
     private Minerware $plugin;
-    private Config $cfg;
+   
     public function __construct(string $world)
 {
     self::$world = $world;
