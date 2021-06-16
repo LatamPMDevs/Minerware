@@ -26,9 +26,11 @@ use pocketmine\utils\SingletonTrait;
 final class Translator {
     use SingletonTrait;
     
-    private Minerware $plugin;
+    /** @var Minerware $plugin */
+    private $plugin;
     
-    private Language $language;
+    /** @var Language $language */
+    private $language;
     
     public function __construct() {
         $this->plugin = Minerware::getInstance();

@@ -27,15 +27,20 @@ final class DataManager {
     
     use SingletonTrait;
     
-    private Minerware $plugin;
+    /** @var Minerware $plugin */
+    private $plugin;
     
-    private string $pluginPath;
+    /** @var String $pluginPath */
+    private $pluginPath;
     
-    private Config $config;
+    /** @var Config $config */
+    private $config;
     
-    private int $arenaStorageType;
+    /** @var Int $arenaStorageType */
+    private $arenaStorageType;
     
-    private int $playerStorageType;
+    /** @var Int $playerStorageType */
+    private $playerStorageType;
     
     public function __construct() {
         $this->plugin = Minerware::getInstance();
@@ -59,7 +64,7 @@ final class DataManager {
      */
     
     /**
-     * @param Player|String
+     * @param Player|String $player
      */
     public function getPlayerData($player): ?DataHolder {
         $filePath = "players" . DIRECTORY_SEPARATOR . (($player instanceof Player) ? $player->getName() : $player) . ".json";
