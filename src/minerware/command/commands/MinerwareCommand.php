@@ -18,7 +18,7 @@ declare(strict_types=1);
 
 namespace minerware\command\commands;
 
-//use minerware\arena\ArenaCreator;
+use minerware\arena\MapRegisterer;
 use minerware\language\Translator;
 use minerware\Minerware;
 use pocketmine\command\Command;
@@ -31,7 +31,7 @@ final class MinerwareCommand extends Command {
 
 //    private static $creating = [];
     
-    public function __construct(private Minerware $plugin) {
+    public function __construct(Minerware $plugin) {
         parent::__construct("minerware", "Minerware main command.");
         $this->setPermission("minerware.command");
     }
@@ -53,12 +53,11 @@ final class MinerwareCommand extends Command {
         
         switch ($args[0]) {
             case "create":
-                $sender->sendMessage(T::RED . Translator::getInstance()->translate(new TranslationContainer("extra.feature.underDevelopment")));
-    
-                /**
-                 * TODO:: Check if arena and world exist.
-                 */
-                //self::$creating[strtolower($sender->getName())] = new ArenaCreator($sender, $args[1]);
+                if (!file_exists(Server::getInstance()->getDataPath() . 'worlds/' . $args[1])) {
+                    $sender->sendMessage(T::RED . Translator::getInstance()->translate(new TranslationContainer("command.error.worldDoesNotExist")));
+                    return;
+                }
+                self::$creating[strtolower($sender->getName())] = new MapRegisterer($sender, $args[1]);
             break;
             
             case "setlanguage":
@@ -92,7 +91,7 @@ final class MinerwareCommand extends Command {
                     T::YELLOW . "---- {$this->plugin->getPrefix()} " . T::WHITE . "Credits " . T::YELLOW . "----",
                     "\n",
                     T::YELLOW . "Authors: " . T::WHITE . "JustJ0rd4n, IvanCraft623, TheModDev",
-                    T::YELLOW . "Status: " . T::WHITE . "§7Private"
+                    T::YELLOW . "Status: " . T::WHITE . "Private"
                 ];
                 
                 foreach ($credits as $str) {
