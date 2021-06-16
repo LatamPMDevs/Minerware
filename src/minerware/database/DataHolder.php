@@ -21,8 +21,13 @@ namespace minerware\database;
 use RuntimeException;
 
 final class DataHolder {
+
+    /** @var Array $data */
+    private $data;
     
-    public function __construct(array $data) { }
+    public function __construct(array $data) {
+        $this->data = $data;
+    }
     
     public function hasData(string $key): bool {
         return isset($this->data[$key]);
@@ -54,6 +59,9 @@ final class DataHolder {
         return (float) $this->data[$key];
     }
     
+    /**
+     * @return String|Bool
+     */
     public function getJsonData() {
         return json_encode($this->data);
     }

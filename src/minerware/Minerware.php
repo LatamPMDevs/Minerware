@@ -29,6 +29,10 @@ use pocketmine\utils\SingletonTrait;
 final class Minerware extends PluginBase {
     use SingletonTrait;
 
+    /** @var Minerware $instance */
+    public static $instance;
+
+    /** @var Array $creating */
     public static $creating = [];
     
     protected function onLoad(): void {
@@ -65,5 +69,9 @@ final class Minerware extends PluginBase {
         foreach ($copyright as $str) {
             $this->getServer()->getLogger()->notice($str);
         }
+    }
+
+    public static function getInstance(): self {
+        return self::$instance;
     }
 }

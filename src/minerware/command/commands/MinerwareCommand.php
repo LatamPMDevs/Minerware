@@ -18,9 +18,9 @@ declare(strict_types=1);
 
 namespace minerware\command\commands;
 
+use minerware\Minerware;
 use minerware\arena\MapRegisterer;
 use minerware\language\Translator;
-use minerware\Minerware;
 use pocketmine\command\Command;
 use pocketmine\command\CommandSender;
 use pocketmine\lang\TranslationContainer;
@@ -30,6 +30,7 @@ use pocketmine\utils\TextFormat as T;
 
 final class MinerwareCommand extends Command {
 
+    /** @var Minerware $plugin */
     private $plugin;
     
     public function __construct(Minerware $plugin) {

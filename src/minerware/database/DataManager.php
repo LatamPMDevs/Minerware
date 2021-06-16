@@ -57,6 +57,10 @@ final class DataManager {
     /**
      * TODO:: Add multi storage type support.
      */
+    
+    /**
+     * @param Player|String
+     */
     public function getPlayerData($player): ?DataHolder {
         $filePath = "players" . DIRECTORY_SEPARATOR . (($player instanceof Player) ? $player->getName() : $player) . ".json";
         $path = $this->pluginPath . "database" . DIRECTORY_SEPARATOR . $filePath;
