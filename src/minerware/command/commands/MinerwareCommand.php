@@ -18,19 +18,18 @@ declare(strict_types=1);
 
 namespace minerware\command\commands;
 
-use minerware\Minerware;
 use minerware\arena\MapRegisterer;
 use minerware\language\Translator;
+use minerware\Minerware;
 use pocketmine\command\Command;
 use pocketmine\command\CommandSender;
 use pocketmine\lang\TranslationContainer;
 use pocketmine\player\Player;
-use pocketmine\Server;
 use pocketmine\utils\TextFormat as T;
 
 final class MinerwareCommand extends Command {
-
-    /** @var Minerware $plugin */
+    
+    /** @var Minerware */
     private $plugin;
     
     public function __construct(Minerware $plugin) {
@@ -41,7 +40,7 @@ final class MinerwareCommand extends Command {
     
     public function execute(CommandSender $sender, string $commandLabel, array $args): void {
         if (!$sender instanceof Player) {
-            $sender->sendMessage(T::RED . Translator::getInstance()->translate(new TranslationContainer("command.error.gameonly")));
+            $sender->sendMessage(Translator::getInstance()->translate(new TranslationContainer("command.error.gameOnly")));
             return;
         }
         
@@ -50,17 +49,24 @@ final class MinerwareCommand extends Command {
         }
         
         if (!isset($args[0])) {
-            $sender->sendMessage(T::RED . Translator::getInstance()->translate(new TranslationContainer("command.error.notfound")));
+            $sender->sendMessage(Translator::getInstance()->translate(new TranslationContainer("command.error.notFound")));
             return;
         }
         
         switch ($args[0]) {
             case "create":
-                if (!file_exists(Server::getInstance()->getDataPath() . 'worlds/' . $args[1])) {
-                    $sender->sendMessage(T::RED . Translator::getInstance()->translate(new TranslationContainer("command.error.worldDoesNotExist")));
+                if (!isset($args[1])) {
+                    $sender->sendMessage(Translator::getInstance()->translate(new TranslationContainer("command.error.provideWorld")));
                     return;
                 }
-                Minerware::$creating[strtolower($sender->getName())] = new MapRegisterer($sender, $args[1]);
+                
+                if (!$this->plugin->getServer()->getWorldManager()->loadWorld($args[1])) {
+                    $sender->sendMessage(Translator::getInstance()->translate(new TranslationContainer("command.error.worldWasNotFound")));
+                    return;
+                }
+                
+                $world = $this->plugin->getServer()->getWorldManager()->getWorldByName($args[1]);
+                MapRegisterer::createRegisterer($sender, $world);
             break;
             
             case "setlanguage":
@@ -76,17 +82,17 @@ final class MinerwareCommand extends Command {
                 ];
                 
                 if ($args[1] == "list") {
-                    $sender->sendMessage(T::RED . Translator::getInstance()->translate(new TranslationContainer("command.arg.setlang.langList", $languages)));
+                    $sender->sendMessage(Translator::getInstance()->translate(new TranslationContainer("command.arg.setlang.langList", $languages)));
                     return;
                 }
                 
                 if (!in_array(ucfirst(strtolower($args[1])), $languages)) {
-                    $sender->sendMessage(T::RED . Translator::getInstance()->translate(new TranslationContainer("command.arg.setlang.langNotFound", [$args[1]])));
+                    $sender->sendMessage(Translator::getInstance()->translate(new TranslationContainer("command.arg.setlang.langNotFound", [$args[1]])));
                     return;
                 }
                 
                 Translator::getInstance()->changeLanguage($args[1]);
-                $sender->sendMessage(T::GREEN . Translator::getInstance()->translate(new TranslationContainer("command.arg.setlang.changed", [strtolower($args[1])])));
+                $sender->sendMessage(Translator::getInstance()->translate(new TranslationContainer("command.arg.setlang.changed", [strtolower($args[1])])));
             break;
             
             case 'credits':
@@ -107,7 +113,7 @@ final class MinerwareCommand extends Command {
             break;
             
             default:
-                $sender->sendMessage(T::RED . Translator::getInstance()->translate(new TranslationContainer("command.error.notfound")));
+                $sender->sendMessage(Translator::getInstance()->translate(new TranslationContainer("command.error.notfound")));
             break;
         }
     }

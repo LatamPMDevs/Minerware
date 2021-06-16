@@ -24,23 +24,22 @@ use pocketmine\utils\Config;
 use pocketmine\utils\SingletonTrait;
 
 final class DataManager {
-    
     use SingletonTrait;
     
-    /** @var Minerware $plugin */
+    /** @var Minerware */
     private $plugin;
     
-    /** @var String $pluginPath */
+    /** @var string */
     private $pluginPath;
     
-    /** @var Config $config */
+    /** @var Config */
     private $config;
     
-    /** @var Int $arenaStorageType */
-    private $arenaStorageType;
-    
-    /** @var Int $playerStorageType */
+    /** @var string */
     private $playerStorageType;
+    
+    /** @var array<string, int> */
+    private $formats;
     
     public function __construct() {
         $this->plugin = Minerware::getInstance();
@@ -50,9 +49,9 @@ final class DataManager {
         $formats = Config::$formats;
         $formats["nbt"] = 6;
         $formats["namedtag"] = $formats["nbt"];
+        $this->formats = $formats;
         
-        $this->arenaStorageType = $formats[$this->config->getNested("storage-format.arena-data")];
-        $this->playerStorageType = $formats[$this->config->getNested("storage-format.player-data")];
+        $this->playerStorageType = $this->config->getNested("storage-format.player-data");
         
         @mkdir($this->pluginPath . "database" . DIRECTORY_SEPARATOR);
         @mkdir($this->pluginPath . "database" . DIRECTORY_SEPARATOR . "players" . DIRECTORY_SEPARATOR);
@@ -64,13 +63,13 @@ final class DataManager {
      */
     
     /**
-     * @param Player|String $player
+     * @param Player|string $player
      */
     public function getPlayerData($player): ?DataHolder {
-        $filePath = "players" . DIRECTORY_SEPARATOR . (($player instanceof Player) ? $player->getName() : $player) . ".json";
+        $filePath = "players" . DIRECTORY_SEPARATOR . (($player instanceof Player) ? $player->getName() : $player) . "." . $this->playerStorageType;
         $path = $this->pluginPath . "database" . DIRECTORY_SEPARATOR . $filePath;
         if (file_exists($path)) {
-            return new DataHolder((new Config($path, $this->playerStorageType))->getAll());
+            return new DataHolder((new Config($path, $this->formats[$this->playerStorageType]))->getAll());
         }
         
         return null;
@@ -80,15 +79,15 @@ final class DataManager {
         $filePath = "arenas" . DIRECTORY_SEPARATOR . $arena . ".json";
         $path = $this->pluginPath . "database" . DIRECTORY_SEPARATOR . $filePath;
         if (file_exists($path)) {
-            return new DataHolder((new Config($path, $this->arenaStorageType))->getAll());
+            return new DataHolder((new Config($path, Config::JSON))->getAll());
         }
         
         return null;
     }
     
     public function saveArenaData(DataHolder $dataHolder): void {
-        $filePath = "arenas" . DIRECTORY_SEPARATOR . $dataHolder->getString("id") . ".json";
+        $filePath = "arenas" . DIRECTORY_SEPARATOR . $dataHolder->getString("name") . ".json";
         $path = $this->pluginPath . "database" . DIRECTORY_SEPARATOR . $filePath;
-        (new Config($path, $this->arenaStorageType, $dataHolder->getAll()))->save();
+        (new Config($path, Config::JSON, $dataHolder->getAll()))->save();
     }
 }

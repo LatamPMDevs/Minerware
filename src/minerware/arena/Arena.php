@@ -16,59 +16,53 @@
 
 declare(strict_types=1);
 
-namespace minerware\database;
+namespace minerware\arena;
 
-use RuntimeException;
+use minerware\arena\minigame\Minigame;
+use minerware\arena\utils\PointHolder;
+use pocketmine\player\Player;
+use pocketmine\world\World;
 
-final class DataHolder {
-
-    /** @var array<string, mixed> */
-    private $data;
+final class Arena {
     
-    public function __construct(array $data) {
-        $this->data = $data;
+    /** @var World */
+    private $world;
+    
+    /** @var array<string, Player> */
+    private $players = [];
+    
+    /** @var PointHolder */
+    private $pointHolder;
+    
+    /** @var Minigame */
+    private $currentMinigame = null;
+    
+    public function __construct(World $world) {
+        $this->world = $world;
+        $this->pointHolder = new PointHolder();
     }
     
-    public function hasData(string $key): bool {
-        return isset($this->data[$key]);
+    public function getWorld(): World {
+        return $this->world;
     }
     
-    private function checkKeyExists(string $key): void {
-        if (!$this->hasData($key)) {
-            throw new RuntimeException("Unable to find the value for the key '$key'! Key is not in the data.");
-        }
+    public function join(Player $player): void {
+        $this->players[$player->getName()] = $player;
     }
     
-    public function getString(string $key): string {
-        $this->checkKeyExists($key);
-        return (string) $this->data[$key];
+    public function quit(Player $player): void {
+        unset($this->players[$player->getName()]);
     }
     
-    public function getBool(string $key): bool {
-        $this->checkKeyExists($key);
-        return (bool) $this->data[$key];
+    public function getPlayers(): array {
+        return $this->players;
     }
     
-    public function getInteger(string $key): int {
-        $this->checkKeyExists($key);
-        return (int) $this->data[$key];
+    public function getPointHolder(): PointHolder {
+        return $this->pointHolder;
     }
     
-    public function getFloat(string $key): float {
-        $this->checkKeyExists($key);
-        return (float) $this->data[$key];
-    }
-    
-    public function getArray(string $key): array {
-        $this->checkKeyExists($key);
-        return (array) $this->data[$key];
-    }
-    
-    public function getJsonData(): string {
-        return (string) json_encode($this->data);
-    }
-    
-    public function getAll(): array {
-        return $this->data;
+    public function getCurrentMinigame(): ?Minigame {
+        return $this->currentMinigame;
     }
 }
