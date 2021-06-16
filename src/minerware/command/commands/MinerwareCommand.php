@@ -25,15 +25,17 @@ use pocketmine\command\Command;
 use pocketmine\command\CommandSender;
 use pocketmine\lang\TranslationContainer;
 use pocketmine\player\Player;
+use pocketmine\Server;
 use pocketmine\utils\TextFormat as T;
 
 final class MinerwareCommand extends Command {
 
-//    private static $creating = [];
+    private $plugin;
     
     public function __construct(Minerware $plugin) {
         parent::__construct("minerware", "Minerware main command.");
         $this->setPermission("minerware.command");
+        $this->plugin = $plugin;
     }
     
     public function execute(CommandSender $sender, string $commandLabel, array $args): void {
@@ -57,7 +59,7 @@ final class MinerwareCommand extends Command {
                     $sender->sendMessage(T::RED . Translator::getInstance()->translate(new TranslationContainer("command.error.worldDoesNotExist")));
                     return;
                 }
-                self::$creating[strtolower($sender->getName())] = new MapRegisterer($sender, $args[1]);
+                Minerware::$creating[strtolower($sender->getName())] = new MapRegisterer($sender, $args[1]);
             break;
             
             case "setlanguage":

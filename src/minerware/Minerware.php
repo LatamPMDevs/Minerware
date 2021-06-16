@@ -28,6 +28,8 @@ use pocketmine\utils\SingletonTrait;
 
 final class Minerware extends PluginBase {
     use SingletonTrait;
+
+    public static $creating = [];
     
     protected function onLoad(): void {
         self::setInstance($this);

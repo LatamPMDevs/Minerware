@@ -21,7 +21,7 @@ final class MapRegisterer {
     private $world;
     
     public function __construct(Player $player, string $name) {
-        $this->name = $name);
+        $this->name = $name;
         $this->data["name"] = $this->name;
         $this->loadWorld();
         $this->setConfiguratorMode($player);

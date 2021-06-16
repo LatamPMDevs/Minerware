@@ -22,7 +22,7 @@ use RuntimeException;
 
 final class DataHolder {
     
-    public function __construct(private array $data) { }
+    public function __construct(array $data) { }
     
     public function hasData(string $key): bool {
         return isset($this->data[$key]);
@@ -54,7 +54,7 @@ final class DataHolder {
         return (float) $this->data[$key];
     }
     
-    public function getJsonData(): string {
+    public function getJsonData() {
         return json_encode($this->data);
     }
     
