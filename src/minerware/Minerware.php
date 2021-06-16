@@ -19,7 +19,6 @@ declare(strict_types=1);
 namespace minerware;
 
 use http\Exception\RuntimeException;
-use JetBrains\PhpStorm\Pure;
 use minerware\command\CommandFactory;
 use minerware\database\DataManager;
 use minerware\language\Translator;
@@ -31,20 +30,13 @@ final class Minerware extends PluginBase {
     use SingletonTrait;
     
     protected function onLoad(): void {
-        $this->checkVersions();
         self::setInstance($this);
         DataManager::getInstance();
         CommandFactory::getInstance();
     }
     
-    #[Pure] public function getPrefix(): string {
+    public function getPrefix(): string {
         return $this->getDescription()->getPrefix();
-    }
-    
-    private function checkVersions(): void {
-        if (version_compare("8.0.0", PHP_VERSION) > 0) {
-            throw new RuntimeException(Translator::getInstance()->translate(new TranslationContainer("extra.version.phplower", [PHP_VERSION])));
-        }
     }
     
     protected function onEnable(): void {
