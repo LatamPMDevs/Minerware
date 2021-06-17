@@ -4,19 +4,17 @@
 </div>
 
 ## Description:
-SOON
+Multiple classic microgames in a single chunk. Using one of the latest PHP versions and the most optimized code possible to give players the best possible experience.
 
-## TODO:
-- [ ] Add APIs
-    - [ ] Form API
-    - [ ] Scoreboard API
-    
+## Microgames list:
+- none yet
+
 ## Project information:
 | Plugin version | Pocketmine version | PHP version | Status |
 |---|---|---|---|
-| 0.1 | 4.0.0 | 8.0 | Development |
+| 0.5.0 | 4.0.0 | 7.4 minimum | Development |
 
-## License:
+## Copyright:
 ```
 This is a private project, your not allow to redistribute nor resell it.
 The only ones with that power are this project's contributors.
