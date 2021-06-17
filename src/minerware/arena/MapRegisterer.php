@@ -18,6 +18,7 @@ declare(strict_types=1);
 
 namespace minerware\arena;
 
+use minerware\Minerware;
 use minerware\database\DataHolder;
 use minerware\database\DataManager;
 use minerware\language\Translator;
@@ -30,7 +31,7 @@ use pocketmine\utils\SingletonTrait;
 
 # Events
 use pocketmine\event\Listener;
-use pocketmine\player\PlayerChatEvent;
+use pocketmine\event\player\PlayerChatEvent;
 
 final class MapRegisterer implements Listener {
 
@@ -38,9 +39,6 @@ final class MapRegisterer implements Listener {
     
     /** @var array<string, self> */
     private static $mapRegisterer;
-
-    /** @var array<string, mixed> */
-    private $data = [];
 
     /** @var array<string, mixed> */
     private $data = [];
