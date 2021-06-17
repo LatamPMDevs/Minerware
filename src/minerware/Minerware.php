@@ -19,7 +19,7 @@ declare(strict_types=1);
 namespace minerware;
 
 use minerware\arena\ArenaManager;
-use minerware\command\CommandFactory;
+use minerware\commands\MinerwareCommand;
 use minerware\database\DataManager;
 use pocketmine\plugin\PluginBase;
 use pocketmine\utils\SingletonTrait;
@@ -30,16 +30,16 @@ final class Minerware extends PluginBase {
     protected function onLoad(): void {
         self::setInstance($this);
         DataManager::getInstance();
-        CommandFactory::getInstance();
         ArenaManager::getInstance();
-    }
-    
-    public function getPrefix(): string {
-        return $this->getDescription()->getPrefix();
+        $this->getServer()->getCommandMap()->register("minerware", new MinerwareCommand($this));
     }
     
     protected function onEnable(): void {
         $this->copyright();
+    }
+    
+    public function getPrefix(): string {
+        return $this->getDescription()->getPrefix();
     }
     
     private function copyright(): void {

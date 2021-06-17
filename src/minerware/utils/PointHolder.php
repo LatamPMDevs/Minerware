@@ -16,7 +16,7 @@
 
 declare(strict_types=1);
 
-namespace minerware\arena\utils;
+namespace minerware\utils;
 
 use pocketmine\player\Player;
 
