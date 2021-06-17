@@ -36,10 +36,13 @@ final class MapRegisterer implements Listener {
     
     /** @var array<string, self> */
     private static $mapRegisterer;
-    
+
     /** @var array<string, mixed> */
     private $data = [];
-    
+
+    /** @var array<string, mixed> */
+    private $data = [];
+
     /** @var world */
     private $world;
     
@@ -53,6 +56,7 @@ final class MapRegisterer implements Listener {
         Minerware::getInstance()->getServer()->getPluginManager()->registerEvents($this, Minerware::getInstance());
     }
     
+
     public static function createRegisterer(Player $player, World $world): self {
         return (self::$mapRegisterer[strtolower($player->getName())] = new self($player, $world));
     }
@@ -60,7 +64,7 @@ final class MapRegisterer implements Listener {
     public static function getRegister(Player $player): ?self {
         return self::$mapRegisterer[strtolower($player->getName())] ?? null;
     }
-    
+
     private function setConfiguratorMode(Player $player): void {
         $this->world->loadChunk($this->world->getSafeSpawn()->getFloorX(), $this->world->getSafeSpawn()->getFloorZ());
         $player->teleport($this->world->getSafeSpawn(), 0, 0);
@@ -85,6 +89,7 @@ final class MapRegisterer implements Listener {
     public function save(): void {
         DataManager::getInstance()->saveArenaData(new DataHolder($this->data));
         unset(self::$mapRegisterer[$this->player->getName()]);
+
     }
 
     #  _      _     _                       
