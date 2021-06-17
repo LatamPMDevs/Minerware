@@ -26,8 +26,10 @@ use pocketmine\lang\TranslationContainer;
 use pocketmine\math\Vector3;
 use pocketmine\player\Player;
 use pocketmine\world\World;
+use pocketmine\utils\SingletonTrait;
 
 # Events
+use pocketmine\event\Listener;
 use pocketmine\player\PlayerChatEvent;
 
 final class MapRegisterer implements Listener {
