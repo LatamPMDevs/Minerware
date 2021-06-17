@@ -26,10 +26,10 @@ use pocketmine\utils\SingletonTrait;
 final class Translator {
     use SingletonTrait;
     
-    /** @var Minerware $plugin */
+    /** @var Minerware */
     private $plugin;
     
-    /** @var Language $language */
+    /** @var Language */
     private $language;
     
     public function __construct() {

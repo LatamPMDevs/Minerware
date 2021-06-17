@@ -16,59 +16,28 @@
 
 declare(strict_types=1);
 
-namespace minerware\database;
+namespace minerware\arena\utils;
 
-use RuntimeException;
+use pocketmine\player\Player;
 
-final class DataHolder {
-
-    /** @var array<string, mixed> */
-    private $data;
+final class PointHolder {
     
-    public function __construct(array $data) {
-        $this->data = $data;
+    /** @var array<string, int> */
+    private $points = [];
+    
+    public function addPlayer(Player $player): void {
+        $this->points[strtolower($player->getName())] = 0;
     }
     
-    public function hasData(string $key): bool {
-        return isset($this->data[$key]);
+    public function getPlayerPoints(Player $player): int {
+        return $this->points[strtolower($player->getName())];
     }
     
-    private function checkKeyExists(string $key): void {
-        if (!$this->hasData($key)) {
-            throw new RuntimeException("Unable to find the value for the key '$key'! Key is not in the data.");
-        }
+    public function addPlayerPoint(Player $player, int $points = 1): void {
+        $this->points[strtolower($player->getName())] += $points;
     }
     
-    public function getString(string $key): string {
-        $this->checkKeyExists($key);
-        return (string) $this->data[$key];
-    }
-    
-    public function getBool(string $key): bool {
-        $this->checkKeyExists($key);
-        return (bool) $this->data[$key];
-    }
-    
-    public function getInteger(string $key): int {
-        $this->checkKeyExists($key);
-        return (int) $this->data[$key];
-    }
-    
-    public function getFloat(string $key): float {
-        $this->checkKeyExists($key);
-        return (float) $this->data[$key];
-    }
-    
-    public function getArray(string $key): array {
-        $this->checkKeyExists($key);
-        return (array) $this->data[$key];
-    }
-    
-    public function getJsonData(): string {
-        return (string) json_encode($this->data);
-    }
-    
-    public function getAll(): array {
-        return $this->data;
+    public function getPoints(): array {
+        return $this->points;
     }
 }

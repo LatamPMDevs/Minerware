@@ -18,27 +18,20 @@ declare(strict_types=1);
 
 namespace minerware;
 
-use http\Exception\RuntimeException;
+use minerware\arena\ArenaManager;
 use minerware\command\CommandFactory;
 use minerware\database\DataManager;
-use minerware\language\Translator;
-use pocketmine\lang\TranslationContainer;
 use pocketmine\plugin\PluginBase;
 use pocketmine\utils\SingletonTrait;
 
 final class Minerware extends PluginBase {
     use SingletonTrait;
-
-    /** @var Minerware $instance */
-    public static $instance;
-
-    /** @var Array $creating */
-    public static $creating = [];
     
     protected function onLoad(): void {
         self::setInstance($this);
         DataManager::getInstance();
         CommandFactory::getInstance();
+        ArenaManager::getInstance();
     }
     
     public function getPrefix(): string {
@@ -69,9 +62,5 @@ final class Minerware extends PluginBase {
         foreach ($copyright as $str) {
             $this->getServer()->getLogger()->notice($str);
         }
-    }
-
-    public static function getInstance(): self {
-        return self::$instance;
     }
 }

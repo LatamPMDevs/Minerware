@@ -14,5 +14,6 @@
 language: english #English & Spanish
 
 storage-format:
-  arena-data: json
   player-data: json
+
+max-runtime-arenas: 2 #15 ~ 20 recommended.
