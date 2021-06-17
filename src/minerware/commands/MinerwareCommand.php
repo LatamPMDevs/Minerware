@@ -16,7 +16,7 @@
 
 declare(strict_types=1);
 
-namespace minerware\command\commands;
+namespace minerware\commands;
 
 use minerware\arena\MapRegisterer;
 use minerware\language\Translator;

@@ -16,53 +16,52 @@
 
 declare(strict_types=1);
 
-namespace minerware\arena;
+namespace minerware\arena\minigame;
 
-use minerware\arena\minigame\Microgame;
-use minerware\utils\PointHolder;
+use pocketmine\event\Listener;
 use pocketmine\player\Player;
-use pocketmine\world\World;
 
-final class Arena {
+abstract class Microgame implements Listener, GameLevel {
     
-    /** @var World */
-    private $world;
+    /** @var array<int, Player> */
+    protected $winners = [];
     
-    /** @var array<string, Player> */
-    private $players = [];
+    /** @var array<int, Player> */
+    protected $losers = [];
     
-    /** @var PointHolder */
-    private $pointHolder;
+    /** @var int */
+    protected $level = self::LEVEL_NORMAL;
     
-    /** @var Microgame */
-    private $currentMicrogame = null;
-    
-    public function __construct(World $world) {
-        $this->world = $world;
-        $this->pointHolder = new PointHolder();
+    public function addWinner(Player $player): void {
+        $this->winners[] = $player;
     }
     
-    public function getWorld(): World {
-        return $this->world;
+    public function getWinner(): ?Player {
+        return $this->winners[0] ?? null;
     }
     
-    public function join(Player $player): void {
-        $this->players[$player->getName()] = $player;
+    /**
+     * @return array<int, Player>
+     */
+    public function getWinners(): array {
+        return $this->winners;
     }
     
-    public function quit(Player $player): void {
-        unset($this->players[$player->getName()]);
+    public function addLoser(Player $player): void {
+        $this->losers[] = $player;
     }
     
-    public function getPlayers(): array {
-        return $this->players;
+    /**
+     * @return array<int, Player>
+     */
+    public function getLosers(): array {
+        return $this->losers;
     }
     
-    public function getPointHolder(): PointHolder {
-        return $this->pointHolder;
+    public function getLevel(): int {
+        return $this->level;
     }
     
-    public function getCurrentMicrogame(): ?Microgame {
-        return $this->currentMicrogame;
-    }
+    abstract public function start(): void;
+    abstract public function end(): void;
 }
