@@ -35,7 +35,7 @@ The platform is split into two sides, one side is red clay, and the other is gre
 - [ ] Done
 
 # Build a Snow Golem
-Todas las mini plataformas de 2x2 se convierten en bloques de nieve y todos reciben 16 bolas de nieve y una calabaza. ¡Crea un bloque de nieve con tus bolas de nieve y crea un gólem de nieve para hacer un amigo y recibir un punto!
+All 2x2 mini platforms are in snow blocks and everyone receives 16 snowballs and a pumpkin. Create a snow block with your snowballs and create a snow golem to make a friend and get a point!
 - [ ] Done
 
 
