@@ -81,8 +81,26 @@ final class MapRegisterer implements Listener {
         $this->data["platform"]["parameter"] = Utils::calculateParameter($firstPoint, $secondPoint);
     }
     
-    private function setVoid(Vector3 $void): void {
-        $this->data["void"]["limit"] = $void->getY();
+    private function setCages(Vector3 $winners, Vector3 $lossers): void {
+        $this->data["cages"]["winners"] = [
+            "X" => $winners->getX(),
+            "Y" => $winners->getY(),
+            "Z" => $winners->getZ()];
+        $this->data["cages"]["lossers"] = [
+            "X" => $lossers->getX(),
+            "Y" => $lossers->getY(),
+            "Z" => $lossers->getZ()];
+    }
+    
+    private function setSpawn(Vector3 $spawn): void {
+        $this->data["spawns"][] = [
+            "X" => $spawn->getX(),
+            "Y" => $spawn->getY(),
+            "Z" => $spawn->getZ()];
+    }
+    
+    private function setVoid(float $void): void {
+        $this->data["void"]["limit"] = $void;
     }
     
     private function save(): void {
@@ -95,28 +113,46 @@ final class MapRegisterer implements Listener {
         $args = explode(" ", $event->getMessage());
         if (strtolower($player->getName()) == strtolower($this->player->getName())) {
             switch (strtolower($args[0])) {
-                case "setvoid":
-                    $this->setVoid($player->getPosition());
-                break;
-                
                 case "setplatform":
                    $player->getInventory()->addItem(ItemFactory::getInstance()->get(369, 0, 1)->setCustomName("§r§aSet platform\n§7Break a corner."));
+                   $player->sendMessage(Translator::getInstance()->translate(new TranslationContainer("configurator.mode.setplatform")));
                 break;
                 
-                case "setwinnerscage":
-                    // code...
+                case "setcages":
+                    $player->getInventory()->addItem(ItemFactory::getInstance()->get(369, 0, 1)->setCustomName("§r§aSet cages\n§7Break a block."));
+                       $player->sendMessage(Translator::getInstance()->translate(new TranslationContainer("configurator.mode.setcage.winners")));
                 break;
                 
-                case "setlosserscage":
-                    // code...
+                case "setspawn":
+                    $this->setSpawn($player->getPosition());
+                    $player->sendMessage(Translator::getInstance()->translate(new TranslationContainer("configurator.mode.setspawn.successfully")));
+                break;
+
+                case "setvoid":
+                    $y = $player->getPosition()->getFloorY();
+                    $this->setVoid($y);
+                    $player->sendMessage(Translator::getInstance()->translate(new TranslationContainer("configurator.mode.setvoid.successfully", [$y])));
                 break;
 
                 case "help":
-                    // code...
+                    $player->sendMessage(
+                        "§6Minerware §bConfiguration Commands"."\n"."\n".
+                        "§ahelp: §7Help commands."."\n".
+                        "§asetplatform: §7Register the platform."."\n".
+                        "§asetcages: §7Register the winners|losser cage."."\n".
+                        "§asetspawn: §7Register a spawn."."\n".
+                        "§asetvoid: §7Set the void position."."\n".
+                        "§adone: §7Finish configurator mode"
+                    );
+                break;
+
+                case "done":
+                    $this->save();
+                    $player->sendMessage(Translator::getInstance()->translate(new TranslationContainer("configurator.mode.registered.successfully")));
                 break;
                 
                 default:
-                    // code...
+                    $player->sendMessage(Translator::getInstance()->translate(new TranslationContainer("configurator.mode.error.notFound")));
                 break;
             }
             $event->cancel();
@@ -138,10 +174,27 @@ final class MapRegisterer implements Listener {
                     $pos2 = $block->getPos()->asVector3();
                     $size = Utils::calculateSize($pos1, $pos2);
                     if ($size !== "24x24") {
-                        // code...
+                        $player->sendMessage(Translator::getInstance()->translate(new TranslationContainer("configurator.mode.error.invalidSize", ["24x24", $size])));
                     } else {
                         $this->setPlatform($pos1, $pos2);
+                        $player->sendMessage(Translator::getInstance()->translate(new TranslationContainer("configurator.mode.setplatform.successfully")));
                     }
+                    $player->getInventory()->removeItem($item);
+                    unset($this->tempData[strtolower($player->getName())]["platform"]);
+                }
+                $event->cancel();
+            }
+            if ($itemId == 369 && $itemName === "§r§aSet cages\n§7Break a block.") {
+                if (!isset($this->tempData[strtolower($player->getName())]["cages"]["winners"])) {
+                    $this->tempData[strtolower($player->getName())]["cages"]["winners"] = $block->getPos()->asVector3();
+                    $player->sendMessage(Translator::getInstance()->translate(new TranslationContainer("configurator.mode.setcage.lossers")));
+                } else {
+                    $winners = $this->tempData[strtolower($player->getName())]["cages"]["winners"];
+                    $lossers = $block->getPos()->asVector3();
+                    $this->setCages($winners, $lossers);
+                    $player->sendMessage(Translator::getInstance()->translate(new TranslationContainer("configurator.mode.setcage.successfully")));
+                    $player->getInventory()->removeItem($item);
+                    unset($this->tempData[strtolower($player->getName())]["cages"]);
                 }
                 $event->cancel();
             }
