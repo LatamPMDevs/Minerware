@@ -26,4 +26,8 @@ final class Utils {
         //TODO:: Calculate parameter between $firstPoint and $secondPoint.
         return "";
     }
+    
+    public static function calculateSize(Vector3 $firstPoint, Vector3 $secondPoint): string {
+        return (abs($firstPoint->x - $secondPoint->x) + 1)."x".(abs($firstPoint->z - $secondPoint->z) + 1);
+    }
 }

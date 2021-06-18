@@ -25,8 +25,10 @@ use minerware\Minerware;
 use minerware\utils\Utils;
 use pocketmine\event\Listener;
 use pocketmine\event\player\PlayerChatEvent;
+use pocketmine\event\block\BlockBreakEvent;
 use pocketmine\lang\TranslationContainer;
 use pocketmine\math\Vector3;
+use pocketmine\item\ItemFactory;
 use pocketmine\player\Player;
 use pocketmine\utils\SingletonTrait;
 use pocketmine\world\World;
@@ -43,6 +45,9 @@ final class MapRegisterer implements Listener {
     
     /** @var array<string, mixed> */
     private $data = [];
+    
+    /** @var array<string, mixed> */
+    private $tempData = [];
     
     /** @var Player */
     private $player;
@@ -65,13 +70,19 @@ final class MapRegisterer implements Listener {
     }
     
     private function setPlatform(Vector3 $firstPoint, Vector3 $secondPoint): void {
-        $this->data["platform"]["firstPoint"] = "{$firstPoint->getX()}, {$firstPoint->getY()}, {$firstPoint->getZ()}";
-        $this->data["platform"]["secondPoint"] = "{$secondPoint->getX()}, {$secondPoint->getY()}, {$secondPoint->getZ()}";
+        $this->data["platform"]["pos1"] = [
+            "X" => $firstPoint->getX(),
+            "Y" => $firstPoint->getY(),
+            "Z" => $firstPoint->getZ()];
+        $this->data["platform"]["pos2"] = [
+            "X" => $secondPoint->getX(),
+            "Y" => $secondPoint->getY(),
+            "Z" => $secondPoint->getZ()];
         $this->data["platform"]["parameter"] = Utils::calculateParameter($firstPoint, $secondPoint);
     }
     
     private function setVoid(Vector3 $void): void {
-        $this->data["void"]["limit"] = "{$void->getY()}";
+        $this->data["void"]["limit"] = $void->getY();
     }
     
     private function save(): void {
@@ -84,21 +95,55 @@ final class MapRegisterer implements Listener {
         $args = explode(" ", $event->getMessage());
         if (strtolower($player->getName()) == strtolower($this->player->getName())) {
             switch (strtolower($args[0])) {
-                case "help":
-                    // code...
-                break;
-                
                 case "setvoid":
                     $this->setVoid($player->getPosition());
                 break;
                 
                 case "setplatform":
+                   $player->getInventory()->addItem(ItemFactory::getInstance()->get(369, 0, 1)->setCustomName("§r§aSet platform\n§7Break a corner."));
+                break;
+                
+                case "setwinnerscage":
+                    // code...
+                break;
+                
+                case "setlosserscage":
+                    // code...
+                break;
+
+                case "help":
                     // code...
                 break;
                 
                 default:
                     // code...
                 break;
+            }
+            $event->cancel();
+        }
+    }
+
+    public function onBreak(BlockBreakEvent $event): void {
+        $player = $event->getPlayer();
+        $block = $event->getBlock();
+        if (strtolower($player->getName()) == strtolower($this->player->getName())) {
+            $item = $player->getInventory()->getItemInHand();
+            $itemId = $item->getId();
+            $itemName = $item->getCustomName();
+            if ($itemId == 369 && $itemName === "§r§aSet platform\n§7Break a corner.") {
+                if (!isset($this->tempData[strtolower($player->getName())]["platform"]["pos1"])) {
+                   $this->tempData[strtolower($player->getName())]["platform"]["pos1"] = $block->getPos()->asVector3();
+                } else {
+                    $pos1 = $this->tempData[strtolower($player->getName())]["platform"]["pos1"];
+                    $pos2 = $block->getPos()->asVector3();
+                    $size = Utils::calculateSize($pos1, $pos2);
+                    if ($size !== "24x24") {
+                        // code...
+                    } else {
+                        $this->setPlatform($pos1, $pos2);
+                    }
+                }
+                $event->cancel();
             }
         }
     }
