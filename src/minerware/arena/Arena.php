@@ -32,7 +32,7 @@ final class Arena {
     public const MAX_PLAYERS = 12;
     
     /** @var string */
-    private $id =;
+    private $id;
     
     /** @var string */
     private $status = "waiting";
