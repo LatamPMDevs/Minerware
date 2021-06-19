@@ -149,6 +149,14 @@ final class MapRegisterer implements Listener {
                 case "done":
                     $this->save();
                     $player->sendMessage(Translator::getInstance()->translate(new TranslationContainer("configurator.mode.registered.successfully")));
+                    $player->teleport(Minerware::getInstance()->getServer()->getWorldManager()->getDefaultWorld()->getSafeSpawn());
+                    # Save World
+                    $folderName = $this->world->getFolderName();
+                    Minerware::getInstance()->getServer()->getWorldManager()->unloadWorld($this->world);
+                    Utils::setZip(
+                        realpath(Minerware::getInstance()->getServer()->getDataPath() . DIRECTORY_SEPARATOR . "worlds" . DIRECTORY_SEPARATOR . $folderName),
+                        realpath(Minerware::getInstance()->getDataFolder() . "database") . DIRECTORY_SEPARATOR . "backups" . DIRECTORY_SEPARATOR . $this->data["name"] . ".zip"
+                    );
                 break;
                 
                 default:

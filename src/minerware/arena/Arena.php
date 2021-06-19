@@ -25,8 +25,8 @@ use pocketmine\world\World;
 
 final class Arena {
     
-    /** @var World */
-    private $world;
+    /** @var ?World */
+    private $world = null;
     
     /** @var array<string, Player> */
     private $players = [];
@@ -37,12 +37,11 @@ final class Arena {
     /** @var Microgame */
     private $currentMicrogame = null;
     
-    public function __construct(World $world) {
-        $this->world = $world;
+    public function __construct() {
         $this->pointHolder = new PointHolder();
     }
     
-    public function getWorld(): World {
+    public function getWorld(): ?World {
         return $this->world;
     }
     
