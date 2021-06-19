@@ -19,6 +19,8 @@ declare(strict_types=1);
 namespace minerware\commands;
 
 use minerware\arena\MapRegisterer;
+use minerware\arena\ArenaManager;
+use minerware\database\DataManager;
 use minerware\language\Translator;
 use minerware\Minerware;
 use pocketmine\command\Command;
@@ -55,6 +57,10 @@ final class MinerwareCommand extends Command {
         
         switch ($args[0]) {
             case "create":
+                if (DataManager::getInstance()->getLobby() === null) {
+                    $sender->sendMessage(Translator::getInstance()->translate(new TranslationContainer("error.lobby.isNotSet")));
+                    return;
+                }
                 if (!isset($args[1])) {
                     $sender->sendMessage(Translator::getInstance()->translate(new TranslationContainer("command.error.provideWorld")));
                     return;
@@ -67,6 +73,21 @@ final class MinerwareCommand extends Command {
                 
                 $world = $this->plugin->getServer()->getWorldManager()->getWorldByName($args[1]);
                 MapRegisterer::createRegisterer($sender, $world);
+            break;
+
+            case "setlobby":
+                if (!isset($args[1])) {
+                    $sender->sendMessage(Translator::getInstance()->translate(new TranslationContainer("command.error.provideWorld")));
+                    return;
+                }
+                
+                if (!$this->plugin->getServer()->getWorldManager()->loadWorld($args[1], true)) {
+                    $sender->sendMessage(Translator::getInstance()->translate(new TranslationContainer("command.error.worldWasNotFound")));
+                    return;
+                }
+                $world = $this->plugin->getServer()->getWorldManager()->getWorldByName($args[1])->getDisplayName();
+                DataManager::getInstance()->setLobby($world);
+                $sender->sendMessage(Translator::getInstance()->translate(new TranslationContainer("command.setlobby")));
             break;
             
             case "setlanguage":
@@ -94,8 +115,12 @@ final class MinerwareCommand extends Command {
                 Translator::getInstance()->changeLanguage($args[1]);
                 $sender->sendMessage(Translator::getInstance()->translate(new TranslationContainer("command.arg.setlang.changed", [strtolower($args[1])])));
             break;
+
+            case "join":
+                ArenaManager::getInstance()->join($sender);
+            break;
             
-            case 'credits':
+            case "credits":
                 $credits = [
                     T::GRAY . "---- {$this->plugin->getPrefix()}" . T::AQUA . "Credits " . T::GRAY . "----",
                     "\n",

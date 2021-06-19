@@ -30,8 +30,15 @@ final class Utils {
     public static function calculateSize(Vector3 $firstPoint, Vector3 $secondPoint): string {
         return (abs($firstPoint->x - $secondPoint->x) + 1)."x".(abs($firstPoint->z - $secondPoint->z) + 1);
     }
-    
-    public static function setZip(string $targetPath, string $zipPath): void {
+
+    /**
+     * @param string|bool $targetPath
+     * @param string|bool $zipPath
+     */
+    public static function setZip($targetPath, $zipPath): bool {
+        if ($targetPath === false || $zipPath === false) {
+            return false;
+        }
         if (is_file($zipPath)) {
             unlink($zipPath);
         }
@@ -49,5 +56,6 @@ final class Utils {
             }
         }
         $zip->close();
+        return true;
     }
 }

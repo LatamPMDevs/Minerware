@@ -19,11 +19,20 @@ declare(strict_types=1);
 namespace minerware\arena;
 
 use minerware\arena\minigame\Microgame;
+use minerware\language\Translator;
 use minerware\utils\PointHolder;
+use pocketmine\lang\TranslationContainer;
 use pocketmine\player\Player;
 use pocketmine\world\World;
 
 final class Arena {
+
+    public const MIN_PLAYERS = 2;
+
+    public const MAX_PLAYERS = 12;
+    
+    /** @var string */
+    private $status = "waiting";
     
     /** @var ?World */
     private $world = null;
@@ -45,12 +54,27 @@ final class Arena {
         return $this->world;
     }
     
+    public function getStatus(): string {
+        return $this->status;
+    }
+    
+    public function setStatus(string $value): void {
+        $this->status = $value;
+    }
+    
     public function join(Player $player): void {
         $this->players[$player->getName()] = $player;
+        $this->sendMessage(Translator::getInstance()->translate(new TranslationContainer("game.player.join", [$player->getName(), count($this->players)."/".self::MAX_PLAYERS])));
     }
     
     public function quit(Player $player): void {
         unset($this->players[$player->getName()]);
+    }
+    
+    public function sendMessage(string $message): void {
+        foreach ($this->players as $player) {
+            $player->sendMessage($message);
+        }
     }
     
     public function getPlayers(): array {

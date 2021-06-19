@@ -20,6 +20,7 @@ namespace minerware\database;
 
 use minerware\Minerware;
 use pocketmine\player\Player;
+use pocketmine\world\World;
 use pocketmine\utils\Config;
 use pocketmine\utils\SingletonTrait;
 
@@ -90,5 +91,23 @@ final class DataManager {
         $filePath = "arenas" . DIRECTORY_SEPARATOR . $dataHolder->getString("name") . ".json";
         $path = $this->pluginPath . "database" . DIRECTORY_SEPARATOR . $filePath;
         (new Config($path, Config::JSON, $dataHolder->getAll()))->save();
+    }
+    
+    public function getLobby(): ?World {
+        $path = $this->pluginPath . "lobby.yml";
+        $name = (new Config($path, Config::YAML))->get("lobby");
+        if ($name !== null && $name !== false) {
+            if ($this->plugin->getServer()->getWorldManager()->loadWorld($name, true)) {
+                return $this->plugin->getServer()->getWorldManager()->getWorldByName($name);
+            }
+        }
+        return null;
+    }
+    
+    public function setLobby(string $name): void {
+        $path = $this->pluginPath . "lobby.yml";
+        $config = new Config($path, Config::YAML);
+        $config->set("lobby", $name);
+        $config->save();
     }
 }
