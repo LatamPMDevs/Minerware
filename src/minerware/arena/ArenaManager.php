@@ -51,8 +51,9 @@ final class ArenaManager {
     }
 
     public function createArena(): Arena {
-        $arena = new Arena();
-        $this->arenas[] = $arena;
+        $id = $this->generateId();
+        $arena = new Arena($id);
+        $this->arenas[$id] = $arena;
         return $arena;
     }
 
@@ -63,6 +64,17 @@ final class ArenaManager {
             }
         }
         return $this->createArena();
+    }
+
+    public function generateId(): string {
+        $az = range("a", "z");
+        shuffle($az);
+
+        $name = "";
+        $name .= $az[0];
+        $name .= $az[1];
+        $name .= rand(10, 99);
+        return $name;
     }
 
     public function join(Player $player, Arena $arena = null): void {

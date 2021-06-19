@@ -32,6 +32,9 @@ final class Arena {
     public const MAX_PLAYERS = 12;
     
     /** @var string */
+    private $id =;
+    
+    /** @var string */
     private $status = "waiting";
     
     /** @var ?World */
@@ -46,8 +49,13 @@ final class Arena {
     /** @var Microgame */
     private $currentMicrogame = null;
     
-    public function __construct() {
+    public function __construct(string $id) {
+        $this->id = $id;
         $this->pointHolder = new PointHolder();
+    }
+    
+    public function getId(): string {
+        return $this->id;
     }
     
     public function getWorld(): ?World {
