@@ -51,7 +51,7 @@ final class Utils {
         return true;
     }
 
-    public static function playSound(Player $player, string $sound, float $volume = 1, float $pitch = 1) {
+    public static function playSound(Player $player, string $sound, float $volume = 1, float $pitch = 1): void {
         $pk = new PlaySoundPacket();
         $pk->x = $player->getPosition()->getX();
         $pk->y = $player->getPosition()->getY();
@@ -62,24 +62,27 @@ final class Utils {
         $player->getNetworkSession()->sendDataPacket($pk);
     }
 
-    public static function removeDir(string $path) {
+    public static function removeDir(string $path): void {
         if (!file_exists($path) || basename($path) == "." || basename($path) == "..") {
             return;
         }
-        foreach (scandir($path) as $item) {
-            if ($item != "." || $item != "..") {
-                if (is_dir($path . DIRECTORY_SEPARATOR . $item)) {
-                    self::removeDir($path . DIRECTORY_SEPARATOR . $item);
-                }
-                if (is_file($path . DIRECTORY_SEPARATOR . $item)) {
-                    self::removeFile($path . DIRECTORY_SEPARATOR . $item);
+        $scandir = scandir($path);
+        if (is_array($scandir)) {
+            foreach ($scandir as $item) {
+                if ($item != "." || $item != "..") {
+                    if (is_dir($path . DIRECTORY_SEPARATOR . $item)) {
+                        self::removeDir($path . DIRECTORY_SEPARATOR . $item);
+                    }
+                    if (is_file($path . DIRECTORY_SEPARATOR . $item)) {
+                        self::removeFile($path . DIRECTORY_SEPARATOR . $item);
+                    }
                 }
             }
         }
         rmdir($path);
     }
 
-    public static function removeFile(string $path) {
+    public static function removeFile(string $path): void {
         unlink($path);
     }
 

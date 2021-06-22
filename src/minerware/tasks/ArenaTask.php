@@ -97,7 +97,7 @@ class ArenaTask extends Task {
                     $arena->setStatus("waiting");
                     $lobby = DataManager::getInstance()->getLobby();
                     foreach ($players as $player) {
-                        $lobby->loadChunk($lobby->getSafeSpawn()->getFloorX(), $this->lobby->getSafeSpawn()->getFloorZ());
+                        $lobby->loadChunk($lobby->getSafeSpawn()->getFloorX(), $lobby->getSafeSpawn()->getFloorZ());
                         $player->teleport($lobby->getSafeSpawn(), 0, 0);
                         $player->getInventory()->clearAll();
                         $player->getArmorInventory()->clearAll();

@@ -159,7 +159,7 @@ final class Arena implements Listener {
         return $this->currentMicrogame;
     }
 
-    public function tpSpawn(Player $player) {
+    public function tpSpawn(Player $player): void {
         $expectedSpawns = [];
         $spawns = $this->map->getData()->getArray("spawns");
         foreach ($spawns as $index => $data) {
@@ -171,7 +171,7 @@ final class Arena implements Listener {
         $player->teleport($pos);
     }
 
-    public function deleteMap() {
+    public function deleteMap(): void {
         if ($this->world !== null) {
             $worldPath = Minerware::getInstance()->getServer()->getDataPath() . "worlds" . DIRECTORY_SEPARATOR . $this->world->getFolderName() . DIRECTORY_SEPARATOR;
             Minerware::getInstance()->getServer()->getWorldManager()->unloadWorld($this->world, true);

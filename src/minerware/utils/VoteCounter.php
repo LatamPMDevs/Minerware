@@ -33,7 +33,7 @@ final class VoteCounter {
     /**
      * @param Map|string $map
      */
-    public function vote(Player $player, $map) {
+    public function vote(Player $player, $map): void {
         $this->votes[($map instanceof Map) ? $map->getName() : $player][] = $player->getName();
     }
 

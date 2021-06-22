@@ -104,7 +104,7 @@ final class MapRegisterer implements Listener {
     }
     
     private function save(): void {
-        DataManager::getInstance()->saveArenaData(new DataHolder($this->data));
+        DataManager::getInstance()->saveMapData(new DataHolder($this->data));
         unset(self::$mapRegisterer[strtolower($this->player->getName())]);
     }
     
@@ -154,8 +154,8 @@ final class MapRegisterer implements Listener {
                     $folderName = $this->world->getFolderName();
                     Minerware::getInstance()->getServer()->getWorldManager()->unloadWorld($this->world);
                     Utils::setZip(
-                        realpath(Minerware::getInstance()->getServer()->getDataPath() . DIRECTORY_SEPARATOR . "worlds" . DIRECTORY_SEPARATOR . $folderName),
-                        realpath(Minerware::getInstance()->getDataFolder() . "database") . DIRECTORY_SEPARATOR . "backups" . DIRECTORY_SEPARATOR . $this->data["name"] . ".zip"
+                        Minerware::getInstance()->getServer()->getDataPath() . "worlds" . DIRECTORY_SEPARATOR . $folderName,
+                        Minerware::getInstance()->getDataFolder() . "database" . DIRECTORY_SEPARATOR . "backups" . DIRECTORY_SEPARATOR . $this->data["name"] . ".zip"
                     );
                 break;
                 
