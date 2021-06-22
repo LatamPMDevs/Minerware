@@ -50,11 +50,28 @@ final class ArenaManager {
         return $this->arenas;
     }
 
+    public function getById(string $id): ?Arena {
+        return (isset($this->arenas[$id]) ? $this->arenas[$id] : null);
+    }
+
+    public function getLobby(): ?World{
+        return $this->lobby;
+    }
+
     public function createArena(): Arena {
         $id = $this->generateId();
         $arena = new Arena($id);
         $this->arenas[$id] = $arena;
         return $arena;
+    }
+
+
+    /**
+     * @param Arena|string $arena
+     */
+    public function deleteArena($arena): void  {
+        $id = ($arena instanceof Arena) ? $arena->getId() : $arena;
+        unset($this->arenas[$id]);
     }
 
     public function getAvaible(): Arena  {
@@ -82,11 +99,9 @@ final class ArenaManager {
             $player->sendMessage(Translator::getInstance()->translate(new TranslationContainer("error.lobby.isNotSet")));
             return;
         }
-        if ($arena == null) {
+        if ($arena === null) {
             $arena = $this->getAvaible();
         }
         $arena->join($player);
-        $this->lobby->loadChunk($this->lobby->getSafeSpawn()->getFloorX(), $this->lobby->getSafeSpawn()->getFloorZ());
-        $player->teleport($this->lobby->getSafeSpawn(), 0, 0);
     }
 }

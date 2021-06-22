@@ -19,6 +19,8 @@ declare(strict_types=1);
 namespace minerware\utils;
 
 use pocketmine\math\Vector3;
+use pocketmine\player\Player;
+use pocketmine\network\mcpe\protocol\PlaySoundPacket;
 
 final class Utils {
     
@@ -47,5 +49,42 @@ final class Utils {
         }
         $zip->close();
         return true;
+    }
+
+    public static function playSound(Player $player, string $sound, float $volume = 1, float $pitch = 1) {
+        $pk = new PlaySoundPacket();
+        $pk->x = $player->getPosition()->getX();
+        $pk->y = $player->getPosition()->getY();
+        $pk->z = $player->getPosition()->getZ();
+        $pk->soundName = $sound;
+        $pk->volume = $volume;
+        $pk->pitch = $pitch;
+        $player->getNetworkSession()->sendDataPacket($pk);
+    }
+
+    public static function removeDir(string $path) {
+        if (!file_exists($path) || basename($path) == "." || basename($path) == "..") {
+            return;
+        }
+        foreach (scandir($path) as $item) {
+            if ($item != "." || $item != "..") {
+                if (is_dir($path . DIRECTORY_SEPARATOR . $item)) {
+                    self::removeDir($path . DIRECTORY_SEPARATOR . $item);
+                }
+                if (is_file($path . DIRECTORY_SEPARATOR . $item)) {
+                    self::removeFile($path . DIRECTORY_SEPARATOR . $item);
+                }
+            }
+        }
+        rmdir($path);
+    }
+
+    public static function removeFile(string $path) {
+        unlink($path);
+    }
+
+    public static function getStartingBar(int $colorSticks, int $totalSticks): string {
+        $leftover = $totalSticks - $colorSticks;
+        return str_repeat("▌", $colorSticks)."§7".str_repeat("▌", $leftover);
     }
 }

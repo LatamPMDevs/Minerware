@@ -19,6 +19,7 @@ declare(strict_types=1);
 namespace minerware\database;
 
 use minerware\Minerware;
+use minerware\arena\Map;
 use pocketmine\player\Player;
 use pocketmine\world\World;
 use pocketmine\utils\Config;
@@ -56,7 +57,7 @@ final class DataManager {
         
         @mkdir($this->pluginPath . "database" . DIRECTORY_SEPARATOR);
         @mkdir($this->pluginPath . "database" . DIRECTORY_SEPARATOR . "players" . DIRECTORY_SEPARATOR);
-        @mkdir($this->pluginPath . "database" . DIRECTORY_SEPARATOR . "arenas" . DIRECTORY_SEPARATOR);
+        @mkdir($this->pluginPath . "database" . DIRECTORY_SEPARATOR . "maps" . DIRECTORY_SEPARATOR);
         @mkdir($this->pluginPath . "database" . DIRECTORY_SEPARATOR . "backups" . DIRECTORY_SEPARATOR);
     }
     
@@ -76,9 +77,22 @@ final class DataManager {
         
         return null;
     }
+
+    public function loadMaps(): bool {
+        if ($handle = opendir($this->pluginPath . "database" . DIRECTORY_SEPARATOR . 'maps' . DIRECTORY_SEPARATOR)) {
+            while (false !== ($entry = readdir($handle))) {
+                if ($entry !== '.' && $entry !== '..') {
+                    $map = str_replace('.json', '', $entry);
+                    Map::$maps[] = new Map($this->getMapData($map));
+                }
+            }
+            return true;
+        }
+        return false;
+    }
     
-    public function getArenaData(string $arena): ?DataHolder {
-        $filePath = "arenas" . DIRECTORY_SEPARATOR . $arena . ".json";
+    public function getMapData(string $map): ?DataHolder {
+        $filePath = "maps" . DIRECTORY_SEPARATOR . $map . ".json";
         $path = $this->pluginPath . "database" . DIRECTORY_SEPARATOR . $filePath;
         if (file_exists($path)) {
             return new DataHolder((new Config($path, Config::JSON))->getAll());
@@ -87,10 +101,11 @@ final class DataManager {
         return null;
     }
     
-    public function saveArenaData(DataHolder $dataHolder): void {
-        $filePath = "arenas" . DIRECTORY_SEPARATOR . $dataHolder->getString("name") . ".json";
+    public function saveMapData(DataHolder $dataHolder): void {
+        $filePath = "maps" . DIRECTORY_SEPARATOR . $dataHolder->getString("name") . ".json";
         $path = $this->pluginPath . "database" . DIRECTORY_SEPARATOR . $filePath;
         (new Config($path, Config::JSON, $dataHolder->getAll()))->save();
+        Map::$maps[] = new Map($dataHolder);
     }
     
     public function getLobby(): ?World {

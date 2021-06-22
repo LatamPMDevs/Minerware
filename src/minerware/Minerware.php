@@ -36,6 +36,13 @@ final class Minerware extends PluginBase {
     
     protected function onEnable(): void {
         $this->copyright();
+        DataManager::getInstance()->loadMaps();
+    }
+    
+    protected function onDisable(): void {
+        foreach (ArenaManager::getInstance()->getArenas() as $arena) {
+            $arena->deleteMap();
+        }
     }
     
     public function getPrefix(): string {
