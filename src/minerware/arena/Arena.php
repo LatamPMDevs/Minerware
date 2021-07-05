@@ -21,11 +21,13 @@ namespace minerware\arena;
 use minerware\Minerware;
 use minerware\tasks\ArenaTask;
 use minerware\database\DataManager;
-use minerware\arena\minigame\Microgame;
 use minerware\language\Translator;
 use minerware\utils\Utils;
 use minerware\utils\PointHolder;
 use minerware\utils\VoteCounter;
+
+use minerware\arena\minigame\{Microgame, WaitForIt, IgniteTNT};
+
 use pocketmine\lang\TranslationContainer;
 use pocketmine\player\Player;
 use pocketmine\player\GameMode;
@@ -63,6 +65,9 @@ final class Arena implements Listener {
     /** @var VoteCounter */
     private $voteCounter;
     
+    /** @var array<Microgame> */
+    private $microgamesQueue = [];
+    
     /** @var Microgame */
     private $currentMicrogame = null;
     
@@ -73,6 +78,9 @@ final class Arena implements Listener {
     public $startingtime = 12;
     
     /** @var Int */
+    public $gametime = 0;
+    
+    /** @var Int */
     public $endingtime = 10;
     
     public function __construct(string $id) {
@@ -81,6 +89,21 @@ final class Arena implements Listener {
         $this->voteCounter = new VoteCounter();
         Minerware::getInstance()->getServer()->getPluginManager()->registerEvents($this, Minerware::getInstance());
         Minerware::getInstance()->getScheduler()->scheduleRepeatingTask(new ArenaTask($this), 20);
+
+        $easyGames = [WaitForIt::class];
+        $randEasy = [array_rand($easyGames, 1)]; //7, remove []
+        $mediumGames = [IgniteTNT::class];
+        $randMedium = [array_rand($mediumGames, 1)]; //8, remove []
+        $bossGames = [BowSpleef::class];
+        $randBoss = array_rand($bossGames);
+
+        foreach ($randEasy as $index) {
+            $this->microgamesQueue[] = $easyGames[$index];
+        }
+        foreach ($randMedium as $index) {
+            $this->microgamesQueue[] = $mediumGames[$index];
+        }
+        $this->microgamesQueue[] = $bossGames[$randBoss];
     }
     
     public function getId(): string {
@@ -157,6 +180,13 @@ final class Arena implements Listener {
     
     public function getCurrentMicrogame(): ?Microgame {
         return $this->currentMicrogame;
+    }
+
+    public function startNextMicrogame(): Microgame {
+        $microgame = new $this->microgamesQueue[0]($this);
+        $this->currentMicrogame = $microgame;
+        unset($this->microgamesQueue[0]);
+        return $microgame;
     }
 
     public function tpSpawn(Player $player): void {

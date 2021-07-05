@@ -122,7 +122,12 @@ class ArenaTask extends Task {
             break;
 
             case "ingame":
-                // code...
+                $arena->gametime++;
+                $microgame = $arena->getCurrentMicrogame();
+                if ($arena->gametime == 1) {
+                    $microgame = $arena->startNextMicrogame();
+                }
+                $microgame->tick();
             break;
 
             case "ending":

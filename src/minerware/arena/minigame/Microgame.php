@@ -63,5 +63,6 @@ abstract class Microgame implements Listener, GameLevel {
     }
     
     abstract public function start(): void;
+    abstract public function tick(): void;
     abstract public function end(): void;
 }

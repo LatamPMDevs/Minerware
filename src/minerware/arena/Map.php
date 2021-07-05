@@ -19,9 +19,10 @@ declare(strict_types=1);
 namespace minerware\arena;
 
 use minerware\Minerware;
+use minerware\utils\Utils;
 use minerware\database\DataHolder;
 use pocketmine\nbt\NBT;
-#use pocketmine\nbt\BigEndianNBTStream;
+use pocketmine\math\Vector3;
 use pocketmine\nbt\tag\CompoundTag;
 use pocketmine\world\World;
 
@@ -32,6 +33,12 @@ final class Map {
     
     /** @var string */
     private $name;
+    
+    /** @var array */
+    private $platform;
+    
+    /** @var array */
+    private $platformMinAndMaxPos;
     
     /** @var array */
     public static $maps = [];
@@ -48,10 +55,28 @@ final class Map {
     public function __construct(DataHolder $data) {
         $this->data = $data;
         $this->name = $data->getString("name");
+
+        $platform = $data->getArray("platform");
+
+        $this->platform = [
+            "pos1" => new Vector3($platform["pos1"]["X"], $platform["pos1"]["Y"], $platform["pos1"]["Z"]),
+            "pos2" => new Vector3($platform["pos2"]["X"], $platform["pos2"]["Y"], $platform["pos2"]["Z"])
+        ];
+        $this->platformMinAndMaxPos = Utils::calculateMinAndMaxPos($this->platform["pos1"], $this->platform["pos2"]);
+
+        self::$maps[] = $this;
     }
 
     public function getName(): string {
         return $this->name;
+    }
+
+    public function getPlatform(): array {
+        return $this->platform;
+    }
+
+    public function getPlatformMinAndMaxPos(): array {
+        return $this->platformMinAndMaxPos;
     }
 
     public function getData(): DataHolder {

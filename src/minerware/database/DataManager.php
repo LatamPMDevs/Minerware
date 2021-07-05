@@ -83,7 +83,7 @@ final class DataManager {
             while (false !== ($entry = readdir($handle))) {
                 if ($entry !== '.' && $entry !== '..') {
                     $map = str_replace('.json', '', $entry);
-                    Map::$maps[] = new Map($this->getMapData($map));
+                    new Map($this->getMapData($map));
                 }
             }
             return true;

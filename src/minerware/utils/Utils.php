@@ -90,4 +90,16 @@ final class Utils {
         $leftover = $totalSticks - $colorSticks;
         return str_repeat("▌", $colorSticks)."§7".str_repeat("▌", $leftover);
     }
+
+    public static function calculateMinAndMaxPos(Vector3 $pos1, Vector3 $pos2): array {
+        $minX = min($pos1->x, $pos2->x);
+        $minY = min($pos1->y, $pos2->y);
+        $minZ = min($pos1->z, $pos2->z);
+
+        $maxX = max($pos1->x, $pos2->x);
+        $maxY = max($pos1->y, $pos2->y);
+        $maxZ = max($pos1->z, $pos2->z);
+
+        return ["Min" => new Vector3($minX, $minY, $minZ), "Max" => new Vector3($maxX, $maxY, $maxZ)];
+    }
 }
