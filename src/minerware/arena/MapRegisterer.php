@@ -27,7 +27,7 @@ use pocketmine\event\block\BlockBreakEvent;
 use pocketmine\event\Listener;
 use pocketmine\event\player\PlayerChatEvent;
 use pocketmine\item\ItemFactory;
-use pocketmine\lang\TranslationContainer;
+use pocketmine\lang\Translatable;
 use pocketmine\math\Vector3;
 use pocketmine\player\Player;
 use pocketmine\utils\SingletonTrait;
@@ -68,7 +68,7 @@ final class MapRegisterer implements Listener {
 	private function setConfiguratorMode(Player $player): void {
 		$this->world->loadChunk($this->world->getSafeSpawn()->getFloorX(), $this->world->getSafeSpawn()->getFloorZ());
 		$player->teleport($this->world->getSafeSpawn(), 0, 0);
-		$player->sendMessage(Translator::getInstance()->translate(new TranslationContainer("configurator.mode.enter")));
+		$player->sendMessage(Translator::getInstance()->translate(new Translatable("configurator.mode.enter")));
 	}
 
 	private function setPlatform(Vector3 $firstPoint, Vector3 $secondPoint): void {
@@ -117,23 +117,23 @@ final class MapRegisterer implements Listener {
 			switch (strtolower($args[0])) {
 				case "setplatform":
 				   $player->getInventory()->addItem(ItemFactory::getInstance()->get(369, 0, 1)->setCustomName("§r§aSet platform\n§7Break a corner."));
-				   $player->sendMessage(Translator::getInstance()->translate(new TranslationContainer("configurator.mode.setplatform")));
+				   $player->sendMessage(Translator::getInstance()->translate(new Translatable("configurator.mode.setplatform")));
 				break;
 
 				case "setcages":
 					$player->getInventory()->addItem(ItemFactory::getInstance()->get(369, 0, 1)->setCustomName("§r§aSet cages\n§7Break a block."));
-					   $player->sendMessage(Translator::getInstance()->translate(new TranslationContainer("configurator.mode.setcage.winners")));
+					   $player->sendMessage(Translator::getInstance()->translate(new Translatable("configurator.mode.setcage.winners")));
 				break;
 
 				case "setspawn":
 					$this->setSpawn($player->getPosition());
-					$player->sendMessage(Translator::getInstance()->translate(new TranslationContainer("configurator.mode.setspawn.successfully")));
+					$player->sendMessage(Translator::getInstance()->translate(new Translatable("configurator.mode.setspawn.successfully")));
 				break;
 
 				case "setvoid":
 					$y = $player->getPosition()->getFloorY();
 					$this->setVoid($y);
-					$player->sendMessage(Translator::getInstance()->translate(new TranslationContainer("configurator.mode.setvoid.successfully", [$y])));
+					$player->sendMessage(Translator::getInstance()->translate(new Translatable("configurator.mode.setvoid.successfully", [$y])));
 				break;
 
 				case "help":
@@ -150,7 +150,7 @@ final class MapRegisterer implements Listener {
 
 				case "done":
 					$this->save();
-					$player->sendMessage(Translator::getInstance()->translate(new TranslationContainer("configurator.mode.registered.successfully")));
+					$player->sendMessage(Translator::getInstance()->translate(new Translatable("configurator.mode.registered.successfully")));
 					$player->teleport(Minerware::getInstance()->getServer()->getWorldManager()->getDefaultWorld()->getSafeSpawn());
 					# Save World
 					$folderName = $this->world->getFolderName();
@@ -162,7 +162,7 @@ final class MapRegisterer implements Listener {
 				break;
 
 				default:
-					$player->sendMessage(Translator::getInstance()->translate(new TranslationContainer("configurator.mode.error.notFound")));
+					$player->sendMessage(Translator::getInstance()->translate(new Translatable("configurator.mode.error.notFound")));
 				break;
 			}
 			$event->cancel();
@@ -184,10 +184,10 @@ final class MapRegisterer implements Listener {
 					$pos2 = $block->getPos()->asVector3();
 					$size = Utils::calculateSize($pos1, $pos2);
 					if ($size !== "24x24") {
-						$player->sendMessage(Translator::getInstance()->translate(new TranslationContainer("configurator.mode.error.invalidSize", ["24x24", $size])));
+						$player->sendMessage(Translator::getInstance()->translate(new Translatable("configurator.mode.error.invalidSize", ["24x24", $size])));
 					} else {
 						$this->setPlatform($pos1, $pos2);
-						$player->sendMessage(Translator::getInstance()->translate(new TranslationContainer("configurator.mode.setplatform.successfully")));
+						$player->sendMessage(Translator::getInstance()->translate(new Translatable("configurator.mode.setplatform.successfully")));
 					}
 					$player->getInventory()->removeItem($item);
 					unset($this->tempData[strtolower($player->getName())]["platform"]);
@@ -197,12 +197,12 @@ final class MapRegisterer implements Listener {
 			if ($itemId == 369 && $itemName === "§r§aSet cages\n§7Break a block.") {
 				if (!isset($this->tempData[strtolower($player->getName())]["cages"]["winners"])) {
 					$this->tempData[strtolower($player->getName())]["cages"]["winners"] = $block->getPos()->asVector3();
-					$player->sendMessage(Translator::getInstance()->translate(new TranslationContainer("configurator.mode.setcage.lossers")));
+					$player->sendMessage(Translator::getInstance()->translate(new Translatable("configurator.mode.setcage.lossers")));
 				} else {
 					$winners = $this->tempData[strtolower($player->getName())]["cages"]["winners"];
 					$lossers = $block->getPos()->asVector3();
 					$this->setCages($winners, $lossers);
-					$player->sendMessage(Translator::getInstance()->translate(new TranslationContainer("configurator.mode.setcage.successfully")));
+					$player->sendMessage(Translator::getInstance()->translate(new Translatable("configurator.mode.setcage.successfully")));
 					$player->getInventory()->removeItem($item);
 					unset($this->tempData[strtolower($player->getName())]["cages"]);
 				}

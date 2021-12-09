@@ -25,7 +25,10 @@ use pocketmine\plugin\PluginBase;
 use pocketmine\utils\SingletonTrait;
 
 final class Minerware extends PluginBase {
-	use SingletonTrait;
+	use SingletonTrait {
+		setInstance as protected;
+		reset as protected;
+	}
 
 	protected function onLoad(): void {
 		self::setInstance($this);

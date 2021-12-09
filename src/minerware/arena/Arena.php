@@ -33,7 +33,7 @@ use minerware\utils\VoteCounter;
 use pocketmine\event\entity\EntityTeleportEvent;
 use pocketmine\event\Listener;
 use pocketmine\event\player\PlayerQuitEvent;
-use pocketmine\lang\TranslationContainer;
+use pocketmine\lang\Translatable;
 use pocketmine\player\GameMode;
 
 use pocketmine\player\Player;
@@ -140,7 +140,7 @@ final class Arena implements Listener {
 
 	public function join(Player $player): void {
 		$this->players[$player->getName()] = $player;
-		$this->sendMessage(Translator::getInstance()->translate(new TranslationContainer("game.player.join", [$player->getName(), count($this->players) . "/" . self::MAX_PLAYERS])));
+		$this->sendMessage(Translator::getInstance()->translate(new Translatable("game.player.join", [$player->getName(), count($this->players) . "/" . self::MAX_PLAYERS])));
 		$lobby = ArenaManager::getInstance()->getLobby();
 		$lobby->loadChunk($lobby->getSafeSpawn()->getFloorX(), $lobby->getSafeSpawn()->getFloorZ());
 		$player->teleport($lobby->getSafeSpawn(), 0, 0);
@@ -152,7 +152,7 @@ final class Arena implements Listener {
 
 	public function quit(Player $player): void {
 		unset($this->players[$player->getName()]);
-		$this->sendMessage(Translator::getInstance()->translate(new TranslationContainer("game.player.quit", [$player->getName(), count($this->players) . "/" . self::MAX_PLAYERS])));
+		$this->sendMessage(Translator::getInstance()->translate(new Translatable("game.player.quit", [$player->getName(), count($this->players) . "/" . self::MAX_PLAYERS])));
 	}
 
 	public function sendMessage(string $message): void {

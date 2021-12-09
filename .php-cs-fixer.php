@@ -5,7 +5,7 @@ declare(strict_types=1);
 $finder = PhpCsFixer\Finder::create()
 	->in(__DIR__ . "/src");
 
-return (new PhpCsFixer\Config)
+	return (new PhpCsFixer\Config)
 	->setRiskyAllowed(true)
 	->setRules([
 		"align_multiline_comment" => [
@@ -33,7 +33,7 @@ return (new PhpCsFixer\Config)
 		"global_namespace_import" => [
 			"import_constants" => true,
 			"import_functions" => true,
-			"import_classes" => null,
+			"import_classes" => true,
 		],
 		"indentation_type" => true,
 		"native_function_invocation" => [
@@ -62,6 +62,7 @@ return (new PhpCsFixer\Config)
 		"phpdoc_trim_consecutive_blank_line_separation" => true,
 		"single_import_per_statement" => true,
 		"strict_param" => true,
+		"return_assignment" => true
 	])
 	->setFinder($finder)
 	->setIndent("\t")
