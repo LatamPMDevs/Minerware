@@ -18,90 +18,93 @@ declare(strict_types=1);
 
 namespace minerware\arena;
 
-use minerware\Minerware;
-use minerware\language\Translator;
 use minerware\database\DataManager;
+use minerware\language\Translator;
+use minerware\Minerware;
 use pocketmine\lang\TranslationContainer;
+use pocketmine\player\Player;
 use pocketmine\utils\SingletonTrait;
 use pocketmine\world\World;
-use pocketmine\player\Player;
+use function count;
+use function rand;
+use function range;
+use function shuffle;
 
 final class ArenaManager {
-    use SingletonTrait;
-    
-    /** @var Minerware */
-    private $plugin;
-    
-    /** @var ?World */
-    private $lobby;
-    
-    /** @var array<string, Arena> */
-    private $arenas = [];
-    
-    /** @var array<string, World> */
-    private $registeredMaps = [];
-    
-    public function __construct() {
-        $this->plugin = Minerware::getInstance();
-        $this->lobby = DataManager::getInstance()->getLobby();
-    }
+	use SingletonTrait;
 
-    public function getArenas(): array  {
-        return $this->arenas;
-    }
+	/** @var Minerware */
+	private $plugin;
 
-    public function getById(string $id): ?Arena {
-        return (isset($this->arenas[$id]) ? $this->arenas[$id] : null);
-    }
+	/** @var ?World */
+	private $lobby;
 
-    public function getLobby(): ?World{
-        return $this->lobby;
-    }
+	/** @var array<string, Arena> */
+	private $arenas = [];
 
-    public function createArena(): Arena {
-        $id = $this->generateId();
-        $arena = new Arena($id);
-        $this->arenas[$id] = $arena;
-        return $arena;
-    }
+	/** @var array<string, World> */
+	private $registeredMaps = [];
 
+	public function __construct() {
+		$this->plugin = Minerware::getInstance();
+		$this->lobby = DataManager::getInstance()->getLobby();
+	}
 
-    /**
-     * @param Arena|string $arena
-     */
-    public function deleteArena($arena): void  {
-        $id = ($arena instanceof Arena) ? $arena->getId() : $arena;
-        unset($this->arenas[$id]);
-    }
+	public function getArenas(): array  {
+		return $this->arenas;
+	}
 
-    public function getAvaible(): Arena  {
-        foreach ($this->arenas as $arena) {
-            if ($arena->getStatus() === "waiting" && count($arena->getPlayers()) < Arena::MAX_PLAYERS) {
-                return $arena;
-            }
-        }
-        return $this->createArena();
-    }
+	public function getById(string $id): ?Arena {
+		return (isset($this->arenas[$id]) ? $this->arenas[$id] : null);
+	}
 
-    public function generateId(): string {
-        $az = range("a", "z");
-        shuffle($az);
+	public function getLobby(): ?World{
+		return $this->lobby;
+	}
 
-        $name = "";
-        $name .= $az[0];
-        $name .= $az[1];
-        $name .= rand(10, 99);
-        return $name;
-    }
+	public function createArena(): Arena {
+		$id = $this->generateId();
+		$arena = new Arena($id);
+		$this->arenas[$id] = $arena;
+		return $arena;
+	}
 
-    public function join(Player $player, Arena $arena = null): void {
-        if ($this->lobby === null) {
-            $player->sendMessage(Translator::getInstance()->translate(new TranslationContainer("error.lobby.isNotSet")));
-            return;
-        }
-        if ($arena === null) {
-            $arena = $this->getAvaible();
-        }
-        $arena->join($player);
-    }
+	/**
+	 * @param Arena|string $arena
+	 */
+	public function deleteArena($arena): void  {
+		$id = ($arena instanceof Arena) ? $arena->getId() : $arena;
+		unset($this->arenas[$id]);
+	}
+
+	public function getAvaible(): Arena  {
+		foreach ($this->arenas as $arena) {
+			if ($arena->getStatus() === "waiting" && count($arena->getPlayers()) < Arena::MAX_PLAYERS) {
+				return $arena;
+			}
+		}
+		return $this->createArena();
+	}
+
+	public function generateId(): string {
+		$az = range("a", "z");
+		shuffle($az);
+
+		$name = "";
+		$name .= $az[0];
+		$name .= $az[1];
+		$name .= rand(10, 99);
+		return $name;
+	}
+
+	public function join(Player $player, Arena $arena = null): void {
+		if ($this->lobby === null) {
+			$player->sendMessage(Translator::getInstance()->translate(new TranslationContainer("error.lobby.isNotSet")));
+			return;
+		}
+		if ($arena === null) {
+			$arena = $this->getAvaible();
+		}
+		$arena->join($player);
+	}
 }

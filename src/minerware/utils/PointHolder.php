@@ -19,25 +19,26 @@ declare(strict_types=1);
 namespace minerware\utils;
 
 use pocketmine\player\Player;
+use function strtolower;
 
 final class PointHolder {
-    
-    /** @var array<string, int> */
-    private $points = [];
-    
-    public function addPlayer(Player $player): void {
-        $this->points[strtolower($player->getName())] = 0;
-    }
-    
-    public function getPlayerPoints(Player $player): int {
-        return $this->points[strtolower($player->getName())];
-    }
-    
-    public function addPlayerPoint(Player $player, int $points = 1): void {
-        $this->points[strtolower($player->getName())] += $points;
-    }
-    
-    public function getPoints(): array {
-        return $this->points;
-    }
+
+	/** @var array<string, int> */
+	private $points = [];
+
+	public function addPlayer(Player $player): void {
+		$this->points[strtolower($player->getName())] = 0;
+	}
+
+	public function getPlayerPoints(Player $player): int {
+		return $this->points[strtolower($player->getName())];
+	}
+
+	public function addPlayerPoint(Player $player, int $points = 1): void {
+		$this->points[strtolower($player->getName())] += $points;
+	}
+
+	public function getPoints(): array {
+		return $this->points;
+	}
 }
