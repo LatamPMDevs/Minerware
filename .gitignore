@@ -1,0 +1,7 @@
+/.vscode/*
+/.idea/*
+
+/composer.phar
+/vendor/*
+
+/.php-cs-fixer.cache
