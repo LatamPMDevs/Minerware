@@ -12,7 +12,7 @@ Multiple classic microgames in a single chunk. Using one of the latest PHP versi
 ## Project information:
 | Plugin version | Pocketmine version | PHP version | Status |
 |---|---|---|---|
-| 0.5.0 | 4.0.0 | 7.4 minimum | Development |
+| 1.0.0-dev5 | 4.0.0 | 8.0 minimum | Development |
 
 ## Copyright:
 ```

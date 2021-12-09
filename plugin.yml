@@ -1,5 +1,5 @@
 name: Minerware
-version: 0.0.1
+version: 1.0.0-dev5
 main: minerware\Minerware
 api: 4.0.0
 prefix: "§aMinerware§r "
