@@ -21,6 +21,9 @@ namespace minerware\utils;
 use pocketmine\math\Vector3;
 use pocketmine\network\mcpe\protocol\PlaySoundPacket;
 use pocketmine\player\Player;
+use RecursiveDirectoryIterator;
+use RecursiveIteratorIterator;
+use ZipArchive;
 use function abs;
 use function basename;
 use function file_exists;
@@ -48,11 +51,11 @@ final class Utils {
 	}
 
 	public static function setZip(string $targetPath, string $zipPath): bool {
-		$zip = new \ZipArchive;
-		$zip->open($zipPath, \ZipArchive::CREATE | \ZipArchive::OVERWRITE);
-		$files = new \RecursiveIteratorIterator(
-			new \RecursiveDirectoryIterator($targetPath),
-			\RecursiveIteratorIterator::LEAVES_ONLY
+		$zip = new ZipArchive;
+		$zip->open($zipPath, ZipArchive::CREATE | ZipArchive::OVERWRITE);
+		$files = new RecursiveIteratorIterator(
+			new RecursiveDirectoryIterator($targetPath),
+			RecursiveIteratorIterator::LEAVES_ONLY
 		);
 		foreach ($files as $file) {
 			if ($file->isFile()) {

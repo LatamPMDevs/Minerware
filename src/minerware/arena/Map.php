@@ -25,6 +25,7 @@ use pocketmine\math\Vector3;
 use pocketmine\nbt\NBT;
 use pocketmine\nbt\tag\CompoundTag;
 use pocketmine\world\World;
+use ZipArchive;
 use function mkdir;
 
 final class Map {
@@ -94,7 +95,7 @@ final class Map {
 		# Create files
 		@mkdir($worldPath);
 		$backup = $this->getZip();
-		$zip = new \ZipArchive();
+		$zip = new ZipArchive();
 		$zip->open($backup);
 		$zip->extractTo($worldPath);
 		$zip->close();
