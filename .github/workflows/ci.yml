@@ -21,20 +21,20 @@ jobs:
           ref: ${{ github.ref }}
 
       - name: Setup PHP
-        uses: shivammathur/setup-php@2.15.0
+        uses: shivammathur/setup-php@2.16.0
         with:
           php-version: ${{ matrix.php }}
 
-      - name: Install PHPStan Composer dependencies
+      - name: Install Composer dependencies
         run: composer install --prefer-dist --no-interaction --ignore-platform-reqs
 
       - name: Run PHP CS Fixer
         run: ./vendor/bin/php-cs-fixer fix src/
 
-      - name: Run PHPStan
-        run: ./vendor/bin/phpstan analyse -c phpstan.neon
-        
       - name: Apply automated changes
         uses: stefanzweifel/git-auto-commit-action@v4
         with:
           commit_message: 'Apply automated code style changes.'
+
+      - name: Run PHPStan
+        run: ./vendor/bin/phpstan analyse -c phpstan.neon
