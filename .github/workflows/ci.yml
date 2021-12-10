@@ -31,10 +31,10 @@ jobs:
       - name: Run PHP CS Fixer
         run: ./vendor/bin/php-cs-fixer fix src/
 
-      - name: Apply PHP CS Fixer changes
-        uses: stefanzweifel/git-auto-commit-action@v4
-        with:
-          commit_message: 'PHP CS Fixer: Apply automated code style changes.'
-
       - name: Run PHPStan
         run: ./vendor/bin/phpstan analyse -c phpstan.neon
+        
+      - name: Apply automated changes
+        uses: stefanzweifel/git-auto-commit-action@v4
+        with:
+          commit_message: 'Apply automated code style changes.'
