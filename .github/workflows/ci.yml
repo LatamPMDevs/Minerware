@@ -6,25 +6,8 @@ on:
   workflow_dispatch:
 
 jobs:
-  phpstan:
-    name: PHPStan analysis
-    runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v2
-        with:
-          ref: ${{ github.ref }}
-
-      - name: Run PHPStan
-        uses: larryTheCoder/pmmp-phpstan-action@master
-        with:
-          phpstan-config: phpstan.neon.dist
-
-  codestyle:
-    name: Code Style checks
+  ci:
+    name: PHP CI
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -37,16 +20,21 @@ jobs:
         with:
           ref: ${{ github.ref }}
 
-      - name: Setup PHP and tools
-        uses: shivammathur/setup-php@2.9.0
+      - name: Setup PHP
+        uses: shivammathur/setup-php@2.15.0
         with:
           php-version: ${{ matrix.php }}
-          tools: php-cs-fixer
+
+      - name: Install PHPStan Composer dependencies
+        run: composer install --prefer-dist --no-interaction --ignore-platform-reqs
 
       - name: Run PHP CS Fixer
-        run: php-cs-fixer fix src
+        run: ./vendor/bin/php-cs-fixer fix src/
 
-      - name: Apply php-cs-fixer changes
+      - name: Apply PHP CS Fixer changes
         uses: stefanzweifel/git-auto-commit-action@v4
         with:
-          commit_message: 'CodeStyle: Apply fix changes'
+          commit_message: 'PHP CS Fixer: Apply automated code style changes.'
+
+      - name: Run PHPStan
+        run: ./vendor/bin/phpstan analyse -c phpstan.neon

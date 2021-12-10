@@ -2,9 +2,11 @@
     "name": "minerware/minerware",
     "description": "Private minerware plugin inspired in CubeCraft's.",
     "version": "1.0.0",
-    "require-dev": {
+    "require": {
         "php": "^8.0",
-        "pocketmine/pocketmine-mp": "^4.0.0",
+        "pocketmine/pocketmine-mp": "^4.0.1"
+    },
+    "require-dev": {
         "phpstan/phpstan": "1.2.0",
         "friendsofphp/php-cs-fixer": "^3.3.2"
     },
