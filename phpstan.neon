@@ -3,4 +3,4 @@
     checkMissingIterableValueType: false
 
     paths:
-        - /src
+        - src
