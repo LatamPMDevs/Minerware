@@ -20,7 +20,6 @@ namespace minerware\arena\minigame;
 
 interface GameLevel {
 
-	/** @var int */
 	public const LEVEL_NORMAL = 0;
 	public const LEVEL_MEDIUM = 1;
 	public const LEVEL_BOSS = 2;

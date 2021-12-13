@@ -35,13 +35,9 @@ use function ucfirst;
 
 final class MinerwareCommand extends Command {
 
-	/** @var Minerware */
-	private $plugin;
-
-	public function __construct(Minerware $plugin) {
+	public function __construct(private Minerware $plugin) {
 		parent::__construct("minerware", "Minerware main command.");
 		$this->setPermission("minerware.command");
-		$this->plugin = $plugin;
 	}
 
 	public function execute(CommandSender $sender, string $commandLabel, array $args): void {

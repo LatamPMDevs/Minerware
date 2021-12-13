@@ -23,14 +23,13 @@ use pocketmine\player\Player;
 
 abstract class Microgame implements Listener, GameLevel {
 
-	/** @var array<int, Player> */
-	protected $winners = [];
+	/** @var Player[] */
+	protected array $winners = [];
 
-	/** @var array<int, Player> */
-	protected $losers = [];
+	/** @var Player[] */
+	protected array $losers = [];
 
-	/** @var int */
-	protected $level = self::LEVEL_NORMAL;
+	protected int $level = self::LEVEL_NORMAL;
 
 	public function addWinner(Player $player): void {
 		$this->winners[] = $player;
@@ -41,7 +40,7 @@ abstract class Microgame implements Listener, GameLevel {
 	}
 
 	/**
-	 * @return array<int, Player>
+	 * @return Player[]
 	 */
 	public function getWinners(): array {
 		return $this->winners;
@@ -52,7 +51,7 @@ abstract class Microgame implements Listener, GameLevel {
 	}
 
 	/**
-	 * @return array<int, Player>
+	 * @return Player[]
 	 */
 	public function getLosers(): array {
 		return $this->losers;

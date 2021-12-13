@@ -24,7 +24,7 @@ use function strtolower;
 final class PointHolder {
 
 	/** @var array<string, int> */
-	private $points = [];
+	private array $points = [];
 
 	public function addPlayer(Player $player): void {
 		$this->points[strtolower($player->getName())] = 0;
@@ -38,6 +38,9 @@ final class PointHolder {
 		$this->points[strtolower($player->getName())] += $points;
 	}
 
+	/**
+	 * @return array<string, int>
+	 */
 	public function getPoints(): array {
 		return $this->points;
 	}

@@ -35,15 +35,10 @@ use function count;
 class ArenaTask extends Task {
 	use SingletonTrait;
 
-	/** @var Minerware */
-	private $plugin;
+	private Minerware $plugin;
 
-	/** @var Arena */
-	private $arena;
-
-	public function __construct(Arena $arena) {
+	public function __construct(private Arena $arena) {
 		$this->plugin = Minerware::getInstance();
-		$this->arena = $arena;
 	}
 
 	public function onRun(): void {

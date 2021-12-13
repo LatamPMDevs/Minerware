@@ -48,47 +48,33 @@ final class Arena implements Listener {
 
 	public const MAX_PLAYERS = 12;
 
-	/** @var string */
-	private $id;
+	private string $status = "waiting";
 
-	/** @var string */
-	private $status = "waiting";
+	private ?World $world = null;
 
-	/** @var ?World */
-	private $world = null;
+	private ?Map $map = null;
 
-	/** @var ?Map */
-	private $map = null;
+	/** @var Player[] */
+	private array $players = [];
 
-	/** @var array<string, Player> */
-	private $players = [];
+	private PointHolder $pointHolder;
 
-	/** @var PointHolder */
-	private $pointHolder;
+	private VoteCounter $voteCounter;
 
-	/** @var VoteCounter */
-	private $voteCounter;
+	/** @var string[] */
+	private array $microgamesQueue = [];
 
-	/** @var array<Microgame> */
-	private $microgamesQueue = [];
+	private Microgame $currentMicrogame = null;
 
-	/** @var Microgame */
-	private $currentMicrogame = null;
+	public int $waitingtime = 40;
 
-	/** @var Int */
-	public $waitingtime = 40;
+	public int $startingtime = 12;
 
-	/** @var Int */
-	public $startingtime = 12;
+	public int $gametime = 0;
 
-	/** @var Int */
-	public $gametime = 0;
+	public int $endingtime = 10;
 
-	/** @var Int */
-	public $endingtime = 10;
-
-	public function __construct(string $id) {
-		$this->id = $id;
+	public function __construct(private string $id) {
 		$this->pointHolder = new PointHolder();
 		$this->voteCounter = new VoteCounter();
 		Minerware::getInstance()->getServer()->getPluginManager()->registerEvents($this, Minerware::getInstance());
@@ -141,6 +127,7 @@ final class Arena implements Listener {
 	public function join(Player $player): void {
 		$this->players[$player->getName()] = $player;
 		$this->sendMessage(Translator::getInstance()->translate(new Translatable("game.player.join", [$player->getName(), count($this->players) . "/" . self::MAX_PLAYERS])));
+		//TODO:: #2 Fix $lobby no being null.
 		$lobby = ArenaManager::getInstance()->getLobby();
 		$lobby->loadChunk($lobby->getSafeSpawn()->getFloorX(), $lobby->getSafeSpawn()->getFloorZ());
 		$player->teleport($lobby->getSafeSpawn(), 0, 0);

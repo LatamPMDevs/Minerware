@@ -33,20 +33,16 @@ use function str_replace;
 final class DataManager {
 	use SingletonTrait;
 
-	/** @var Minerware */
-	private $plugin;
+	private Minerware $plugin;
 
-	/** @var string */
-	private $pluginPath;
+	private string $pluginPath;
 
-	/** @var Config */
-	private $config;
+	private COnfig $config;
 
-	/** @var string */
-	private $playerStorageType;
+	private string $playerStorageType;
 
 	/** @var array<string, int> */
-	private $formats;
+	private array $formats;
 
 	public function __construct() {
 		$this->plugin = Minerware::getInstance();
@@ -70,10 +66,7 @@ final class DataManager {
 	 * TODO:: Add multi storage type support.
 	 */
 
-	/**
-	 * @param Player|string $player
-	 */
-	public function getPlayerData($player): ?DataHolder {
+	public function getPlayerData(Player|string $player): ?DataHolder {
 		$filePath = "players" . DIRECTORY_SEPARATOR . (($player instanceof Player) ? $player->getName() : $player) . "." . $this->playerStorageType;
 		$path = $this->pluginPath . "database" . DIRECTORY_SEPARATOR . $filePath;
 		if (file_exists($path)) {
@@ -91,8 +84,10 @@ final class DataManager {
 					new Map($this->getMapData($map));
 				}
 			}
+
 			return true;
 		}
+
 		return false;
 	}
 
@@ -113,6 +108,7 @@ final class DataManager {
 		Map::$maps[] = new Map($dataHolder);
 	}
 
+	//TODO:: #2 Fix $lobby no being null.
 	public function getLobby(): ?World {
 		$path = $this->pluginPath . "lobby.yml";
 		$name = (new Config($path, Config::YAML))->get("lobby");
@@ -121,6 +117,7 @@ final class DataManager {
 				return $this->plugin->getServer()->getWorldManager()->getWorldByName($name);
 			}
 		}
+
 		return null;
 	}
 

@@ -39,28 +39,20 @@ final class MapRegisterer implements Listener {
 	use SingletonTrait;
 
 	/** @var array<string, self> */
-	private static $mapRegisterer;
+	private static array $mapRegisterer;
 
 	public static function createRegisterer(Player $player, World $world): self {
 		return (self::$mapRegisterer[strtolower($player->getName())] = new self($player, $world));
 	}
 
 	/** @var array<string, mixed> */
-	private $data = [];
+	private array $data = [];
 
 	/** @var array<string, mixed> */
-	private $tempData = [];
+	private array $tempData = [];
 
-	/** @var Player */
-	private $player;
-
-	/** @var world */
-	private $world;
-
-	private function __construct(Player $player, World $world) {
+	private function __construct(private Player $player, private World $world) {
 		$this->data["name"] = $world->getDisplayName();
-		$this->player = $player;
-		$this->world = $world;
 		$this->setConfiguratorMode($player);
 		Minerware::getInstance()->getServer()->getPluginManager()->registerEvents($this, Minerware::getInstance());
 	}
@@ -206,6 +198,7 @@ final class MapRegisterer implements Listener {
 					$player->getInventory()->removeItem($item);
 					unset($this->tempData[strtolower($player->getName())]["cages"]);
 				}
+
 				$event->cancel();
 			}
 		}

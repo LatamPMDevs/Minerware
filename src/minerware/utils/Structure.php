@@ -28,21 +28,11 @@ use function intval;
 final class Structure {
 	use SingletonTrait;
 
-	/** @var DataHolder */
-	private $data;
+	private string $name;
 
-	/** @var Position */
-	private $pos;
+	private array $changedBlocks;
 
-	/** @var string */
-	private $name;
-
-	/** @var array */
-	private $changedBlocks;
-
-	public function __construct(DataHolder $data, Position $pos) {
-		$this->data = $data;
-		$this->pos = $pos;
+	public function __construct(private DataHolder $data, private Position $pos) {
 		$this->name = $data->getString("name");
 	}
 

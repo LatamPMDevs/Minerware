@@ -33,17 +33,15 @@ use function shuffle;
 final class ArenaManager {
 	use SingletonTrait;
 
-	/** @var Minerware */
-	private $plugin;
+	private Minerware $plugin;
 
-	/** @var ?World */
-	private $lobby;
+	private ?World $lobby;
 
 	/** @var array<string, Arena> */
-	private $arenas = [];
+	private array $arenas = [];
 
 	/** @var array<string, World> */
-	private $registeredMaps = [];
+	private array $registeredMaps = [];
 
 	public function __construct() {
 		$this->plugin = Minerware::getInstance();
@@ -69,10 +67,7 @@ final class ArenaManager {
 		return $arena;
 	}
 
-	/**
-	 * @param Arena|string $arena
-	 */
-	public function deleteArena($arena): void  {
+	public function deleteArena(Arena|string $arena): void  {
 		$id = ($arena instanceof Arena) ? $arena->getId() : $arena;
 		unset($this->arenas[$id]);
 	}

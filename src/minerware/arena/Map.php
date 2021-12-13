@@ -30,20 +30,13 @@ use function mkdir;
 
 final class Map {
 
-	/** @var DataHolder */
-	private $data;
+	private string $name;
 
-	/** @var string */
-	private $name;
+	private array $platform;
 
-	/** @var array */
-	private $platform;
+	private array $platformMinAndMaxPos;
 
-	/** @var array */
-	private $platformMinAndMaxPos;
-
-	/** @var array */
-	public static $maps = [];
+	public static array $maps = [];
 
 	public static function getByName(string $name): ?self {
 		foreach (self::$maps as $map) {
@@ -51,11 +44,11 @@ final class Map {
 				return $map;
 			}
 		}
+
 		return null;
 	}
 
-	public function __construct(DataHolder $data) {
-		$this->data = $data;
+	public function __construct(private DataHolder $data) {
 		$this->name = $data->getString("name");
 
 		$platform = $data->getArray("platform");
@@ -114,6 +107,7 @@ final class Map {
 		if (Minerware::getInstance()->getServer()->getWorldManager()->loadWorld($this->name . "-" . $uniqueId)) {
 			return Minerware::getInstance()->getServer()->getWorldManager()->getWorldByName($this->name . "-" . $uniqueId);
 		}
+
 		return null;
 	}
 }

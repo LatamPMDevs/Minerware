@@ -23,12 +23,10 @@ use function json_encode;
 
 final class DataHolder {
 
-	/** @var array<string, mixed> */
-	private $data;
-
-	public function __construct(array $data) {
-		$this->data = $data;
-	}
+	/**
+	 * @param array<string, mixed>
+	 */
+	public function __construct(private array $data) { }
 
 	public function hasData(string $key): bool {
 		return isset($this->data[$key]);

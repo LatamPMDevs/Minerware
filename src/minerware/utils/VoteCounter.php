@@ -25,18 +25,15 @@ use function count;
 
 final class VoteCounter {
 
-	/** @var array */
-	private $votes = [];
+	/** @var array<Map, Player[]> */
+	private array $votes = [];
 
 	public function __construct() {
 		// code...
 	}
 
-	/**
-	 * @param Map|string $map
-	 */
-	public function vote(Player $player, $map): void {
-		$this->votes[($map instanceof Map) ? $map->getName() : $player][] = $player->getName();
+	public function vote(Player $player, Map|string $map): void {
+		$this->votes[($map instanceof Map) ? $map->getName() : $map][] = $player->getName();
 	}
 
 	public function getVote(Player $player): ?string {
@@ -47,6 +44,7 @@ final class VoteCounter {
 				}
 			}
 		}
+
 		return null;
 	}
 
@@ -59,11 +57,13 @@ final class VoteCounter {
 				$lastCount = count($voters);
 			}
 		}
+
 		if ($winner === null) {
 			$maps = Map::$maps;
 			$randMap = $maps[array_rand($maps)];
 			$winner = $randMap->getName();
 		}
+
 		return Map::getByName($winner);
 	}
 }
