@@ -61,7 +61,7 @@ final class Arena implements Listener {
 
 	private VoteCounter $voteCounter;
 
-	/** @var string[] */
+	/** @var Microgame[] */
 	private array $microgamesQueue = [];
 
 	private Microgame $currentMicrogame = null;
