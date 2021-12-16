@@ -33,13 +33,13 @@ final class VoteCounter {
 	}
 
 	public function vote(Player $player, Map|string $map): void {
-		$this->votes[($map instanceof Map) ? $map->getName() : $map][] = $player->getName();
+		$this->votes[($map instanceof Map) ? $map->getName() : $map][] = $player;
 	}
 
 	public function getVote(Player $player): ?string {
 		foreach ($this->votes as $map => $voters) {
 			foreach ($voters as $voter) {
-				if ($voter === $player->getName()) {
+				if ($voter->getName() === $player->getName()) {
 					return $map;
 				}
 			}
