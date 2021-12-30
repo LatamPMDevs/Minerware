@@ -11,50 +11,45 @@
  * This is a private project, your not allow to redistribute nor resell it.
  * The only ones with that power are this project's contributors.
  *
- * Copyright 2021 © Minerware
+ * Copyright 2022 © Minerware
  */
 
 declare(strict_types=1);
 
-namespace minerware\commands;
+namespace minerware\command;
 
+use CortexPE\Commando\BaseCommand;
+use CortexPE\Commando\constraint\InGameRequiredConstraint;
 use minerware\arena\ArenaManager;
 use minerware\arena\MapRegisterer;
+use minerware\command\constraints\NoArgumentsConstraint;
+use minerware\command\subcommands\HelpCommand;
+use minerware\command\subcommands\LanguageCommand;
 use minerware\database\DataManager;
 use minerware\language\Translator;
 use minerware\Minerware;
-use pocketmine\command\Command;
 use pocketmine\command\CommandSender;
 use pocketmine\lang\Translatable;
 use pocketmine\player\Player;
 use pocketmine\utils\TextFormat as T;
 use function implode;
-use function in_array;
-use function strtolower;
-use function ucfirst;
 
-final class MinerwareCommand extends Command {
+final class MinerwareCommand extends BaseCommand {
 
 	public function __construct(private Minerware $plugin) {
-		parent::__construct("minerware", "Minerware main command.");
+		parent::__construct($plugin, "minerware", "Minerware main command.");
 		$this->setPermission("minerware.command");
 	}
 
-	public function execute(CommandSender $sender, string $commandLabel, array $args): void {
-		if (!$sender instanceof Player) {
-			$sender->sendMessage(Translator::getInstance()->translate(new Translatable("command.error.gameOnly")));
-			return;
-		}
+	protected function prepare(): void {
+		$this->addConstraint(new InGameRequiredConstraint($this));
+		$this->addConstraint(new NoArgumentsConstraint($this));
+		$this->registerSubcommand(new LanguageCommand());
+		$this->registerSubcommand(new HelpCommand());
+	}
 
-		if (!$this->testPermission($sender)) {
-			return;
-		}
-
-		if (!isset($args[0])) {
-			$sender->sendMessage(Translator::getInstance()->translate(new Translatable("command.error.notFound")));
-			return;
-		}
-
+	public function onRun(CommandSender $sender, string $aliasUsed, array $args): void {
+		if (!$sender instanceof Player) return;
 		switch ($args[0]) {
 			case "create":
 				if (DataManager::getInstance()->getLobby() === null) {
@@ -90,32 +85,6 @@ final class MinerwareCommand extends Command {
 				$sender->sendMessage(Translator::getInstance()->translate(new Translatable("command.setlobby")));
 			break;
 
-			case "setlanguage":
-			case "setlang":
-				if (!isset($args[1])) {
-					$sender->sendMessage(T::RED . "Usage: /minerware setlang <language>");
-					return;
-				}
-
-				$languages = [
-					"English",
-					"Spanish"
-				];
-
-				if ($args[1] == "list") {
-					$sender->sendMessage(Translator::getInstance()->translate(new Translatable("command.arg.setlang.langList", $languages)));
-					return;
-				}
-
-				if (!in_array(ucfirst(strtolower($args[1])), $languages, true)) {
-					$sender->sendMessage(Translator::getInstance()->translate(new Translatable("command.arg.setlang.langNotFound", [$args[1]])));
-					return;
-				}
-
-				Translator::getInstance()->changeLanguage($args[1]);
-				$sender->sendMessage(Translator::getInstance()->translate(new Translatable("command.arg.setlang.changed", [strtolower($args[1])])));
-			break;
-
 			case "join":
 				ArenaManager::getInstance()->join($sender);
 			break;
@@ -133,12 +102,8 @@ final class MinerwareCommand extends Command {
 				}
 			break;
 
-			case "help":
-				$sender->sendMessage("SOON");
-			break;
-
 			default:
-				$sender->sendMessage(Translator::getInstance()->translate(new Translatable("command.error.notfound")));
+				$sender->sendMessage(Translator::getInstance()->translate(new Translatable("command.error.notFound")));
 			break;
 		}
 	}

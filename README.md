@@ -19,5 +19,5 @@ Multiple classic microgames in a single chunk. Using one of the latest PHP versi
 This is a private project, your not allow to redistribute nor resell it.
 The only ones with that power are this project's contributors.
 
-Copyright 2021 © Minerware
+Copyright 2022 © Minerware
 ```
