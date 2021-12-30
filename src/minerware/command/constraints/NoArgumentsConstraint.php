@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace minerware\command\constraints;
 
 use CortexPE\Commando\constraint\BaseConstraint;
@@ -7,6 +9,7 @@ use minerware\language\Translator;
 use pocketmine\command\CommandSender;
 use pocketmine\lang\Translatable;
 use pocketmine\player\Player;
+use function count;
 
 final class NoArgumentsConstraint extends BaseConstraint {
 
