@@ -1,0 +1,12 @@
+--- # Poggit-CI Manifest. Open the CI at https://poggit.pmmp.io/ci/JustJ0rd4n/Minerware
+build-by-default: true
+branches:
+  - master
+projects:
+  Minerware:
+    path: ""
+    libs:
+      - src: CortexPE/Commando/Commando
+        version: ^3.0.0
+        branch: PM4
+...
