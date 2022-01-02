@@ -23,7 +23,6 @@ final class ArgumentNotProvided extends BaseConstraint {
 	}
 
 	public function test(CommandSender $sender, string $aliasUsed, array $args): bool {
-		var_dump($args);
 		foreach ($this->argumentName as $argumentName) {
 			if (!array_key_exists($argumentName, $args)) {
 				return false;
