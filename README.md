@@ -6,6 +6,23 @@
 ## Description:
 Multiple classic microgames in a single chunk. Using one of the latest PHP versions and the most optimized code possible to give players the best possible experience.
 
+## Development:
+```bash
+# Install plugin.
+cd your/server/path/plugins
+git clone https://github.com/IvanCraft623/Minerware.git
+
+# Install dependencies.
+cd Minerware
+composer install
+# Make sure you have DevTools and DEVirion installed.
+
+# Install Poggit dependencies.
+mkdir virions
+cd your/server/path/virions
+git clone https://github.com/CortexPE/Commando.git
+git clone https://github.com/dktapps-pm-pl/pmforms.git
+```
 ## Microgames list:
 - none yet
 

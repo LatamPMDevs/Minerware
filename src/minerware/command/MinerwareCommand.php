@@ -23,6 +23,7 @@ use CortexPE\Commando\constraint\InGameRequiredConstraint;
 use minerware\arena\ArenaManager;
 use minerware\arena\MapRegisterer;
 use minerware\command\constraints\NoArgumentsConstraint;
+use minerware\command\subcommands\ArenasCommand;
 use minerware\command\subcommands\HelpCommand;
 use minerware\command\subcommands\LanguageCommand;
 use minerware\database\DataManager;
@@ -39,17 +40,19 @@ final class MinerwareCommand extends BaseCommand {
 	public function __construct(private Minerware $plugin) {
 		parent::__construct($plugin, "minerware", "Minerware main command.");
 		$this->setPermission("minerware.command");
+		$this->setPermissionMessage(Translator::getInstance()->translate(new Translatable("command.noPermission")));
 	}
 
 	protected function prepare(): void {
 		$this->addConstraint(new InGameRequiredConstraint($this));
 		$this->addConstraint(new NoArgumentsConstraint($this));
-		$this->registerSubcommand(new LanguageCommand());
+		$this->registerSubCommand(new ArenasCommand($this->plugin));
+		$this->registerSubcommand(new LanguageCommand($this->plugin));
 		$this->registerSubcommand(new HelpCommand());
 	}
 
 	public function onRun(CommandSender $sender, string $aliasUsed, array $args): void {
-		if (!$sender instanceof Player) return;
+		/** @var Player $sender */
 		switch ($args[0]) {
 			case "create":
 				if (DataManager::getInstance()->getLobby() === null) {
@@ -103,7 +106,7 @@ final class MinerwareCommand extends BaseCommand {
 			break;
 
 			default:
-				$sender->sendMessage(Translator::getInstance()->translate(new Translatable("command.error.notFound")));
+				$sender->sendMessage(Translator::getInstance()->translate(new Translatable("command.notFound")));
 			break;
 		}
 	}

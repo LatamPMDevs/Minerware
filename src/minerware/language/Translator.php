@@ -46,10 +46,11 @@ final class Translator {
 		$this->plugin->saveResource("/languages/english.ini", true);
 	}
 
-	public function changeLanguage(string $newLanguage): void {
-		$this->language = new Language($newLanguage, $this->plugin->getDataFolder() . "/languages/", $newLanguage);
-		$this->plugin->getConfig()->set("language", $this->language->getLang());
+	public function changeLanguage(Language $language): Language {
+		$this->language = $language;
+		$this->plugin->getConfig()->set("language", $language->getLang());
 		$this->plugin->getConfig()->save();
+		return $language;
 	}
 
 	public function translate(Translatable $container): string {

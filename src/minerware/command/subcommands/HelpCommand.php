@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace minerware\command\subcommands;
 
 use CortexPE\Commando\args\RawStringArgument;
+use CortexPE\Commando\BaseCommand;
 use CortexPE\Commando\BaseSubCommand;
 use pocketmine\command\CommandSender;
 
@@ -25,5 +26,9 @@ final class HelpCommand extends BaseSubCommand {
 		}
 
 		$sender->sendMessage("SOON. Category selected: " . $category);
+	}
+
+	public function getParent(): BaseCommand {
+		return $this->parent;
 	}
 }

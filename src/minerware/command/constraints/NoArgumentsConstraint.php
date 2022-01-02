@@ -15,7 +15,7 @@ final class NoArgumentsConstraint extends BaseConstraint {
 	}
 
 	public function onFailure(CommandSender $sender, string $aliasUsed, array $args): void {
-		$sender->sendMessage(Translator::getInstance()->translate(new Translatable("command.error.notFound")));
+		$sender->sendMessage(Translator::getInstance()->translate(new Translatable("command.notFound")));
 	}
 
 	public function isVisibleTo(CommandSender $sender): bool {
