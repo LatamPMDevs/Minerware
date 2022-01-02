@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace minerware\command\subcommands;
 
 use CortexPE\Commando\BaseCommand;
