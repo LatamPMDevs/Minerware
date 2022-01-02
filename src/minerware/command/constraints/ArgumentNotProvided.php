@@ -12,7 +12,6 @@ use pocketmine\command\CommandSender;
 use pocketmine\lang\Translatable;
 use pocketmine\player\Player;
 use function array_key_exists;
-use function var_dump;
 
 final class ArgumentNotProvided extends BaseConstraint {
 
