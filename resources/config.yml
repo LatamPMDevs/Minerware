@@ -12,7 +12,7 @@
 
 #Settings
 language: english #English & Spanish
-lobby: null #Waiting lobby
+lobby: null #Waiting lobby (null = disabled)
 
 storage-format:
   player-data: json
