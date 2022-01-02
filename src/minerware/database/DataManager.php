@@ -11,7 +11,7 @@
  * This is a private project, your not allow to redistribute nor resell it.
  * The only ones with that power are this project's contributors.
  *
- * Copyright 2021 © Minerware
+ * Copyright 2022 © Minerware
  */
 
 declare(strict_types=1);
@@ -44,6 +44,8 @@ final class DataManager {
 	/** @var array<string, int> */
 	private array $formats;
 
+	private ?World $lobby = null;
+
 	public function __construct() {
 		$this->plugin = Minerware::getInstance();
 		$this->pluginPath = $this->plugin->getDataFolder();
@@ -60,6 +62,13 @@ final class DataManager {
 		@mkdir($this->pluginPath . "database" . DIRECTORY_SEPARATOR . "players" . DIRECTORY_SEPARATOR);
 		@mkdir($this->pluginPath . "database" . DIRECTORY_SEPARATOR . "maps" . DIRECTORY_SEPARATOR);
 		@mkdir($this->pluginPath . "database" . DIRECTORY_SEPARATOR . "backups" . DIRECTORY_SEPARATOR);
+
+		$name = $this->plugin->getConfig()->get("lobby", null);
+		if ($name !== null) {
+			if ($this->plugin->getServer()->getWorldManager()->loadWorld($name, true)) {
+				$this->lobby = $this->plugin->getServer()->getWorldManager()->getWorldByName($name);
+			}
+		}
 	}
 
 	/**
@@ -108,23 +117,14 @@ final class DataManager {
 		Map::$maps[] = new Map($dataHolder);
 	}
 
-	//TODO:: #2 Fix $lobby no being null.
 	public function getLobby(): ?World {
-		$path = $this->pluginPath . "lobby.yml";
-		$name = (new Config($path, Config::YAML))->get("lobby");
-		if ($name !== null && $name !== false) {
-			if ($this->plugin->getServer()->getWorldManager()->loadWorld($name, true)) {
-				return $this->plugin->getServer()->getWorldManager()->getWorldByName($name);
-			}
-		}
-
-		return null;
+		return $this->lobby;
 	}
 
-	public function setLobby(string $name): void {
-		$path = $this->pluginPath . "lobby.yml";
-		$config = new Config($path, Config::YAML);
-		$config->set("lobby", $name);
+	public function setLobby(World $lobby): void {
+		$this->lobby = $lobby;
+		$config = $this->plugin->getConfig();
+		$config->set("lobby", $lobby->getDisplayName());
 		$config->save();
 	}
 }

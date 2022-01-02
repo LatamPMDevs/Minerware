@@ -11,7 +11,7 @@
  * This is a private project, your not allow to redistribute nor resell it.
  * The only ones with that power are this project's contributors.
  *
- * Copyright 2021 © Minerware
+ * Copyright 2022 © Minerware
  */
 
 declare(strict_types=1);
@@ -64,7 +64,7 @@ final class Arena implements Listener {
 	/** @var Microgame[] */
 	private array $microgamesQueue = [];
 
-	private Microgame $currentMicrogame = null;
+	private ?Microgame $currentMicrogame = null;
 
 	public int $waitingtime = 40;
 
@@ -213,14 +213,14 @@ final class Arena implements Listener {
 	public function onWorldChange(EntityTeleportEvent $event): void {
 		$player = $event->getEntity();
 		if (!$player instanceof Player) return;
-		if ($event->getFrom()->getWorld() == $event->getTo()->getWorld()) return;
+		if ($event->getFrom()->getWorld() === $event->getTo()->getWorld()) return;
 		if ($this->inGame($player)) {
 			if ($this->status === "waiting") {
-				if ($event->getTo()->getWorld() != DataManager::getInstance()->getLobby()) {
+				if ($event->getTo()->getWorld() !== DataManager::getInstance()->getLobby()) {
 					$this->quit($player);
 				}
 			} elseif ($this->status === "starting") {
-				if ($event->getTo()->getWorld() != $this->world) {
+				if ($event->getTo()->getWorld() !== $this->world) {
 					$this->quit($player);
 				}
 			} else {

@@ -11,7 +11,7 @@
  * This is a private project, your not allow to redistribute nor resell it.
  * The only ones with that power are this project's contributors.
  *
- * Copyright 2021 © Minerware
+ * Copyright 2022 © Minerware
  */
 
 declare(strict_types=1);
@@ -131,7 +131,7 @@ final class MapRegisterer implements Listener {
 				case "help":
 					$player->sendMessage(
 						"§6Minerware §bConfiguration Commands" . "\n" . "\n" .
-						"§ahelp: §7Help commands." . "\n" .
+						"§ahelp: §7Help command." . "\n" .
 						"§asetplatform: §7Register the platform." . "\n" .
 						"§asetcages: §7Register the winners|losser cage." . "\n" .
 						"§asetspawn: §7Register a spawn." . "\n" .
@@ -170,10 +170,10 @@ final class MapRegisterer implements Listener {
 			$itemName = $item->getCustomName();
 			if ($itemId == 369 && $itemName === "§r§aSet platform\n§7Break a corner.") {
 				if (!isset($this->tempData[strtolower($player->getName())]["platform"]["pos1"])) {
-				   $this->tempData[strtolower($player->getName())]["platform"]["pos1"] = $block->getPos()->asVector3();
+				   $this->tempData[strtolower($player->getName())]["platform"]["pos1"] = $block->getPosition()->asVector3();
 				} else {
 					$pos1 = $this->tempData[strtolower($player->getName())]["platform"]["pos1"];
-					$pos2 = $block->getPos()->asVector3();
+					$pos2 = $block->getPosition()->asVector3();
 					$size = Utils::calculateSize($pos1, $pos2);
 					if ($size !== "24x24") {
 						$player->sendMessage(Translator::getInstance()->translate(new Translatable("configurator.mode.error.invalidSize", ["24x24", $size])));
@@ -188,11 +188,11 @@ final class MapRegisterer implements Listener {
 			}
 			if ($itemId == 369 && $itemName === "§r§aSet cages\n§7Break a block.") {
 				if (!isset($this->tempData[strtolower($player->getName())]["cages"]["winners"])) {
-					$this->tempData[strtolower($player->getName())]["cages"]["winners"] = $block->getPos()->asVector3();
+					$this->tempData[strtolower($player->getName())]["cages"]["winners"] = $block->getPosition()->asVector3();
 					$player->sendMessage(Translator::getInstance()->translate(new Translatable("configurator.mode.setcage.lossers")));
 				} else {
 					$winners = $this->tempData[strtolower($player->getName())]["cages"]["winners"];
-					$lossers = $block->getPos()->asVector3();
+					$lossers = $block->getPosition()->asVector3();
 					$this->setCages($winners, $lossers);
 					$player->sendMessage(Translator::getInstance()->translate(new Translatable("configurator.mode.setcage.successfully")));
 					$player->getInventory()->removeItem($item);

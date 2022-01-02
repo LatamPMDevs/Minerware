@@ -11,15 +11,16 @@
  * This is a private project, your not allow to redistribute nor resell it.
  * The only ones with that power are this project's contributors.
  *
- * Copyright 2021 © Minerware
+ * Copyright 2022 © Minerware
  */
 
 declare(strict_types=1);
 
 namespace minerware;
 
+use CortexPE\Commando\PacketHooker;
 use minerware\arena\ArenaManager;
-use minerware\commands\MinerwareCommand;
+use minerware\command\MinerwareCommand;
 use minerware\database\DataManager;
 use pocketmine\plugin\PluginBase;
 use pocketmine\utils\SingletonTrait;
@@ -39,6 +40,10 @@ final class Minerware extends PluginBase {
 
 	protected function onEnable(): void {
 		$this->copyright();
+		if(!PacketHooker::isRegistered()) {
+			PacketHooker::register($this);
+		}
+
 		DataManager::getInstance()->loadMaps();
 	}
 
@@ -65,7 +70,7 @@ final class Minerware extends PluginBase {
 			"This is a private project, your not allow to redistribute nor resell it.",
 			"The only ones with that power are this project's contributors.",
 			"",
-			"Copyright 2021 © Minerware",
+			"Copyright 2022 © Minerware",
 			""
 		];
 

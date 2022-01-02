@@ -11,7 +11,7 @@
  * This is a private project, your not allow to redistribute nor resell it.
  * The only ones with that power are this project's contributors.
  *
- * Copyright 2021 © Minerware
+ * Copyright 2022 © Minerware
  */
 
 declare(strict_types=1);
@@ -46,10 +46,11 @@ final class Translator {
 		$this->plugin->saveResource("/languages/english.ini", true);
 	}
 
-	public function changeLanguage(string $newLanguage): void {
-		$this->language = new Language($newLanguage, $this->plugin->getDataFolder() . "/languages/", $newLanguage);
-		$this->plugin->getConfig()->set("language", $this->language->getLang());
+	public function changeLanguage(Language $language): Language {
+		$this->language = $language;
+		$this->plugin->getConfig()->set("language", $language->getLang());
 		$this->plugin->getConfig()->save();
+		return $language;
 	}
 
 	public function translate(Translatable $container): string {

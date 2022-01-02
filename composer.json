@@ -4,11 +4,12 @@
     "version": "1.0.0",
     "require": {
         "php": "^8.0",
-        "pocketmine/pocketmine-mp": "^4.0.1"
+        "pocketmine/pocketmine-mp": "^4.0.3",
+        "cortexpe/commando": "dev-PM4"
+
     },
     "require-dev": {
-        "phpstan/phpstan": "1.2.0",
-        "friendsofphp/php-cs-fixer": "^3.3.2"
+        "friendsofphp/php-cs-fixer": "^3.4.0"
     },
     "config": {
         "platform": {
