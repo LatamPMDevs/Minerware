@@ -4,8 +4,7 @@
     "version": "1.0.0",
     "require": {
         "php": "^8.0",
-        "pocketmine/pocketmine-mp": "^4.0.3",
-        "cortexpe/commando": "dev-PM4"
+        "pocketmine/pocketmine-mp": "^4.0.3"
 
     },
     "require-dev": {
