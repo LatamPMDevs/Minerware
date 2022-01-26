@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "1b37b6e9f5da02753682d4d37189e1a6",
+    "content-hash": "be297f8bca85309d7d9d035ba8d2dabc",
     "packages": [
         {
             "name": "adhocore/json-comment",
@@ -120,39 +120,6 @@
                 }
             ],
             "time": "2021-08-15T20:50:18+00:00"
-        },
-        {
-            "name": "cortexpe/commando",
-            "version": "dev-PM4",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/CortexPE/Commando.git",
-                "reference": "89a1bc1f9ffb748004888e38e0479e2ec58a3fc4"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/CortexPE/Commando/zipball/89a1bc1f9ffb748004888e38e0479e2ec58a3fc4",
-                "reference": "89a1bc1f9ffb748004888e38e0479e2ec58a3fc4",
-                "shasum": ""
-            },
-            "type": "library",
-            "autoload": {
-                "psr-4": {
-                    "CortexPE\\Commando\\": [
-                        "src\\CortexPE\\Commando\\"
-                    ]
-                }
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "LGPL-3.0-only"
-            ],
-            "description": "A Command Framework virion for PocketMine-MP ",
-            "support": {
-                "issues": "https://github.com/CortexPE/Commando/issues",
-                "source": "https://github.com/CortexPE/Commando/tree/PM4"
-            },
-            "time": "2021-11-21T08:13:35+00:00"
         },
         {
             "name": "fgrosse/phpasn1",
@@ -759,16 +726,16 @@
         },
         {
             "name": "pocketmine/pocketmine-mp",
-            "version": "4.0.7",
+            "version": "4.0.8",
             "source": {
                 "type": "git",
                 "url": "https://github.com/pmmp/PocketMine-MP.git",
-                "reference": "58ba4f680f50634de9be7f0475b8072722b1b3d0"
+                "reference": "8a4bc72b3443a61db9a58c51f7aeac14c3d6e42d"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/pmmp/PocketMine-MP/zipball/58ba4f680f50634de9be7f0475b8072722b1b3d0",
-                "reference": "58ba4f680f50634de9be7f0475b8072722b1b3d0",
+                "url": "https://api.github.com/repos/pmmp/PocketMine-MP/zipball/8a4bc72b3443a61db9a58c51f7aeac14c3d6e42d",
+                "reference": "8a4bc72b3443a61db9a58c51f7aeac14c3d6e42d",
                 "shasum": ""
             },
             "require": {
@@ -842,7 +809,7 @@
             "homepage": "https://pmmp.io",
             "support": {
                 "issues": "https://github.com/pmmp/PocketMine-MP/issues",
-                "source": "https://github.com/pmmp/PocketMine-MP/tree/4.0.7"
+                "source": "https://github.com/pmmp/PocketMine-MP/tree/4.0.8"
             },
             "funding": [
                 {
@@ -854,7 +821,7 @@
                     "type": "patreon"
                 }
             ],
-            "time": "2022-01-21T19:39:30+00:00"
+            "time": "2022-01-25T23:33:20+00:00"
         },
         {
             "name": "pocketmine/raklib",
@@ -3365,9 +3332,7 @@
     ],
     "aliases": [],
     "minimum-stability": "stable",
-    "stability-flags": {
-        "cortexpe/commando": 20
-    },
+    "stability-flags": [],
     "prefer-stable": false,
     "prefer-lowest": false,
     "platform": {
