@@ -535,16 +535,16 @@
         },
         {
             "name": "pocketmine/locale-data",
-            "version": "2.3.33",
+            "version": "2.4.3",
             "source": {
                 "type": "git",
                 "url": "https://github.com/pmmp/Language.git",
-                "reference": "44998ca9c055f872a33e59cd4d2736d081ba84b5"
+                "reference": "4d0b081f1a79407e087968ea76aaf330db6ea2b5"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/pmmp/Language/zipball/44998ca9c055f872a33e59cd4d2736d081ba84b5",
-                "reference": "44998ca9c055f872a33e59cd4d2736d081ba84b5",
+                "url": "https://api.github.com/repos/pmmp/Language/zipball/4d0b081f1a79407e087968ea76aaf330db6ea2b5",
+                "reference": "4d0b081f1a79407e087968ea76aaf330db6ea2b5",
                 "shasum": ""
             },
             "type": "library",
@@ -552,9 +552,9 @@
             "description": "Language resources used by PocketMine-MP",
             "support": {
                 "issues": "https://github.com/pmmp/Language/issues",
-                "source": "https://github.com/pmmp/Language/tree/2.3.33"
+                "source": "https://github.com/pmmp/Language/tree/2.4.3"
             },
-            "time": "2022-01-16T22:08:04+00:00"
+            "time": "2022-01-25T23:18:24+00:00"
         },
         {
             "name": "pocketmine/log",
@@ -726,16 +726,16 @@
         },
         {
             "name": "pocketmine/pocketmine-mp",
-            "version": "4.0.8",
+            "version": "4.0.9",
             "source": {
                 "type": "git",
                 "url": "https://github.com/pmmp/PocketMine-MP.git",
-                "reference": "8a4bc72b3443a61db9a58c51f7aeac14c3d6e42d"
+                "reference": "df1cdbe921adafde406e787b34b818b7ca49b765"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/pmmp/PocketMine-MP/zipball/8a4bc72b3443a61db9a58c51f7aeac14c3d6e42d",
-                "reference": "8a4bc72b3443a61db9a58c51f7aeac14c3d6e42d",
+                "url": "https://api.github.com/repos/pmmp/PocketMine-MP/zipball/df1cdbe921adafde406e787b34b818b7ca49b765",
+                "reference": "df1cdbe921adafde406e787b34b818b7ca49b765",
                 "shasum": ""
             },
             "require": {
@@ -775,7 +775,7 @@
                 "pocketmine/classloader": "^0.2.0",
                 "pocketmine/color": "^0.2.0",
                 "pocketmine/errorhandler": "^0.3.0",
-                "pocketmine/locale-data": "~2.3.0",
+                "pocketmine/locale-data": "~2.4.2",
                 "pocketmine/log": "^0.4.0",
                 "pocketmine/log-pthreads": "^0.4.0",
                 "pocketmine/math": "^0.4.0",
@@ -794,12 +794,12 @@
             },
             "type": "project",
             "autoload": {
-                "psr-4": {
-                    "pocketmine\\": "src/"
-                },
                 "files": [
                     "src/CoreConstants.php"
-                ]
+                ],
+                "psr-4": {
+                    "pocketmine\\": "src/"
+                }
             },
             "notification-url": "https://packagist.org/downloads/",
             "license": [
@@ -809,7 +809,7 @@
             "homepage": "https://pmmp.io",
             "support": {
                 "issues": "https://github.com/pmmp/PocketMine-MP/issues",
-                "source": "https://github.com/pmmp/PocketMine-MP/tree/4.0.8"
+                "source": "https://github.com/pmmp/PocketMine-MP/tree/4.0.9"
             },
             "funding": [
                 {
@@ -821,7 +821,7 @@
                     "type": "patreon"
                 }
             ],
-            "time": "2022-01-25T23:33:20+00:00"
+            "time": "2022-02-05T16:08:10+00:00"
         },
         {
             "name": "pocketmine/raklib",
@@ -1234,12 +1234,12 @@
                 }
             },
             "autoload": {
-                "psr-4": {
-                    "Symfony\\Polyfill\\Php80\\": ""
-                },
                 "files": [
                     "bootstrap.php"
                 ],
+                "psr-4": {
+                    "Symfony\\Polyfill\\Php80\\": ""
+                },
                 "classmap": [
                     "Resources/stubs"
                 ]
@@ -1317,12 +1317,12 @@
                 }
             },
             "autoload": {
-                "psr-4": {
-                    "Symfony\\Polyfill\\Php81\\": ""
-                },
                 "files": [
                     "bootstrap.php"
                 ],
+                "psr-4": {
+                    "Symfony\\Polyfill\\Php81\\": ""
+                },
                 "classmap": [
                     "Resources/stubs"
                 ]
