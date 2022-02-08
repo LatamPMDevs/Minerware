@@ -275,16 +275,16 @@
         },
         {
             "name": "pocketmine/bedrock-protocol",
-            "version": "7.1.0+bedrock-1.18.0",
+            "version": "7.3.1+bedrock-1.18.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/pmmp/BedrockProtocol.git",
-                "reference": "42f2a00634c17c346fd98c05b2daf29d1fbf5805"
+                "reference": "c2667453b03ca08a8c54cd89a1fd45cb29196aeb"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/pmmp/BedrockProtocol/zipball/42f2a00634c17c346fd98c05b2daf29d1fbf5805",
-                "reference": "42f2a00634c17c346fd98c05b2daf29d1fbf5805",
+                "url": "https://api.github.com/repos/pmmp/BedrockProtocol/zipball/c2667453b03ca08a8c54cd89a1fd45cb29196aeb",
+                "reference": "c2667453b03ca08a8c54cd89a1fd45cb29196aeb",
                 "shasum": ""
             },
             "require": {
@@ -298,7 +298,7 @@
                 "ramsey/uuid": "^4.1"
             },
             "require-dev": {
-                "phpstan/phpstan": "1.2.0",
+                "phpstan/phpstan": "1.4.2",
                 "phpstan/phpstan-phpunit": "^1.0.0",
                 "phpstan/phpstan-strict-rules": "^1.0.0",
                 "phpunit/phpunit": "^9.5"
@@ -316,9 +316,9 @@
             "description": "An implementation of the Minecraft: Bedrock Edition protocol in PHP",
             "support": {
                 "issues": "https://github.com/pmmp/BedrockProtocol/issues",
-                "source": "https://github.com/pmmp/BedrockProtocol/tree/7.1.0+bedrock-1.18.0"
+                "source": "https://github.com/pmmp/BedrockProtocol/tree/7.3.1+bedrock-1.18.0"
             },
-            "time": "2021-12-15T03:07:05+00:00"
+            "time": "2022-01-26T21:14:23+00:00"
         },
         {
             "name": "pocketmine/binaryutils",
@@ -497,24 +497,25 @@
         },
         {
             "name": "pocketmine/errorhandler",
-            "version": "0.3.0",
+            "version": "0.6.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/pmmp/ErrorHandler.git",
-                "reference": "ec742b209e8056bbe855069c4eff94c9734ea19b"
+                "reference": "dae214a04348b911e8219ebf125ff1c5589cc878"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/pmmp/ErrorHandler/zipball/ec742b209e8056bbe855069c4eff94c9734ea19b",
-                "reference": "ec742b209e8056bbe855069c4eff94c9734ea19b",
+                "url": "https://api.github.com/repos/pmmp/ErrorHandler/zipball/dae214a04348b911e8219ebf125ff1c5589cc878",
+                "reference": "dae214a04348b911e8219ebf125ff1c5589cc878",
                 "shasum": ""
             },
             "require": {
-                "php": "^7.2 || ^8.0"
+                "php": "^8.0"
             },
             "require-dev": {
-                "phpstan/phpstan": "0.12.75",
-                "phpstan/phpstan-strict-rules": "^0.12.2"
+                "phpstan/phpstan": "0.12.99",
+                "phpstan/phpstan-strict-rules": "^0.12.2",
+                "phpunit/phpunit": "^9.5"
             },
             "type": "library",
             "autoload": {
@@ -529,22 +530,22 @@
             "description": "Utilities to handle nasty PHP E_* errors in a usable way",
             "support": {
                 "issues": "https://github.com/pmmp/ErrorHandler/issues",
-                "source": "https://github.com/pmmp/ErrorHandler/tree/0.3.0"
+                "source": "https://github.com/pmmp/ErrorHandler/tree/0.6.0"
             },
-            "time": "2021-02-12T18:56:22+00:00"
+            "time": "2022-01-08T21:05:46+00:00"
         },
         {
             "name": "pocketmine/locale-data",
-            "version": "2.3.33",
+            "version": "2.4.3",
             "source": {
                 "type": "git",
                 "url": "https://github.com/pmmp/Language.git",
-                "reference": "44998ca9c055f872a33e59cd4d2736d081ba84b5"
+                "reference": "4d0b081f1a79407e087968ea76aaf330db6ea2b5"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/pmmp/Language/zipball/44998ca9c055f872a33e59cd4d2736d081ba84b5",
-                "reference": "44998ca9c055f872a33e59cd4d2736d081ba84b5",
+                "url": "https://api.github.com/repos/pmmp/Language/zipball/4d0b081f1a79407e087968ea76aaf330db6ea2b5",
+                "reference": "4d0b081f1a79407e087968ea76aaf330db6ea2b5",
                 "shasum": ""
             },
             "type": "library",
@@ -552,9 +553,9 @@
             "description": "Language resources used by PocketMine-MP",
             "support": {
                 "issues": "https://github.com/pmmp/Language/issues",
-                "source": "https://github.com/pmmp/Language/tree/2.3.33"
+                "source": "https://github.com/pmmp/Language/tree/2.4.3"
             },
-            "time": "2022-01-16T22:08:04+00:00"
+            "time": "2022-01-25T23:18:24+00:00"
         },
         {
             "name": "pocketmine/log",
@@ -726,16 +727,16 @@
         },
         {
             "name": "pocketmine/pocketmine-mp",
-            "version": "4.0.8",
+            "version": "4.1.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/pmmp/PocketMine-MP.git",
-                "reference": "8a4bc72b3443a61db9a58c51f7aeac14c3d6e42d"
+                "reference": "1c60aa9769d67180eb1330642e9f97a824cddfc6"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/pmmp/PocketMine-MP/zipball/8a4bc72b3443a61db9a58c51f7aeac14c3d6e42d",
-                "reference": "8a4bc72b3443a61db9a58c51f7aeac14c3d6e42d",
+                "url": "https://api.github.com/repos/pmmp/PocketMine-MP/zipball/1c60aa9769d67180eb1330642e9f97a824cddfc6",
+                "reference": "1c60aa9769d67180eb1330642e9f97a824cddfc6",
                 "shasum": ""
             },
             "require": {
@@ -769,13 +770,13 @@
                 "php": "^8.0",
                 "php-64bit": "*",
                 "pocketmine/bedrock-data": "~1.5.0+bedrock-1.18.0",
-                "pocketmine/bedrock-protocol": "~7.1.0+bedrock-1.18.0",
+                "pocketmine/bedrock-protocol": "~7.3.0+bedrock-1.18.0",
                 "pocketmine/binaryutils": "^0.2.1",
                 "pocketmine/callback-validator": "^1.0.2",
                 "pocketmine/classloader": "^0.2.0",
                 "pocketmine/color": "^0.2.0",
-                "pocketmine/errorhandler": "^0.3.0",
-                "pocketmine/locale-data": "~2.3.0",
+                "pocketmine/errorhandler": "^0.6.0",
+                "pocketmine/locale-data": "~2.4.2",
                 "pocketmine/log": "^0.4.0",
                 "pocketmine/log-pthreads": "^0.4.0",
                 "pocketmine/math": "^0.4.0",
@@ -794,12 +795,12 @@
             },
             "type": "project",
             "autoload": {
-                "psr-4": {
-                    "pocketmine\\": "src/"
-                },
                 "files": [
                     "src/CoreConstants.php"
-                ]
+                ],
+                "psr-4": {
+                    "pocketmine\\": "src/"
+                }
             },
             "notification-url": "https://packagist.org/downloads/",
             "license": [
@@ -809,7 +810,7 @@
             "homepage": "https://pmmp.io",
             "support": {
                 "issues": "https://github.com/pmmp/PocketMine-MP/issues",
-                "source": "https://github.com/pmmp/PocketMine-MP/tree/4.0.8"
+                "source": "https://github.com/pmmp/PocketMine-MP/tree/4.1.0"
             },
             "funding": [
                 {
@@ -821,7 +822,7 @@
                     "type": "patreon"
                 }
             ],
-            "time": "2022-01-25T23:33:20+00:00"
+            "time": "2022-02-07T19:22:53+00:00"
         },
         {
             "name": "pocketmine/raklib",
