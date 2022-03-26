@@ -24,7 +24,7 @@ final class ArenasCommand extends BaseSubCommand {
 		parent::__construct("arenas", "Manage all the minigame arenas.");
 	}
 
-	protected function prepare(): void {
+	protected function prepare() : void {
 		$this->addConstraint(new ArgumentNotProvided($this, "world"));
 		$this->registerArgument(0, new ArenaActionArgument("action"));
 		$this->registerArgument(1, new WorldArgument($this->plugin));
@@ -33,7 +33,7 @@ final class ArenasCommand extends BaseSubCommand {
 	/**
 	 * @param Player $sender
 	 */
-	public function onRun(CommandSender $sender, string $aliasUsed, array $args): void {
+	public function onRun(CommandSender $sender, string $aliasUsed, array $args) : void {
 		$world = $args["world"]	?? null;
 		switch ($args["action"]) {
 			case ArenaActionArgument::CREATE_ARENA:
@@ -52,7 +52,7 @@ final class ArenasCommand extends BaseSubCommand {
 		}
 	}
 
-	public function getParent(): BaseCommand {
+	public function getParent() : BaseCommand {
 		return $this->parent;
 	}
 }

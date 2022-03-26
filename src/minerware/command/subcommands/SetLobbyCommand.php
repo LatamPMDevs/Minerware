@@ -20,11 +20,11 @@ final class SetLobbyCommand extends BaseSubCommand {
 		parent::__construct("setlobby", "Set the game waiting lobby.");
 	}
 
-	protected function prepare(): void {
+	protected function prepare() : void {
 		$this->registerArgument(0, new WorldArgument($this->plugin));
 	}
 
-	public function onRun(CommandSender $sender, string $aliasUsed, array $args): void {
+	public function onRun(CommandSender $sender, string $aliasUsed, array $args) : void {
 		$world = $args["world"]	?? null;
 		if (!$world instanceof World || !$world->isLoaded()) {
 			$sender->sendMessage(Translator::getInstance()->translate(new Translatable("command.arguments.worldNotFound", [$args["world"]])));
@@ -35,7 +35,7 @@ final class SetLobbyCommand extends BaseSubCommand {
 		$sender->sendMessage(Translator::getInstance()->translate(new Translatable("command.setLobby.success")));
 	}
 
-	public function getParent(): BaseCommand {
+	public function getParent() : BaseCommand {
 		return $this->parent;
 	}
 }

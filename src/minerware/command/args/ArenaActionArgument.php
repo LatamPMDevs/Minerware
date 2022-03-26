@@ -21,11 +21,11 @@ final class ArenaActionArgument extends StringEnumArgument {
 		parent::__construct($name, true);
 	}
 
-	public function parse(string $argument, CommandSender $sender): string {
+	public function parse(string $argument, CommandSender $sender) : string {
 		return $this->getValue($argument);
 	}
 
-	public function getTypeName(): string {
+	public function getTypeName() : string {
 		return "string";
 	}
 }

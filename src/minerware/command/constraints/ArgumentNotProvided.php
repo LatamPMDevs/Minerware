@@ -23,7 +23,7 @@ final class ArgumentNotProvided extends BaseConstraint {
 		$this->argumentName = $argumentName;
 	}
 
-	public function test(CommandSender $sender, string $aliasUsed, array $args): bool {
+	public function test(CommandSender $sender, string $aliasUsed, array $args) : bool {
 		foreach ($this->argumentName as $argumentName) {
 			if (!array_key_exists($argumentName, $args)) {
 				return false;
@@ -33,13 +33,13 @@ final class ArgumentNotProvided extends BaseConstraint {
 		return true;
 	}
 
-	public function onFailure(CommandSender $sender, string $aliasUsed, array $args): void {
+	public function onFailure(CommandSender $sender, string $aliasUsed, array $args) : void {
 		/** @var BaseSubCommand $context */
 		$context = $this->context;
 		$sender->sendMessage(Translator::getInstance()->translate(new Translatable("command.usage", [$context->getParent()->getName() . " " . $context->getUsageMessage()])));
 	}
 
-	public function isVisibleTo(CommandSender $sender): bool {
+	public function isVisibleTo(CommandSender $sender) : bool {
 		return $sender instanceof Player;
 	}
 }

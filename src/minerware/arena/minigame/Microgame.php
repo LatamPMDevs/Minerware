@@ -31,37 +31,37 @@ abstract class Microgame implements Listener, GameLevel {
 
 	protected int $level = self::LEVEL_NORMAL;
 
-	public function addWinner(Player $player): void {
+	public function addWinner(Player $player) : void {
 		$this->winners[] = $player;
 	}
 
-	public function getWinner(): ?Player {
+	public function getWinner() : ?Player {
 		return $this->winners[0] ?? null;
 	}
 
 	/**
 	 * @return Player[]
 	 */
-	public function getWinners(): array {
+	public function getWinners() : array {
 		return $this->winners;
 	}
 
-	public function addLoser(Player $player): void {
+	public function addLoser(Player $player) : void {
 		$this->losers[] = $player;
 	}
 
 	/**
 	 * @return Player[]
 	 */
-	public function getLosers(): array {
+	public function getLosers() : array {
 		return $this->losers;
 	}
 
-	public function getLevel(): int {
+	public function getLevel() : int {
 		return $this->level;
 	}
 
-	abstract public function start(): void;
-	abstract public function tick(): void;
-	abstract public function end(): void;
+	abstract public function start() : void;
+	abstract public function tick() : void;
+	abstract public function end() : void;
 }

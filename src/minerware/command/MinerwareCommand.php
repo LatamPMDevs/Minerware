@@ -41,7 +41,7 @@ final class MinerwareCommand extends BaseCommand {
 		$this->setPermissionMessage(Translator::getInstance()->translate(new Translatable("command.noPermission")));
 	}
 
-	protected function prepare(): void {
+	protected function prepare() : void {
 		$this->addConstraint(new InGameRequiredConstraint($this));
 		$this->addConstraint(new NoArgumentsConstraint($this));
 		$this->registerSubCommand(new ArenasCommand($this->plugin));
@@ -51,7 +51,7 @@ final class MinerwareCommand extends BaseCommand {
 		$this->registerSubCommand(new SetLobbyCommand($this->plugin));
 	}
 
-	public function onRun(CommandSender $sender, string $aliasUsed, array $args): void {
+	public function onRun(CommandSender $sender, string $aliasUsed, array $args) : void {
 		switch ($args[0]) {
 			case "credits":
 				$credits = [

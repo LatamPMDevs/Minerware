@@ -96,35 +96,35 @@ final class Arena implements Listener {
 		$this->microgamesQueue[] = $bossGames[$randBoss];
 	}
 
-	public function getId(): string {
+	public function getId() : string {
 		return $this->id;
 	}
 
-	public function getWorld(): ?World {
+	public function getWorld() : ?World {
 		return $this->world;
 	}
 
-	public function setWorld(?World $world): void {
+	public function setWorld(?World $world) : void {
 		$this->world = $world;
 	}
 
-	public function getMap(): ?Map {
+	public function getMap() : ?Map {
 		return $this->map;
 	}
 
-	public function setMap(Map $map): void {
+	public function setMap(Map $map) : void {
 		$this->map = $map;
 	}
 
-	public function getStatus(): string {
+	public function getStatus() : string {
 		return $this->status;
 	}
 
-	public function setStatus(string $value): void {
+	public function setStatus(string $value) : void {
 		$this->status = $value;
 	}
 
-	public function join(Player $player): void {
+	public function join(Player $player) : void {
 		$this->players[$player->getName()] = $player;
 		$this->sendMessage(Translator::getInstance()->translate(new Translatable("game.player.join", [$player->getName(), count($this->players) . "/" . self::MAX_PLAYERS])));
 		//TODO:: #2 Fix $lobby no being null.
@@ -137,18 +137,18 @@ final class Arena implements Listener {
 		$player->setGamemode(GameMode::fromMagicNumber(2));
 	}
 
-	public function quit(Player $player): void {
+	public function quit(Player $player) : void {
 		unset($this->players[$player->getName()]);
 		$this->sendMessage(Translator::getInstance()->translate(new Translatable("game.player.quit", [$player->getName(), count($this->players) . "/" . self::MAX_PLAYERS])));
 	}
 
-	public function sendMessage(string $message): void {
+	public function sendMessage(string $message) : void {
 		foreach ($this->players as $player) {
 			$player->sendMessage($message);
 		}
 	}
 
-	public function inGame(Player $player): bool {
+	public function inGame(Player $player) : bool {
 		foreach ($this->players as $name => $pl) {
 			if ($pl == $player) {
 				return true;
@@ -157,30 +157,30 @@ final class Arena implements Listener {
 		return false;
 	}
 
-	public function getPlayers(): array {
+	public function getPlayers() : array {
 		return $this->players;
 	}
 
-	public function getPointHolder(): PointHolder {
+	public function getPointHolder() : PointHolder {
 		return $this->pointHolder;
 	}
 
-	public function getVoteCounter(): VoteCounter {
+	public function getVoteCounter() : VoteCounter {
 		return $this->voteCounter;
 	}
 
-	public function getCurrentMicrogame(): ?Microgame {
+	public function getCurrentMicrogame() : ?Microgame {
 		return $this->currentMicrogame;
 	}
 
-	public function startNextMicrogame(): Microgame {
+	public function startNextMicrogame() : Microgame {
 		$microgame = new $this->microgamesQueue[0]($this);
 		$this->currentMicrogame = $microgame;
 		unset($this->microgamesQueue[0]);
 		return $microgame;
 	}
 
-	public function tpSpawn(Player $player): void {
+	public function tpSpawn(Player $player) : void {
 		$expectedSpawns = [];
 		$spawns = $this->map->getData()->getArray("spawns");
 		foreach ($spawns as $index => $data) {
@@ -192,7 +192,7 @@ final class Arena implements Listener {
 		$player->teleport($pos);
 	}
 
-	public function deleteMap(): void {
+	public function deleteMap() : void {
 		if ($this->world !== null) {
 			$worldPath = Minerware::getInstance()->getServer()->getDataPath() . "worlds" . DIRECTORY_SEPARATOR . $this->world->getFolderName() . DIRECTORY_SEPARATOR;
 			Minerware::getInstance()->getServer()->getWorldManager()->unloadWorld($this->world, true);
@@ -203,14 +203,14 @@ final class Arena implements Listener {
 
 	#Listener
 
-	public function onQuit(PlayerQuitEvent $event): void {
+	public function onQuit(PlayerQuitEvent $event) : void {
 		$player = $event->getPlayer();
 		if ($this->inGame($player)) {
 			$this->quit($player);
 		}
 	}
 
-	public function onWorldChange(EntityTeleportEvent $event): void {
+	public function onWorldChange(EntityTeleportEvent $event) : void {
 		$player = $event->getEntity();
 		if (!$player instanceof Player) return;
 		if ($event->getFrom()->getWorld() === $event->getTo()->getWorld()) return;

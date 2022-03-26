@@ -41,7 +41,7 @@ final class MapRegisterer implements Listener {
 	/** @var array<string, self> */
 	private static array $mapRegisterer;
 
-	public static function createRegisterer(Player $player, World $world): self {
+	public static function createRegisterer(Player $player, World $world) : self {
 		return (self::$mapRegisterer[strtolower($player->getName())] = new self($player, $world));
 	}
 
@@ -57,13 +57,13 @@ final class MapRegisterer implements Listener {
 		Minerware::getInstance()->getServer()->getPluginManager()->registerEvents($this, Minerware::getInstance());
 	}
 
-	private function setConfiguratorMode(Player $player): void {
+	private function setConfiguratorMode(Player $player) : void {
 		$this->world->loadChunk($this->world->getSafeSpawn()->getFloorX(), $this->world->getSafeSpawn()->getFloorZ());
 		$player->teleport($this->world->getSafeSpawn(), 0, 0);
 		$player->sendMessage(Translator::getInstance()->translate(new Translatable("configurator.mode.enter")));
 	}
 
-	private function setPlatform(Vector3 $firstPoint, Vector3 $secondPoint): void {
+	private function setPlatform(Vector3 $firstPoint, Vector3 $secondPoint) : void {
 		$this->data["platform"]["pos1"] = [
 			"X" => $firstPoint->getX(),
 			"Y" => $firstPoint->getY(),
@@ -75,7 +75,7 @@ final class MapRegisterer implements Listener {
 		$this->data["platform"]["parameter"] = Utils::calculateParameter($firstPoint, $secondPoint);
 	}
 
-	private function setCages(Vector3 $winners, Vector3 $lossers): void {
+	private function setCages(Vector3 $winners, Vector3 $lossers) : void {
 		$this->data["cages"]["winners"] = [
 			"X" => $winners->getX(),
 			"Y" => $winners->getY(),
@@ -86,23 +86,23 @@ final class MapRegisterer implements Listener {
 			"Z" => $lossers->getZ()];
 	}
 
-	private function setSpawn(Vector3 $spawn): void {
+	private function setSpawn(Vector3 $spawn) : void {
 		$this->data["spawns"][] = [
 			"X" => $spawn->getX(),
 			"Y" => $spawn->getY(),
 			"Z" => $spawn->getZ()];
 	}
 
-	private function setVoid(float $void): void {
+	private function setVoid(float $void) : void {
 		$this->data["void"]["limit"] = $void;
 	}
 
-	private function save(): void {
+	private function save() : void {
 		DataManager::getInstance()->saveMapData(new DataHolder($this->data));
 		unset(self::$mapRegisterer[strtolower($this->player->getName())]);
 	}
 
-	public function chatCommand(PlayerChatEvent $event): void {
+	public function chatCommand(PlayerChatEvent $event) : void {
 		$player = $event->getPlayer();
 		$args = explode(" ", $event->getMessage());
 		if (strtolower($player->getName()) == strtolower($this->player->getName())) {
@@ -161,7 +161,7 @@ final class MapRegisterer implements Listener {
 		}
 	}
 
-	public function onBreak(BlockBreakEvent $event): void {
+	public function onBreak(BlockBreakEvent $event) : void {
 		$player = $event->getPlayer();
 		$block = $event->getBlock();
 		if (strtolower($player->getName()) == strtolower($this->player->getName())) {

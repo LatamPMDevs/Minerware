@@ -19,16 +19,16 @@ final class JoinCommand extends BaseSubCommand {
 	/**
 	 * @deprecated
 	 */
-	protected function prepare(): void { }
+	protected function prepare() : void { }
 
 	/**
 	 * @param Player $sender
 	 */
-	public function onRun(CommandSender $sender, string $aliasUsed, array $args): void {
+	public function onRun(CommandSender $sender, string $aliasUsed, array $args) : void {
 		ArenaManager::getInstance()->join($sender);
 	}
 
-	public function getParent(): BaseCommand {
+	public function getParent() : BaseCommand {
 		return $this->parent;
 	}
 }

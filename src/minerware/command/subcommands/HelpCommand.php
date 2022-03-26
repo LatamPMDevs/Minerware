@@ -15,11 +15,11 @@ final class HelpCommand extends BaseSubCommand {
 		parent::__construct("help", "Show the list of commands available.");
 	}
 
-	protected function prepare(): void {
+	protected function prepare() : void {
 		$this->registerArgument(0, new RawStringArgument("category", true));
 	}
 
-	public function onRun(CommandSender $sender, string $aliasUsed, array $args): void {
+	public function onRun(CommandSender $sender, string $aliasUsed, array $args) : void {
 		$category = $args["category"] ?? null;
 		if ($category === null) {
 			$category = "";
@@ -28,7 +28,7 @@ final class HelpCommand extends BaseSubCommand {
 		$sender->sendMessage("SOON. Category selected: " . $category);
 	}
 
-	public function getParent(): BaseCommand {
+	public function getParent() : BaseCommand {
 		return $this->parent;
 	}
 }

@@ -20,15 +20,15 @@ final class LanguageArgument extends StringEnumArgument {
 		parent::__construct("language", true);
 	}
 
-	public function parse(string $argument, CommandSender $sender): Language {
+	public function parse(string $argument, CommandSender $sender) : Language {
 		return $this->getValue($argument);
 	}
 
-	public function getValue(string $string): Language {
+	public function getValue(string $string) : Language {
 		return new Language($string, $this->plugin->getDataFolder() . "/languages/", $string);
 	}
 
-	public function getTypeName(): string {
+	public function getTypeName() : string {
 		return "string";
 	}
 }

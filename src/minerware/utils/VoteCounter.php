@@ -32,11 +32,11 @@ final class VoteCounter {
 		// code...
 	}
 
-	public function vote(Player $player, Map|string $map): void {
+	public function vote(Player $player, Map|string $map) : void {
 		$this->votes[($map instanceof Map) ? $map->getName() : $map][] = $player;
 	}
 
-	public function getVote(Player $player): ?string {
+	public function getVote(Player $player) : ?string {
 		foreach ($this->votes as $map => $voters) {
 			foreach ($voters as $voter) {
 				if ($voter->getName() === $player->getName()) {
@@ -48,7 +48,7 @@ final class VoteCounter {
 		return null;
 	}
 
-	public function getWinner(): Map {
+	public function getWinner() : Map {
 		$winner = null;
 		$lastCount = -1;
 		foreach ($this->votes as $map => $voters) {

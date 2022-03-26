@@ -31,14 +31,14 @@ final class Minerware extends PluginBase {
 		reset as protected;
 	}
 
-	protected function onLoad(): void {
+	protected function onLoad() : void {
 		self::setInstance($this);
 		DataManager::getInstance();
 		ArenaManager::getInstance();
 		$this->getServer()->getCommandMap()->register("minerware", new MinerwareCommand($this));
 	}
 
-	protected function onEnable(): void {
+	protected function onEnable() : void {
 		$this->copyright();
 		if(!PacketHooker::isRegistered()) {
 			PacketHooker::register($this);
@@ -47,17 +47,17 @@ final class Minerware extends PluginBase {
 		DataManager::getInstance()->loadMaps();
 	}
 
-	protected function onDisable(): void {
+	protected function onDisable() : void {
 		foreach (ArenaManager::getInstance()->getArenas() as $arena) {
 			$arena->deleteMap();
 		}
 	}
 
-	public function getPrefix(): string {
+	public function getPrefix() : string {
 		return $this->getDescription()->getPrefix();
 	}
 
-	private function copyright(): void {
+	private function copyright() : void {
 		$copyright = [
 			"",
 			"███╗   ███╗██╗███╗   ██╗███████╗██████╗ ██╗    ██╗ █████╗ ██████╗ ███████╗",

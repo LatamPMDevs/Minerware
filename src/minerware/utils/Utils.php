@@ -41,16 +41,16 @@ use function unlink;
 
 final class Utils {
 
-	public static function calculateParameter(Vector3 $firstPoint, Vector3 $secondPoint): string {
+	public static function calculateParameter(Vector3 $firstPoint, Vector3 $secondPoint) : string {
 		//TODO:: Calculate parameter between $firstPoint and $secondPoint.
 		return "";
 	}
 
-	public static function calculateSize(Vector3 $firstPoint, Vector3 $secondPoint): string {
+	public static function calculateSize(Vector3 $firstPoint, Vector3 $secondPoint) : string {
 		return (abs($firstPoint->x - $secondPoint->x) + 1) . "x" . (abs($firstPoint->z - $secondPoint->z) + 1);
 	}
 
-	public static function setZip(string $targetPath, string $zipPath): bool {
+	public static function setZip(string $targetPath, string $zipPath) : bool {
 		$zip = new ZipArchive;
 		$zip->open($zipPath, ZipArchive::CREATE | ZipArchive::OVERWRITE);
 		$files = new RecursiveIteratorIterator(
@@ -68,7 +68,7 @@ final class Utils {
 		return true;
 	}
 
-	public static function playSound(Player $player, string $sound, float $volume = 1, float $pitch = 1): void {
+	public static function playSound(Player $player, string $sound, float $volume = 1, float $pitch = 1) : void {
 		$pk = new PlaySoundPacket();
 		$pk->x = $player->getPosition()->getX();
 		$pk->y = $player->getPosition()->getY();
@@ -79,7 +79,7 @@ final class Utils {
 		$player->getNetworkSession()->sendDataPacket($pk);
 	}
 
-	public static function removeDir(string $path): void {
+	public static function removeDir(string $path) : void {
 		if (!file_exists($path) || basename($path) == "." || basename($path) == "..") {
 			return;
 		}
@@ -99,16 +99,16 @@ final class Utils {
 		rmdir($path);
 	}
 
-	public static function removeFile(string $path): void {
+	public static function removeFile(string $path) : void {
 		unlink($path);
 	}
 
-	public static function getStartingBar(int $colorSticks, int $totalSticks): string {
+	public static function getStartingBar(int $colorSticks, int $totalSticks) : string {
 		$leftover = $totalSticks - $colorSticks;
 		return str_repeat("▌", $colorSticks) . "§7" . str_repeat("▌", $leftover);
 	}
 
-	public static function calculateMinAndMaxPos(Vector3 $pos1, Vector3 $pos2): array {
+	public static function calculateMinAndMaxPos(Vector3 $pos1, Vector3 $pos2) : array {
 		$minX = min($pos1->x, $pos2->x);
 		$minY = min($pos1->y, $pos2->y);
 		$minZ = min($pos1->z, $pos2->z);

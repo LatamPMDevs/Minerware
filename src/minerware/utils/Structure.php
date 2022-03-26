@@ -36,23 +36,23 @@ final class Structure {
 		$this->name = $data->getString("name");
 	}
 
-	public function getName(): string {
+	public function getName() : string {
 		return $this->name;
 	}
 
-	public function getReference(): Position {
+	public function getReference() : Position {
 		return $this->pos;
 	}
 
-	public function set(): void {
+	public function set() : void {
 		$this->build($this->data->getArray("Blocks"));
 	}
 
-	public function unset(): void {
+	public function unset() : void {
 		$this->build($this->changedBlocks);
 	}
 
-	private function build(array $blocks): void {
+	private function build(array $blocks) : void {
 		$world = $this->pos->getWorld();
 		$this->changedBlocks = [];
 		foreach ($blocks as $data => $block) {

@@ -13,15 +13,15 @@ use function count;
 
 final class NoArgumentsConstraint extends BaseConstraint {
 
-	public function test(CommandSender $sender, string $aliasUsed, array $args): bool {
+	public function test(CommandSender $sender, string $aliasUsed, array $args) : bool {
 		return count($args) !== 0;
 	}
 
-	public function onFailure(CommandSender $sender, string $aliasUsed, array $args): void {
+	public function onFailure(CommandSender $sender, string $aliasUsed, array $args) : void {
 		$sender->sendMessage(Translator::getInstance()->translate(new Translatable("command.notFound")));
 	}
 
-	public function isVisibleTo(CommandSender $sender): bool {
+	public function isVisibleTo(CommandSender $sender) : bool {
 		return $sender instanceof Player;
 	}
 }

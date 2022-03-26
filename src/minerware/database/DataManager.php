@@ -75,7 +75,7 @@ final class DataManager {
 	 * TODO:: Add multi storage type support.
 	 */
 
-	public function getPlayerData(Player|string $player): ?DataHolder {
+	public function getPlayerData(Player|string $player) : ?DataHolder {
 		$filePath = "players" . DIRECTORY_SEPARATOR . (($player instanceof Player) ? $player->getName() : $player) . "." . $this->playerStorageType;
 		$path = $this->pluginPath . "database" . DIRECTORY_SEPARATOR . $filePath;
 		if (file_exists($path)) {
@@ -85,7 +85,7 @@ final class DataManager {
 		return null;
 	}
 
-	public function loadMaps(): bool {
+	public function loadMaps() : bool {
 		if ($handle = opendir($this->pluginPath . "database" . DIRECTORY_SEPARATOR . 'maps' . DIRECTORY_SEPARATOR)) {
 			while (false !== ($entry = readdir($handle))) {
 				if ($entry !== '.' && $entry !== '..') {
@@ -100,7 +100,7 @@ final class DataManager {
 		return false;
 	}
 
-	public function getMapData(string $map): ?DataHolder {
+	public function getMapData(string $map) : ?DataHolder {
 		$filePath = "maps" . DIRECTORY_SEPARATOR . $map . ".json";
 		$path = $this->pluginPath . "database" . DIRECTORY_SEPARATOR . $filePath;
 		if (file_exists($path)) {
@@ -110,18 +110,18 @@ final class DataManager {
 		return null;
 	}
 
-	public function saveMapData(DataHolder $dataHolder): void {
+	public function saveMapData(DataHolder $dataHolder) : void {
 		$filePath = "maps" . DIRECTORY_SEPARATOR . $dataHolder->getString("name") . ".json";
 		$path = $this->pluginPath . "database" . DIRECTORY_SEPARATOR . $filePath;
 		(new Config($path, Config::JSON, $dataHolder->getAll()))->save();
 		Map::$maps[] = new Map($dataHolder);
 	}
 
-	public function getLobby(): ?World {
+	public function getLobby() : ?World {
 		return $this->lobby;
 	}
 
-	public function setLobby(World $lobby): void {
+	public function setLobby(World $lobby) : void {
 		$this->lobby = $lobby;
 		$config = $this->plugin->getConfig();
 		$config->set("lobby", $lobby->getDisplayName());

@@ -26,22 +26,22 @@ final class PointHolder {
 	/** @var array<string, int> */
 	private array $points = [];
 
-	public function addPlayer(Player $player): void {
+	public function addPlayer(Player $player) : void {
 		$this->points[strtolower($player->getName())] = 0;
 	}
 
-	public function getPlayerPoints(Player $player): int {
+	public function getPlayerPoints(Player $player) : int {
 		return $this->points[strtolower($player->getName())];
 	}
 
-	public function addPlayerPoint(Player $player, int $points = 1): void {
+	public function addPlayerPoint(Player $player, int $points = 1) : void {
 		$this->points[strtolower($player->getName())] += $points;
 	}
 
 	/**
 	 * @return array<string, int>
 	 */
-	public function getPoints(): array {
+	public function getPoints() : array {
 		return $this->points;
 	}
 }

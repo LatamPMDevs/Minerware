@@ -22,11 +22,11 @@ final class LanguageCommand extends BaseSubCommand {
 		parent::__construct("language", "Change the language of the plugin.");
 	}
 
-	protected function prepare(): void {
+	protected function prepare() : void {
 		$this->registerArgument(0, new LanguageArgument($this->plugin));
 	}
 
-	public function onRun(CommandSender $sender, string $aliasUsed, array $args): void {
+	public function onRun(CommandSender $sender, string $aliasUsed, array $args) : void {
 		/** @var ?Language $language */
 		$language = $args["language"] ?? null;
 		$languages = LanguageArgument::VALUES;
@@ -49,7 +49,7 @@ final class LanguageCommand extends BaseSubCommand {
 		$sender->sendMessage(Translator::getInstance()->translate(new Translatable("command.language.changed", [$language->getName()])));
 	}
 
-	public function getParent(): BaseCommand {
+	public function getParent() : BaseCommand {
 		return $this->parent;
 	}
 }

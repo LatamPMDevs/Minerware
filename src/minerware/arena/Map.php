@@ -38,7 +38,7 @@ final class Map {
 
 	public static array $maps = [];
 
-	public static function getByName(string $name): ?self {
+	public static function getByName(string $name) : ?self {
 		foreach (self::$maps as $map) {
 			if ($map->getName() === $name) {
 				return $map;
@@ -62,27 +62,27 @@ final class Map {
 		self::$maps[] = $this;
 	}
 
-	public function getName(): string {
+	public function getName() : string {
 		return $this->name;
 	}
 
-	public function getPlatform(): array {
+	public function getPlatform() : array {
 		return $this->platform;
 	}
 
-	public function getPlatformMinAndMaxPos(): array {
+	public function getPlatformMinAndMaxPos() : array {
 		return $this->platformMinAndMaxPos;
 	}
 
-	public function getData(): DataHolder {
+	public function getData() : DataHolder {
 		return $this->data;
 	}
 
-	public function getZip(): string {
+	public function getZip() : string {
 		return Minerware::getInstance()->getDataFolder() . "database" . DIRECTORY_SEPARATOR . "backups" . DIRECTORY_SEPARATOR . $this->name . ".zip";
 	}
 
-	public function generateWorld(string $uniqueId): ?World {
+	public function generateWorld(string $uniqueId) : ?World {
 		$worldPath = Minerware::getInstance()->getServer()->getDataPath() . "worlds" . DIRECTORY_SEPARATOR . $this->name . "-" . $uniqueId . DIRECTORY_SEPARATOR;
 
 		# Create files

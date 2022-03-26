@@ -48,31 +48,31 @@ final class ArenaManager {
 		$this->lobby = DataManager::getInstance()->getLobby();
 	}
 
-	public function getArenas(): array {
+	public function getArenas() : array {
 		return $this->arenas;
 	}
 
-	public function getById(string $id): ?Arena {
+	public function getById(string $id) : ?Arena {
 		return (isset($this->arenas[$id]) ? $this->arenas[$id] : null);
 	}
 
-	public function getLobby(): ?World {
+	public function getLobby() : ?World {
 		return $this->lobby;
 	}
 
-	public function createArena(): Arena {
+	public function createArena() : Arena {
 		$id = $this->generateId();
 		$arena = new Arena($id);
 		$this->arenas[$id] = $arena;
 		return $arena;
 	}
 
-	public function deleteArena(Arena|string $arena): void {
+	public function deleteArena(Arena|string $arena) : void {
 		$id = ($arena instanceof Arena) ? $arena->getId() : $arena;
 		unset($this->arenas[$id]);
 	}
 
-	public function getAvaible(): Arena {
+	public function getAvaible() : Arena {
 		foreach ($this->arenas as $arena) {
 			if ($arena->getStatus() === "waiting" && count($arena->getPlayers()) < Arena::MAX_PLAYERS) {
 				return $arena;
@@ -81,7 +81,7 @@ final class ArenaManager {
 		return $this->createArena();
 	}
 
-	public function generateId(): string {
+	public function generateId() : string {
 		$az = range("a", "z");
 		shuffle($az);
 
@@ -92,7 +92,7 @@ final class ArenaManager {
 		return $name;
 	}
 
-	public function join(Player $player, Arena $arena = null): void {
+	public function join(Player $player, Arena $arena = null) : void {
 		if ($this->lobby === null) {
 			$player->sendMessage(Translator::getInstance()->translate(new Translatable("error.lobby.isNotSet")));
 			return;

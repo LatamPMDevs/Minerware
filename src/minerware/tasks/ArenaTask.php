@@ -41,7 +41,7 @@ class ArenaTask extends Task {
 		$this->plugin = Minerware::getInstance();
 	}
 
-	public function onRun(): void {
+	public function onRun() : void {
 		$arena = $this->arena;
 		$players = $arena->getPlayers();
 		$world = $arena->getWorld();

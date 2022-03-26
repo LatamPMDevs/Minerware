@@ -15,11 +15,11 @@ class WorldArgument extends RawStringArgument {
 		parent::__construct("world", true);
 	}
 
-	public function canParse(string $testString, CommandSender $sender): bool {
+	public function canParse(string $testString, CommandSender $sender) : bool {
 		return true;
 	}
 
-	public function parse(string $argument, CommandSender $sender): ?World {
+	public function parse(string $argument, CommandSender $sender) : ?World {
 		if ($this->plugin->getServer()->getWorldManager()->loadWorld($argument, true)) {
 			return $this->plugin->getServer()->getWorldManager()->getWorldByName($argument);
 		}
@@ -27,7 +27,7 @@ class WorldArgument extends RawStringArgument {
 		return null;
 	}
 
-	public function getTypeName(): string {
+	public function getTypeName() : string {
 		return "string";
 	}
 }
