@@ -47,7 +47,7 @@ class ArenaTask extends Task {
 		$world = $arena->getWorld();
 		switch ($arena->getStatus()) {
 			case "waiting":
-				if(count($players) < Arena::MIN_PLAYERS) {
+				if (count($players) < Arena::MIN_PLAYERS) {
 				   $arena->waitingtime = 40;
 					foreach ($players as $player) {
 						$player->sendTip(Translator::getInstance()->translate(new Translatable("game.arena.needMorePlayers")));
