@@ -48,7 +48,7 @@ final class ArenaManager {
 		$this->lobby = DataManager::getInstance()->getLobby();
 	}
 
-	public function getArenas(): array  {
+	public function getArenas(): array {
 		return $this->arenas;
 	}
 
@@ -56,7 +56,7 @@ final class ArenaManager {
 		return (isset($this->arenas[$id]) ? $this->arenas[$id] : null);
 	}
 
-	public function getLobby(): ?World{
+	public function getLobby(): ?World {
 		return $this->lobby;
 	}
 
@@ -67,12 +67,12 @@ final class ArenaManager {
 		return $arena;
 	}
 
-	public function deleteArena(Arena|string $arena): void  {
+	public function deleteArena(Arena|string $arena): void {
 		$id = ($arena instanceof Arena) ? $arena->getId() : $arena;
 		unset($this->arenas[$id]);
 	}
 
-	public function getAvaible(): Arena  {
+	public function getAvaible(): Arena {
 		foreach ($this->arenas as $arena) {
 			if ($arena->getStatus() === "waiting" && count($arena->getPlayers()) < Arena::MAX_PLAYERS) {
 				return $arena;
