@@ -62,7 +62,10 @@ return (new PhpCsFixer\Config)
 		"phpdoc_trim_consecutive_blank_line_separation" => true,
 		"single_import_per_statement" => true,
 		"strict_param" => true,
-		"return_assignment" => true
+		"return_assignment" => true,
+		"function_declaration" => [
+			"closure_function_spacing" => "none"
+		]
 	])
 	->setFinder($finder)
 	->setIndent("\t")
