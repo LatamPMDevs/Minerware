@@ -63,9 +63,6 @@ return (new PhpCsFixer\Config)
 		"single_import_per_statement" => true,
 		"strict_param" => true,
 		"return_assignment" => true,
-		"return_type_declaration" => [
-			"space_before" => "one"
-		],
 		"function_declaration" => [
 			"closure_function_spacing" => "none"
 		]
