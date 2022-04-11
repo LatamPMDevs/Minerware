@@ -22,7 +22,6 @@ use minerware\arena\minigame\IgniteTNT;
 use minerware\arena\minigame\Microgame;
 use minerware\arena\minigame\WaitForIt;
 use minerware\database\DataManager;
-use minerware\language\Translator;
 use minerware\Minerware;
 use minerware\tasks\ArenaTask;
 
@@ -33,7 +32,6 @@ use minerware\utils\VoteCounter;
 use pocketmine\event\entity\EntityTeleportEvent;
 use pocketmine\event\Listener;
 use pocketmine\event\player\PlayerQuitEvent;
-use pocketmine\lang\Translatable;
 use pocketmine\player\GameMode;
 
 use pocketmine\player\Player;

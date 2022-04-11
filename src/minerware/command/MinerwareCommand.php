@@ -26,10 +26,8 @@ use minerware\command\subcommands\HelpCommand;
 use minerware\command\subcommands\JoinCommand;
 use minerware\command\subcommands\LanguageCommand;
 use minerware\command\subcommands\SetLobbyCommand;
-use minerware\language\Translator;
 use minerware\Minerware;
 use pocketmine\command\CommandSender;
-use pocketmine\lang\Translatable;
 use pocketmine\utils\TextFormat as T;
 use function implode;
 

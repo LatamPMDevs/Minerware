@@ -11,12 +11,9 @@ use minerware\command\args\ArenaActionArgument;
 use minerware\command\args\WorldArgument;
 use minerware\command\constraints\ArgumentNotProvided;
 use minerware\database\DataManager;
-use minerware\language\Translator;
 use minerware\Minerware;
 use pocketmine\command\CommandSender;
-use pocketmine\lang\Translatable;
 use pocketmine\player\Player;
-use pocketmine\world\World;
 
 final class ArenasCommand extends BaseSubCommand {
 

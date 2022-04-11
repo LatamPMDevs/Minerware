@@ -9,7 +9,6 @@ use CortexPE\Commando\constraint\BaseConstraint;
 use CortexPE\Commando\IRunnable;
 use minerware\Minerware;
 use pocketmine\command\CommandSender;
-use pocketmine\lang\Translatable;
 use pocketmine\player\Player;
 use function array_key_exists;
 

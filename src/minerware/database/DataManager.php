@@ -18,6 +18,7 @@ declare(strict_types=1);
 
 namespace minerware\database;
 
+use InvalidArgumentException;
 use IvanCraft623\languages\Language;
 use minerware\arena\Map;
 use minerware\Minerware;
@@ -26,10 +27,13 @@ use pocketmine\utils\Config;
 use pocketmine\utils\SingletonTrait;
 use pocketmine\utils\Utils;
 use pocketmine\world\World;
-use InvalidArgumentException;
+use function array_map;
+use function basename;
 use function file_exists;
+use function glob;
 use function mkdir;
 use function opendir;
+use function parse_ini_file;
 use function readdir;
 use function str_replace;
 

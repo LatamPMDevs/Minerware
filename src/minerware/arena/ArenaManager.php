@@ -19,9 +19,7 @@ declare(strict_types=1);
 namespace minerware\arena;
 
 use minerware\database\DataManager;
-use minerware\language\Translator;
 use minerware\Minerware;
-use pocketmine\lang\Translatable;
 use pocketmine\player\Player;
 use pocketmine\utils\SingletonTrait;
 use pocketmine\world\World;

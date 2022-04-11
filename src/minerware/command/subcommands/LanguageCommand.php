@@ -6,14 +6,9 @@ namespace minerware\command\subcommands;
 
 use CortexPE\Commando\BaseCommand;
 use CortexPE\Commando\BaseSubCommand;
-use IvanCraft623\languages\Language;
 use minerware\command\args\LanguageArgument;
-use minerware\language\Translator;
 use minerware\Minerware;
 use pocketmine\command\CommandSender;
-use pocketmine\lang\Translatable;
-use function in_array;
-use function strtolower;
 use function ucfirst;
 
 final class LanguageCommand extends BaseSubCommand {
@@ -33,7 +28,7 @@ final class LanguageCommand extends BaseSubCommand {
 		if ($language === null) {
 			$list = "";
 			foreach ($languages as $lang) {
-				$list .= "§e- §a" .$lang->getLocale() . " §f(" . ucfirst($lang->getName()) . ")\n";
+				$list .= "§e- §a" . $lang->getLocale() . " §f(" . ucfirst($lang->getName()) . ")\n";
 			}
 
 			$sender->sendMessage($this->plugin->getTranslator()->translate(

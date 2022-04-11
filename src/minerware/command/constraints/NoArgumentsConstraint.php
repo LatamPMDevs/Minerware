@@ -7,7 +7,6 @@ namespace minerware\command\constraints;
 use CortexPE\Commando\constraint\BaseConstraint;
 use minerware\Minerware;
 use pocketmine\command\CommandSender;
-use pocketmine\lang\Translatable;
 use pocketmine\player\Player;
 use function count;
 

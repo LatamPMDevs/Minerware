@@ -20,14 +20,12 @@ namespace minerware\arena;
 
 use minerware\database\DataHolder;
 use minerware\database\DataManager;
-use minerware\language\Translator;
 use minerware\Minerware;
 use minerware\utils\Utils;
 use pocketmine\event\block\BlockBreakEvent;
 use pocketmine\event\Listener;
 use pocketmine\event\player\PlayerChatEvent;
 use pocketmine\item\ItemFactory;
-use pocketmine\lang\Translatable;
 use pocketmine\math\Vector3;
 use pocketmine\player\Player;
 use pocketmine\utils\SingletonTrait;

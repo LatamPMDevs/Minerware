@@ -21,10 +21,8 @@ namespace minerware\tasks;
 use minerware\arena\Arena;
 use minerware\arena\ArenaManager;
 use minerware\database\DataManager;
-use minerware\language\Translator;
 use minerware\Minerware;
 use minerware\utils\Utils;
-use pocketmine\lang\Translatable;
 use pocketmine\scheduler\Task;
 use function count;
 

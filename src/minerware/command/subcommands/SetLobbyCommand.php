@@ -8,11 +8,8 @@ use CortexPE\Commando\BaseCommand;
 use CortexPE\Commando\BaseSubCommand;
 use minerware\command\args\WorldArgument;
 use minerware\database\DataManager;
-use minerware\language\Translator;
 use minerware\Minerware;
 use pocketmine\command\CommandSender;
-use pocketmine\lang\Translatable;
-use pocketmine\world\World;
 
 final class SetLobbyCommand extends BaseSubCommand {
 

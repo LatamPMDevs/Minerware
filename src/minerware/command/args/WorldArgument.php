@@ -7,7 +7,6 @@ namespace minerware\command\args;
 use CortexPE\Commando\args\RawStringArgument;
 use minerware\Minerware;
 use pocketmine\command\CommandSender;
-use pocketmine\world\World;
 
 class WorldArgument extends RawStringArgument {
 
