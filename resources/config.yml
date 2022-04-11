@@ -11,7 +11,7 @@
 # Copyright 2022 © Minerware
 
 #Settings
-language: english #English & Spanish
+default-language: en_US #See languages folder
 lobby: null #Waiting lobby (null = disabled)
 
 storage-format:

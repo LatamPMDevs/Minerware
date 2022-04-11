@@ -94,7 +94,7 @@ final class ArenaManager {
 
 	public function join(Player $player, Arena $arena = null) : void {
 		if ($this->lobby === null) {
-			$player->sendMessage(Translator::getInstance()->translate(new Translatable("error.lobby.isNotSet")));
+			$player->sendMessage($this->plugin->getTranslator()->translate($player, "error.lobby.isNotSet"));
 			return;
 		}
 		if ($arena === null) {

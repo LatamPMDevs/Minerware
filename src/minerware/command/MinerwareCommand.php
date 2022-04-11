@@ -38,7 +38,7 @@ final class MinerwareCommand extends BaseCommand {
 	public function __construct(private Minerware $plugin) {
 		parent::__construct($plugin, "minerware", "Minerware main command.");
 		$this->setPermission("minerware.command");
-		$this->setPermissionMessage(Translator::getInstance()->translate(new Translatable("command.noPermission")));
+		$this->setPermissionMessage($plugin->getTranslator()->translate(null, "command.noPermission"));
 	}
 
 	protected function prepare() : void {

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace minerware\command\constraints;
 
 use CortexPE\Commando\constraint\BaseConstraint;
-use minerware\language\Translator;
+use minerware\Minerware;
 use pocketmine\command\CommandSender;
 use pocketmine\lang\Translatable;
 use pocketmine\player\Player;
@@ -18,7 +18,7 @@ final class NoArgumentsConstraint extends BaseConstraint {
 	}
 
 	public function onFailure(CommandSender $sender, string $aliasUsed, array $args) : void {
-		$sender->sendMessage(Translator::getInstance()->translate(new Translatable("command.notFound")));
+		$sender->sendMessage(Minerware::getInstance()->getTranslator()->translate($sender, "command.notFound"));
 	}
 
 	public function isVisibleTo(CommandSender $sender) : bool {

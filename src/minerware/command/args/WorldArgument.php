@@ -19,14 +19,6 @@ class WorldArgument extends RawStringArgument {
 		return true;
 	}
 
-	public function parse(string $argument, CommandSender $sender) : ?World {
-		if ($this->plugin->getServer()->getWorldManager()->loadWorld($argument, true)) {
-			return $this->plugin->getServer()->getWorldManager()->getWorldByName($argument);
-		}
-
-		return null;
-	}
-
 	public function getTypeName() : string {
 		return "string";
 	}
