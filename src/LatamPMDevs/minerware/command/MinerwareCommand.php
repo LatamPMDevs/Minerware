@@ -31,8 +31,6 @@ use LatamPMDevs\minerware\command\subcommands\LanguageCommand;
 use LatamPMDevs\minerware\command\subcommands\SetLobbyCommand;
 use LatamPMDevs\minerware\Minerware;
 use pocketmine\command\CommandSender;
-use pocketmine\utils\TextFormat as T;
-use function implode;
 
 final class MinerwareCommand extends BaseCommand {
 
