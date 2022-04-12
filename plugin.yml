@@ -1,6 +1,6 @@
 name: Minerware
 version: 1.0.0-dev5
-main: minerware\Minerware
+main: LatamPMDevs\minerware\Minerware
 api: 4.0.0
 prefix: "§aMinerware§r "
 authors:
