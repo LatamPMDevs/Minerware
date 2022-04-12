@@ -22,7 +22,7 @@ declare(strict_types=1);
 
 namespace LatamPMDevs\minerware\utils;
 
-use minerware\database\DataHolder;
+use LatamPMDevs\minerware\database\DataHolder;
 use pocketmine\block\BlockFactory;
 use pocketmine\world\Position;
 use function floor;

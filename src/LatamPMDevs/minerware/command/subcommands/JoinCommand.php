@@ -24,7 +24,7 @@ namespace LatamPMDevs\minerware\command\subcommands;
 
 use CortexPE\Commando\BaseCommand;
 use CortexPE\Commando\BaseSubCommand;
-use minerware\arena\ArenaManager;
+use LatamPMDevs\minerware\arena\ArenaManager;
 use pocketmine\command\CommandSender;
 use pocketmine\player\Player;
 

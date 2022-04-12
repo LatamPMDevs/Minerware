@@ -22,11 +22,11 @@ declare(strict_types=1);
 
 namespace LatamPMDevs\minerware\tasks;
 
-use minerware\arena\Arena;
-use minerware\arena\ArenaManager;
-use minerware\database\DataManager;
-use minerware\Minerware;
-use minerware\utils\Utils;
+use LatamPMDevs\minerware\arena\Arena;
+use LatamPMDevs\minerware\arena\ArenaManager;
+use LatamPMDevs\minerware\database\DataManager;
+use LatamPMDevs\minerware\Minerware;
+use LatamPMDevs\minerware\utils\Utils;
 use pocketmine\scheduler\Task;
 use function count;
 

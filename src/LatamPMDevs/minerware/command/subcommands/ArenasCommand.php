@@ -24,12 +24,12 @@ namespace LatamPMDevs\minerware\command\subcommands;
 
 use CortexPE\Commando\BaseCommand;
 use CortexPE\Commando\BaseSubCommand;
-use minerware\arena\MapRegisterer;
-use minerware\command\args\ArenaActionArgument;
-use minerware\command\args\WorldArgument;
-use minerware\command\constraints\ArgumentNotProvided;
-use minerware\database\DataManager;
-use minerware\Minerware;
+use LatamPMDevs\minerware\arena\MapRegisterer;
+use LatamPMDevs\minerware\command\args\ArenaActionArgument;
+use LatamPMDevs\minerware\command\args\WorldArgument;
+use LatamPMDevs\minerware\command\constraints\ArgumentNotProvided;
+use LatamPMDevs\minerware\database\DataManager;
+use LatamPMDevs\minerware\Minerware;
 use pocketmine\command\CommandSender;
 use pocketmine\player\Player;
 

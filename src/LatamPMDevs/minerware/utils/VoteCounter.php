@@ -22,7 +22,7 @@ declare(strict_types=1);
 
 namespace LatamPMDevs\minerware\utils;
 
-use minerware\arena\Map;
+use LatamPMDevs\minerware\arena\Map;
 use pocketmine\player\Player;
 use function array_rand;
 use function count;

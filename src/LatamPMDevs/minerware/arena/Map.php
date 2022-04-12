@@ -22,9 +22,9 @@ declare(strict_types=1);
 
 namespace LatamPMDevs\minerware\arena;
 
-use minerware\database\DataHolder;
-use minerware\Minerware;
-use minerware\utils\Utils;
+use LatamPMDevs\minerware\database\DataHolder;
+use LatamPMDevs\minerware\Minerware;
+use LatamPMDevs\minerware\utils\Utils;
 use pocketmine\math\Vector3;
 use pocketmine\nbt\NBT;
 use pocketmine\nbt\tag\CompoundTag;

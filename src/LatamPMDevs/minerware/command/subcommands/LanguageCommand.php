@@ -24,8 +24,8 @@ namespace LatamPMDevs\minerware\command\subcommands;
 
 use CortexPE\Commando\BaseCommand;
 use CortexPE\Commando\BaseSubCommand;
-use minerware\command\args\LanguageArgument;
-use minerware\Minerware;
+use LatamPMDevs\minerware\command\args\LanguageArgument;
+use LatamPMDevs\minerware\Minerware;
 use pocketmine\command\CommandSender;
 use function ucfirst;
 

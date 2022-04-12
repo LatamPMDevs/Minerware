@@ -25,7 +25,7 @@ namespace LatamPMDevs\minerware\command\constraints;
 use CortexPE\Commando\BaseSubCommand;
 use CortexPE\Commando\constraint\BaseConstraint;
 use CortexPE\Commando\IRunnable;
-use minerware\Minerware;
+use LatamPMDevs\minerware\Minerware;
 use pocketmine\command\CommandSender;
 use pocketmine\player\Player;
 use function array_key_exists;

@@ -22,8 +22,8 @@ declare(strict_types=1);
 
 namespace LatamPMDevs\minerware\arena;
 
-use minerware\database\DataManager;
-use minerware\Minerware;
+use LatamPMDevs\minerware\database\DataManager;
+use LatamPMDevs\minerware\Minerware;
 use pocketmine\player\Player;
 use pocketmine\utils\SingletonTrait;
 use pocketmine\world\World;

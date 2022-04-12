@@ -22,16 +22,16 @@ declare(strict_types=1);
 
 namespace LatamPMDevs\minerware\arena;
 
-use minerware\arena\minigame\IgniteTNT;
-use minerware\arena\minigame\Microgame;
-use minerware\arena\minigame\WaitForIt;
-use minerware\database\DataManager;
-use minerware\Minerware;
-use minerware\tasks\ArenaTask;
+use LatamPMDevs\minerware\arena\minigame\IgniteTNT;
+use LatamPMDevs\minerware\arena\minigame\Microgame;
+use LatamPMDevs\minerware\arena\minigame\WaitForIt;
+use LatamPMDevs\minerware\database\DataManager;
+use LatamPMDevs\minerware\Minerware;
+use LatamPMDevs\minerware\tasks\ArenaTask;
 
-use minerware\utils\PointHolder;
-use minerware\utils\Utils;
-use minerware\utils\VoteCounter;
+use LatamPMDevs\minerware\utils\PointHolder;
+use LatamPMDevs\minerware\utils\Utils;
+use LatamPMDevs\minerware\utils\VoteCounter;
 
 use pocketmine\event\entity\EntityTeleportEvent;
 use pocketmine\event\Listener;

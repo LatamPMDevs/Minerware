@@ -24,8 +24,8 @@ namespace LatamPMDevs\minerware\database;
 
 use InvalidArgumentException;
 use IvanCraft623\languages\Language;
-use minerware\arena\Map;
-use minerware\Minerware;
+use LatamPMDevs\minerware\arena\Map;
+use LatamPMDevs\minerware\Minerware;
 use pocketmine\player\Player;
 use pocketmine\utils\Config;
 use pocketmine\utils\SingletonTrait;

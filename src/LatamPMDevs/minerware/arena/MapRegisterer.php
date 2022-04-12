@@ -22,10 +22,10 @@ declare(strict_types=1);
 
 namespace LatamPMDevs\minerware\arena;
 
-use minerware\database\DataHolder;
-use minerware\database\DataManager;
-use minerware\Minerware;
-use minerware\utils\Utils;
+use LatamPMDevs\minerware\database\DataHolder;
+use LatamPMDevs\minerware\database\DataManager;
+use LatamPMDevs\minerware\Minerware;
+use LatamPMDevs\minerware\utils\Utils;
 use pocketmine\event\block\BlockBreakEvent;
 use pocketmine\event\Listener;
 use pocketmine\event\player\PlayerChatEvent;

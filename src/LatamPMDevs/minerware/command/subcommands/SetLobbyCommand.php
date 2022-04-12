@@ -24,9 +24,9 @@ namespace LatamPMDevs\minerware\command\subcommands;
 
 use CortexPE\Commando\BaseCommand;
 use CortexPE\Commando\BaseSubCommand;
-use minerware\command\args\WorldArgument;
-use minerware\database\DataManager;
-use minerware\Minerware;
+use LatamPMDevs\minerware\command\args\WorldArgument;
+use LatamPMDevs\minerware\database\DataManager;
+use LatamPMDevs\minerware\Minerware;
 use pocketmine\command\CommandSender;
 
 final class SetLobbyCommand extends BaseSubCommand {

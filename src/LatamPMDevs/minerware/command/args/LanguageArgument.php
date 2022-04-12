@@ -24,7 +24,7 @@ namespace LatamPMDevs\minerware\command\args;
 
 use CortexPE\Commando\args\StringEnumArgument;
 use IvanCraft623\languages\Language;
-use minerware\Minerware;
+use LatamPMDevs\minerware\Minerware;
 use pocketmine\command\CommandSender;
 
 final class LanguageArgument extends StringEnumArgument {

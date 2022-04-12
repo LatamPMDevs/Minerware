@@ -24,9 +24,9 @@ namespace LatamPMDevs\minerware;
 
 use CortexPE\Commando\PacketHooker;
 use IvanCraft623\languages\Translator;
-use minerware\arena\ArenaManager;
-use minerware\command\MinerwareCommand;
-use minerware\database\DataManager;
+use LatamPMDevs\minerware\arena\ArenaManager;
+use LatamPMDevs\minerware\command\MinerwareCommand;
+use LatamPMDevs\minerware\database\DataManager;
 use pocketmine\plugin\PluginBase;
 use pocketmine\utils\SingletonTrait;
 
