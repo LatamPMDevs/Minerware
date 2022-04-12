@@ -26,10 +26,8 @@ use minerware\command\subcommands\HelpCommand;
 use minerware\command\subcommands\JoinCommand;
 use minerware\command\subcommands\LanguageCommand;
 use minerware\command\subcommands\SetLobbyCommand;
-use minerware\language\Translator;
 use minerware\Minerware;
 use pocketmine\command\CommandSender;
-use pocketmine\lang\Translatable;
 use pocketmine\utils\TextFormat as T;
 use function implode;
 
@@ -38,7 +36,7 @@ final class MinerwareCommand extends BaseCommand {
 	public function __construct(private Minerware $plugin) {
 		parent::__construct($plugin, "minerware", "Minerware main command.");
 		$this->setPermission("minerware.command");
-		$this->setPermissionMessage(Translator::getInstance()->translate(new Translatable("command.noPermission")));
+		$this->setPermissionMessage($plugin->getTranslator()->translate(null, "command.noPermission"));
 	}
 
 	protected function prepare() : void {

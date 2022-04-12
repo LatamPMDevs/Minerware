@@ -22,7 +22,6 @@ use minerware\arena\minigame\IgniteTNT;
 use minerware\arena\minigame\Microgame;
 use minerware\arena\minigame\WaitForIt;
 use minerware\database\DataManager;
-use minerware\language\Translator;
 use minerware\Minerware;
 use minerware\tasks\ArenaTask;
 
@@ -33,7 +32,6 @@ use minerware\utils\VoteCounter;
 use pocketmine\event\entity\EntityTeleportEvent;
 use pocketmine\event\Listener;
 use pocketmine\event\player\PlayerQuitEvent;
-use pocketmine\lang\Translatable;
 use pocketmine\player\GameMode;
 
 use pocketmine\player\Player;
@@ -47,6 +45,8 @@ final class Arena implements Listener {
 	public const MIN_PLAYERS = 2;
 
 	public const MAX_PLAYERS = 12;
+
+	private Minerware $plugin;
 
 	private string $status = "waiting";
 
@@ -75,10 +75,11 @@ final class Arena implements Listener {
 	public int $endingtime = 10;
 
 	public function __construct(private string $id) {
+		$this->plugin = Minerware::getInstance();
 		$this->pointHolder = new PointHolder();
 		$this->voteCounter = new VoteCounter();
-		Minerware::getInstance()->getServer()->getPluginManager()->registerEvents($this, Minerware::getInstance());
-		Minerware::getInstance()->getScheduler()->scheduleRepeatingTask(new ArenaTask($this), 20);
+		$this->plugin->getServer()->getPluginManager()->registerEvents($this, $this->plugin);
+		$this->plugin->getScheduler()->scheduleRepeatingTask(new ArenaTask($this), 20);
 
 		$easyGames = [WaitForIt::class];
 		$randEasy = [array_rand($easyGames, 1)]; //7, remove []
@@ -126,7 +127,14 @@ final class Arena implements Listener {
 
 	public function join(Player $player) : void {
 		$this->players[$player->getName()] = $player;
-		$this->sendMessage(Translator::getInstance()->translate(new Translatable("game.player.join", [$player->getName(), count($this->players) . "/" . self::MAX_PLAYERS])));
+		foreach ($this->players as $pl) {
+			$pl->sendMessage($this->plugin->getTranslator()->translate(
+				$pl, "game.player.join", [
+					"{%player}" => $player->getName(),
+					"{%count}" => count($this->players) . "/" . self::MAX_PLAYERS
+				]
+			));
+		}
 		//TODO:: #2 Fix $lobby no being null.
 		$lobby = ArenaManager::getInstance()->getLobby();
 		$lobby->loadChunk($lobby->getSafeSpawn()->getFloorX(), $lobby->getSafeSpawn()->getFloorZ());
@@ -139,7 +147,14 @@ final class Arena implements Listener {
 
 	public function quit(Player $player) : void {
 		unset($this->players[$player->getName()]);
-		$this->sendMessage(Translator::getInstance()->translate(new Translatable("game.player.quit", [$player->getName(), count($this->players) . "/" . self::MAX_PLAYERS])));
+		foreach ($this->players as $pl) {
+			$pl->sendMessage($this->plugin->getTranslator()->translate(
+				$pl, "game.player.quit", [
+					"{%player}" => $player->getName(),
+					"{%count}" => count($this->players) . "/" . self::MAX_PLAYERS
+				]
+			));
+		}
 	}
 
 	public function sendMessage(string $message) : void {
@@ -194,8 +209,8 @@ final class Arena implements Listener {
 
 	public function deleteMap() : void {
 		if ($this->world !== null) {
-			$worldPath = Minerware::getInstance()->getServer()->getDataPath() . "worlds" . DIRECTORY_SEPARATOR . $this->world->getFolderName() . DIRECTORY_SEPARATOR;
-			Minerware::getInstance()->getServer()->getWorldManager()->unloadWorld($this->world, true);
+			$worldPath = $this->plugin->getServer()->getDataPath() . "worlds" . DIRECTORY_SEPARATOR . $this->world->getFolderName() . DIRECTORY_SEPARATOR;
+			$this->plugin->getServer()->getWorldManager()->unloadWorld($this->world, true);
 			Utils::removeDir($worldPath);
 			$this->world = null;
 		}

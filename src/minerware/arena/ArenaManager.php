@@ -19,9 +19,7 @@ declare(strict_types=1);
 namespace minerware\arena;
 
 use minerware\database\DataManager;
-use minerware\language\Translator;
 use minerware\Minerware;
-use pocketmine\lang\Translatable;
 use pocketmine\player\Player;
 use pocketmine\utils\SingletonTrait;
 use pocketmine\world\World;
@@ -94,7 +92,7 @@ final class ArenaManager {
 
 	public function join(Player $player, Arena $arena = null) : void {
 		if ($this->lobby === null) {
-			$player->sendMessage(Translator::getInstance()->translate(new Translatable("error.lobby.isNotSet")));
+			$player->sendMessage($this->plugin->getTranslator()->translate($player, "error.lobby.isNotSet"));
 			return;
 		}
 		if ($arena === null) {

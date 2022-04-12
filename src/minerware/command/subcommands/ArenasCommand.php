@@ -11,12 +11,9 @@ use minerware\command\args\ArenaActionArgument;
 use minerware\command\args\WorldArgument;
 use minerware\command\constraints\ArgumentNotProvided;
 use minerware\database\DataManager;
-use minerware\language\Translator;
 use minerware\Minerware;
 use pocketmine\command\CommandSender;
-use pocketmine\lang\Translatable;
 use pocketmine\player\Player;
-use pocketmine\world\World;
 
 final class ArenasCommand extends BaseSubCommand {
 
@@ -34,16 +31,24 @@ final class ArenasCommand extends BaseSubCommand {
 	 * @param Player $sender
 	 */
 	public function onRun(CommandSender $sender, string $aliasUsed, array $args) : void {
-		$world = $args["world"]	?? null;
+		if (!isset($args["action"])) {
+			# TODO...
+			return;
+		}
 		switch ($args["action"]) {
 			case ArenaActionArgument::CREATE_ARENA:
 				if (DataManager::getInstance()->getLobby() === null) {
-					$sender->sendMessage(Translator::getInstance()->translate(new Translatable("database.lobby.notSet")));
+					$sender->sendMessage($this->plugin->getTranslator()->translate($sender, "database.lobby.notSet"));
 					return;
 				}
 
-				if (!$world instanceof World || !$world->isLoaded()) {
-					$sender->sendMessage(Translator::getInstance()->translate(new Translatable("command.arguments.worldNotFound", [$args["world"]])));
+				if ($this->plugin->getServer()->getWorldManager()->loadWorld($args["world"], true) ||
+				($world = $this->plugin->getServer()->getWorldManager()->getWorldByName($args["world"]))) {
+					$sender->sendMessage($this->plugin->getTranslator()->translate(
+						$sender, "command.arguments.worldNotFound", [
+							"{%world}" => [$args["world"]]
+						]
+					));
 					return;
 				}
 

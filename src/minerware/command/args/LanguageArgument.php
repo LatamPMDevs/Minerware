@@ -5,27 +5,30 @@ declare(strict_types=1);
 namespace minerware\command\args;
 
 use CortexPE\Commando\args\StringEnumArgument;
+use IvanCraft623\languages\Language;
 use minerware\Minerware;
 use pocketmine\command\CommandSender;
-use pocketmine\lang\Language;
 
 final class LanguageArgument extends StringEnumArgument {
-
-	public const VALUES = [
-		"english" => "english",
-		"spanish" => "spanish"
-	];
 
 	public function __construct(private Minerware $plugin) {
 		parent::__construct("language", true);
 	}
 
-	public function parse(string $argument, CommandSender $sender) : Language {
-		return $this->getValue($argument);
+	public function parse(string $argument, CommandSender $sender) : string {
+		return $this->getValue($argument)?->getLocale() ?? "";
 	}
 
-	public function getValue(string $string) : Language {
-		return new Language($string, $this->plugin->getDataFolder() . "/languages/", $string);
+	public function getValue(string $string) : ?Language {
+		return $this->plugin->getTranslator()->getLanguage($string);
+	}
+
+	public function getEnumValues(): array {
+		$values = [];
+		foreach ($this->plugin->getTranslator()->getLanguages() as $lang) {
+			$values[] = $lang->getLocale();
+		}
+		return $values;
 	}
 
 	public function getTypeName() : string {

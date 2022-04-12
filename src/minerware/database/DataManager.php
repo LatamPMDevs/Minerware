@@ -18,15 +18,22 @@ declare(strict_types=1);
 
 namespace minerware\database;
 
+use InvalidArgumentException;
+use IvanCraft623\languages\Language;
 use minerware\arena\Map;
 use minerware\Minerware;
 use pocketmine\player\Player;
 use pocketmine\utils\Config;
 use pocketmine\utils\SingletonTrait;
+use pocketmine\utils\Utils;
 use pocketmine\world\World;
+use function array_map;
+use function basename;
 use function file_exists;
+use function glob;
 use function mkdir;
 use function opendir;
+use function parse_ini_file;
 use function readdir;
 use function str_replace;
 
@@ -63,6 +70,9 @@ final class DataManager {
 		@mkdir($this->pluginPath . "database" . DIRECTORY_SEPARATOR . "maps" . DIRECTORY_SEPARATOR);
 		@mkdir($this->pluginPath . "database" . DIRECTORY_SEPARATOR . "backups" . DIRECTORY_SEPARATOR);
 
+		$this->plugin->saveResource("languages/en_US.ini", true);
+		$this->plugin->saveResource("languages/es_MX.ini", true);
+
 		$name = $this->plugin->getConfig()->get("lobby", null);
 		if ($name !== null) {
 			if ($this->plugin->getServer()->getWorldManager()->loadWorld($name, true)) {
@@ -98,6 +108,18 @@ final class DataManager {
 		}
 
 		return false;
+	}
+
+	public function loadLanguages() : void {
+		$translator = $this->plugin->getTranslator();
+		foreach (glob($this->pluginPath . "languages" . DIRECTORY_SEPARATOR . "*.ini") as $file) {
+			$locale = basename($file, ".ini");
+			$data = array_map('\stripcslashes', Utils::assumeNotFalse(parse_ini_file($file, false, INI_SCANNER_RAW), "Missing or inaccessible required resource files"));
+			$translator->registerLanguage(new Language($locale, $data));
+		}
+		$l = $this->plugin->getConfig()->get("default-language", "en_US");
+		$lang = $translator->getLanguage($l) ?? throw new InvalidArgumentException("Language $l not found");
+		$translator->setDefaultLanguage($lang);
 	}
 
 	public function getMapData(string $map) : ?DataHolder {

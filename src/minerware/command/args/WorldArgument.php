@@ -7,7 +7,6 @@ namespace minerware\command\args;
 use CortexPE\Commando\args\RawStringArgument;
 use minerware\Minerware;
 use pocketmine\command\CommandSender;
-use pocketmine\world\World;
 
 class WorldArgument extends RawStringArgument {
 
@@ -17,14 +16,6 @@ class WorldArgument extends RawStringArgument {
 
 	public function canParse(string $testString, CommandSender $sender) : bool {
 		return true;
-	}
-
-	public function parse(string $argument, CommandSender $sender) : ?World {
-		if ($this->plugin->getServer()->getWorldManager()->loadWorld($argument, true)) {
-			return $this->plugin->getServer()->getWorldManager()->getWorldByName($argument);
-		}
-
-		return null;
 	}
 
 	public function getTypeName() : string {

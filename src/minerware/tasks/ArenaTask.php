@@ -21,19 +21,15 @@ namespace minerware\tasks;
 use minerware\arena\Arena;
 use minerware\arena\ArenaManager;
 use minerware\database\DataManager;
-use minerware\language\Translator;
 use minerware\Minerware;
 use minerware\utils\Utils;
-use pocketmine\lang\Translatable;
 use pocketmine\scheduler\Task;
-use pocketmine\utils\SingletonTrait;
 use function count;
 
 /**
  * Class ArenaTask
  */
 class ArenaTask extends Task {
-	use SingletonTrait;
 
 	private Minerware $plugin;
 
@@ -50,19 +46,29 @@ class ArenaTask extends Task {
 				if (count($players) < Arena::MIN_PLAYERS) {
 				   $arena->waitingtime = 40;
 					foreach ($players as $player) {
-						$player->sendTip(Translator::getInstance()->translate(new Translatable("game.arena.needMorePlayers")));
+						$player->sendTip($this->plugin->getTranslator()->translate($player, "game.arena.needMorePlayers"));
 					}
 				} else {
 					$arena->waitingtime--;
 					if (count($players) == Arena::MAX_PLAYERS) {
-						$arena->sendMessage(Translator::getInstance()->translate(new Translatable("game.arena.startingByReachCapacity")));
+						foreach ($players as $player) {
+							$pl->sendMessage($this->plugin->getTranslator()->translate($pl, "game.arena.startingByReachCapacity"));
+						}
 						$arena->setStatus("starting");
 					}
 					foreach ($players as $player) {
 						if ($arena->waitingtime >= 6 && $arena->waitingtime <= 40) {
-							$player->sendTip(Translator::getInstance()->translate(new Translatable("game.arena.starting", [$arena->waitingtime])));
+							$player->sendMessage($this->plugin->getTranslator()->translate(
+								$player, "game.arena.starting", [
+									"{%time}" => $arena->waitingtime
+								]
+							));
 						} elseif ($arena->waitingtime >= 1 && $arena->waitingtime <= 5) {
-							$player->sendTip(Translator::getInstance()->translate(new Translatable("game.arena.starting", ["§c" . $arena->waitingtime])));
+							$player->sendMessage($this->plugin->getTranslator()->translate(
+								$player, "game.arena.starting", [
+									"{%time}" => "§c" . $arena->waitingtime
+								]
+							));
 							Utils::playSound($player, "random.click");
 						}
 					}
@@ -87,10 +93,10 @@ class ArenaTask extends Task {
 					}
 				}
 				if (count($players) < Arena::MIN_PLAYERS) {
-					$arena->sendMessage(Translator::getInstance()->translate(new Translatable("game.arena.countCancelled")));
 					$arena->setStatus("waiting");
 					$lobby = DataManager::getInstance()->getLobby();
 					foreach ($players as $player) {
+						$player->sendMessage($this->plugin->getTranslator()->translate($player, "game.arena.countCancelled"));
 						$lobby->loadChunk($lobby->getSafeSpawn()->getFloorX(), $lobby->getSafeSpawn()->getFloorZ());
 						$player->teleport($lobby->getSafeSpawn(), 0, 0);
 						$player->getInventory()->clearAll();
@@ -101,12 +107,20 @@ class ArenaTask extends Task {
 				}
 				if ($arena->startingtime >= 4 && $arena->startingtime <= 10) {
 					foreach ($players as $player) {
-						$player->sendTip(Translator::getInstance()->translate(new Translatable("game.arena.start", ["§e" . Utils::getStartingBar($arena->startingtime, 10) . "§f " . $arena->startingtime])));
+						$player->sendTip($this->plugin->getTranslator()->translate(
+							$player, "game.arena.start", [
+								"{%time}" => "§e" . Utils::getStartingBar($arena->startingtime, 10) . "§f " . $arena->startingtime
+							]
+						));
 					}
 				}
 				if ($arena->startingtime >= 1 && $arena->startingtime <= 3) {
 					foreach ($players as $player) {
-						$player->sendTip(Translator::getInstance()->translate(new Translatable("game.arena.start", ["§c" . Utils::getStartingBar($arena->startingtime, 10) . "§f " . $arena->startingtime])));
+						$player->sendTip($this->plugin->getTranslator()->translate(
+							$player, "game.arena.start", [
+								"{%time}" => "§c" . Utils::getStartingBar($arena->startingtime, 10) . "§f " . $arena->startingtime
+							]
+						));
 						Utils::playSound($player, "random.toast", 1, 1.5);
 					}
 				}

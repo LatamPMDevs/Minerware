@@ -7,9 +7,8 @@ namespace minerware\command\constraints;
 use CortexPE\Commando\BaseSubCommand;
 use CortexPE\Commando\constraint\BaseConstraint;
 use CortexPE\Commando\IRunnable;
-use minerware\language\Translator;
+use minerware\Minerware;
 use pocketmine\command\CommandSender;
-use pocketmine\lang\Translatable;
 use pocketmine\player\Player;
 use function array_key_exists;
 
@@ -36,7 +35,11 @@ final class ArgumentNotProvided extends BaseConstraint {
 	public function onFailure(CommandSender $sender, string $aliasUsed, array $args) : void {
 		/** @var BaseSubCommand $context */
 		$context = $this->context;
-		$sender->sendMessage(Translator::getInstance()->translate(new Translatable("command.usage", [$context->getParent()->getName() . " " . $context->getUsageMessage()])));
+		$sender->sendMessage(Minerware::getInstance()->getTranslator()->translate(
+			$sender, "command.usage", [
+				"{%usage}" => $context->getParent()->getName() . " " . $context->getUsageMessage()
+			]
+		));
 	}
 
 	public function isVisibleTo(CommandSender $sender) : bool {

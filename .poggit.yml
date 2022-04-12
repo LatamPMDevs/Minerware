@@ -11,4 +11,6 @@ projects:
         branch: PM4
       - src: dktapps-pm-pl/pmforms/pmforms
         version: ^2.0.0
+      - src: IvanCraft623/languages/languages
+        version: ^0.0.1
 ...

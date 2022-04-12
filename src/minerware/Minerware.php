@@ -19,6 +19,7 @@ declare(strict_types=1);
 namespace minerware;
 
 use CortexPE\Commando\PacketHooker;
+use IvanCraft623\languages\Translator;
 use minerware\arena\ArenaManager;
 use minerware\command\MinerwareCommand;
 use minerware\database\DataManager;
@@ -31,10 +32,14 @@ final class Minerware extends PluginBase {
 		reset as protected;
 	}
 
+	private Translator $translator;
+
 	protected function onLoad() : void {
 		self::setInstance($this);
 		DataManager::getInstance();
 		ArenaManager::getInstance();
+		$this->translator = new Translator($this);
+		DataManager::getInstance()->loadLanguages();
 		$this->getServer()->getCommandMap()->register("minerware", new MinerwareCommand($this));
 	}
 
@@ -55,6 +60,10 @@ final class Minerware extends PluginBase {
 
 	public function getPrefix() : string {
 		return $this->getDescription()->getPrefix();
+	}
+
+	public function getTranslator() : Translator {
+		return $this->translator;
 	}
 
 	private function copyright() : void {
