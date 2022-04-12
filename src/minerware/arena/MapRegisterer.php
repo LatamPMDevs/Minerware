@@ -1,12 +1,12 @@
 <?php
 
 /**
- *  ███╗	███╗██╗███╗	██╗███████╗██████╗ ██╗	 ██╗ █████╗ ██████╗ ███████╗
- *  ████╗ ████║██║████╗  ██║██╔════╝██╔══██╗██║	 ██║██╔══██╗██╔══██╗██╔════╝
+ *  ███╗   ███╗██╗███╗   ██╗███████╗██████╗ ██╗    ██╗ █████╗ ██████╗ ███████╗
+ *  ████╗ ████║██║████╗  ██║██╔════╝██╔══██╗██║    ██║██╔══██╗██╔══██╗██╔════╝
  *  ██╔████╔██║██║██╔██╗ ██║█████╗  ██████╔╝██║ █╗ ██║███████║██████╔╝█████╗
  *  ██║╚██╔╝██║██║██║╚██╗██║██╔══╝  ██╔══██╗██║███╗██║██╔══██║██╔══██╗██╔══╝
  *  ██║ ╚═╝ ██║██║██║ ╚████║███████╗██║  ██║╚███╔███╔╝██║  ██║██║  ██║███████╗
- *  ╚═╝	  ╚═╝╚═╝╚═╝  ╚═══╝╚══════╝╚═╝  ╚═╝ ╚══╝╚══╝ ╚═╝  ╚═╝╚═╝  ╚═╝╚══════╝
+ *  ╚═╝     ╚═╝╚═╝╚═╝  ╚═══╝╚══════╝╚═╝  ╚═╝ ╚══╝╚══╝ ╚═╝  ╚═╝╚═╝  ╚═╝╚══════╝
  *
  * This is a private project, your not allow to redistribute nor resell it.
  * The only ones with that power are this project's contributors.
@@ -28,13 +28,11 @@ use pocketmine\event\player\PlayerChatEvent;
 use pocketmine\item\ItemFactory;
 use pocketmine\math\Vector3;
 use pocketmine\player\Player;
-use pocketmine\utils\SingletonTrait;
 use pocketmine\world\World;
 use function explode;
 use function strtolower;
 
 final class MapRegisterer implements Listener {
-	use SingletonTrait;
 
 	/** @var array<string, self> */
 	private static array $mapRegisterer;

@@ -20,13 +20,11 @@ namespace minerware\utils;
 
 use minerware\database\DataHolder;
 use pocketmine\block\BlockFactory;
-use pocketmine\utils\SingletonTrait;
 use pocketmine\world\Position;
 use function floor;
 use function intval;
 
 final class Structure {
-	use SingletonTrait;
 
 	private string $name;
 

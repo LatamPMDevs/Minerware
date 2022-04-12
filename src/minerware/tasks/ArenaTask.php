@@ -26,10 +26,7 @@ use minerware\utils\Utils;
 use pocketmine\scheduler\Task;
 use function count;
 
-/**
- * Class ArenaTask
- */
-class ArenaTask extends Task {
+final class ArenaTask extends Task {
 
 	private Minerware $plugin;
 
@@ -52,7 +49,7 @@ class ArenaTask extends Task {
 					$arena->waitingtime--;
 					if (count($players) == Arena::MAX_PLAYERS) {
 						foreach ($players as $player) {
-							$pl->sendMessage($this->plugin->getTranslator()->translate($pl, "game.arena.startingByReachCapacity"));
+							$player->sendMessage($this->plugin->getTranslator()->translate($player, "game.arena.startingByReachCapacity"));
 						}
 						$arena->setStatus("starting");
 					}
