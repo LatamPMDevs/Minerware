@@ -29,6 +29,11 @@ use pocketmine\command\CommandSender;
 
 final class LanguageArgument extends StringEnumArgument {
 
+	protected const VALUES = [
+		"en_US" => "en_US",
+		"es_MX" => "es_MX"
+	];
+
 	public function __construct(private Minerware $plugin) {
 		parent::__construct("language", true);
 	}

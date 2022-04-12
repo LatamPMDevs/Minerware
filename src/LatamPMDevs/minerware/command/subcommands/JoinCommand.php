@@ -24,6 +24,7 @@ namespace LatamPMDevs\minerware\command\subcommands;
 
 use CortexPE\Commando\BaseCommand;
 use CortexPE\Commando\BaseSubCommand;
+use CortexPE\Commando\constraint\InGameRequiredConstraint;
 use LatamPMDevs\minerware\arena\ArenaManager;
 use pocketmine\command\CommandSender;
 use pocketmine\player\Player;
@@ -37,7 +38,9 @@ final class JoinCommand extends BaseSubCommand {
 	/**
 	 * @deprecated
 	 */
-	protected function prepare() : void { }
+	protected function prepare() : void {
+		$this->addConstraint(new InGameRequiredConstraint($this));
+	}
 
 	/**
 	 * @param Player $sender

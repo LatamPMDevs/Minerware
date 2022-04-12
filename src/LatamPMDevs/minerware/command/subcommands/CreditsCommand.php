@@ -20,38 +20,38 @@
 
 declare(strict_types=1);
 
-namespace LatamPMDevs\minerware\command;
+namespace LatamPMDevs\minerware\command\subcommands;
 
 use CortexPE\Commando\BaseCommand;
-use LatamPMDevs\minerware\command\subcommands\ArenasCommand;
-use LatamPMDevs\minerware\command\subcommands\CreditsCommand;
-use LatamPMDevs\minerware\command\subcommands\HelpCommand;
-use LatamPMDevs\minerware\command\subcommands\JoinCommand;
-use LatamPMDevs\minerware\command\subcommands\LanguageCommand;
-use LatamPMDevs\minerware\command\subcommands\SetLobbyCommand;
+use CortexPE\Commando\BaseSubCommand;
 use LatamPMDevs\minerware\Minerware;
 use pocketmine\command\CommandSender;
-use pocketmine\utils\TextFormat as T;
-use function implode;
+use pocketmine\player\Player;
 
-final class MinerwareCommand extends BaseCommand {
+final class CreditsCommand extends BaseSubCommand {
 
 	public function __construct(private Minerware $plugin) {
-		parent::__construct($plugin, "minerware", "Minerware main command.");
-		$this->setPermission("minerware.command");
-		$this->setPermissionMessage($plugin->getTranslator()->translate(null, "command.noPermission"));
+		parent::__construct("credits", "Show plugin credits");
 	}
 
-	protected function prepare() : void {
-		$this->registerSubCommand(new ArenasCommand($this->plugin));
-		$this->registerSubCommand(new CreditsCommand($this->plugin));
-		$this->registerSubcommand(new HelpCommand());
-		$this->registerSubcommand(new JoinCommand());
-		$this->registerSubcommand(new LanguageCommand($this->plugin));
-		$this->registerSubCommand(new SetLobbyCommand($this->plugin));
-	}
+	/**
+	 * @deprecated
+	 */
+	protected function prepare() : void { }
 
+	/**
+	 * @param Player $sender
+	 */
 	public function onRun(CommandSender $sender, string $aliasUsed, array $args) : void {
-		$sender->sendMessage($this->plugin->getTranslator()->translate($sender, "command.notFound"));
+		$sender->sendMessage($this->plugin->getTranslator()->translate(
+			$sender, "command.credits", [
+				"{%prefix}" => $this->plugin->getPrefix(),
+				"{%authors}" => implode(", ", $this->plugin->getDescription()->getAuthors())
+			]
+		));
+	}
+
+	public function getParent() : BaseCommand {
+		return $this->parent;
 	}
 }

@@ -24,6 +24,7 @@ namespace LatamPMDevs\minerware\command\subcommands;
 
 use CortexPE\Commando\BaseCommand;
 use CortexPE\Commando\BaseSubCommand;
+use CortexPE\Commando\constraint\InGameRequiredConstraint;
 use LatamPMDevs\minerware\arena\MapRegisterer;
 use LatamPMDevs\minerware\command\args\ArenaActionArgument;
 use LatamPMDevs\minerware\command\args\WorldArgument;
@@ -40,6 +41,7 @@ final class ArenasCommand extends BaseSubCommand {
 	}
 
 	protected function prepare() : void {
+		$this->addConstraint(new InGameRequiredConstraint($this));
 		$this->addConstraint(new ArgumentNotProvided($this, "world"));
 		$this->registerArgument(0, new ArenaActionArgument("action"));
 		$this->registerArgument(1, new WorldArgument($this->plugin));
