@@ -30,7 +30,6 @@ use pocketmine\player\Player;
 use pocketmine\utils\Config;
 use pocketmine\utils\SingletonTrait;
 use pocketmine\utils\Utils;
-use pocketmine\world\World;
 use function array_map;
 use function basename;
 use function file_exists;

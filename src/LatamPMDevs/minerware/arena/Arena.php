@@ -22,9 +22,7 @@ declare(strict_types=1);
 
 namespace LatamPMDevs\minerware\arena;
 
-use LatamPMDevs\minerware\arena\microgame\IgniteTNT;
 use LatamPMDevs\minerware\arena\microgame\Microgame;
-use LatamPMDevs\minerware\arena\microgame\WaitForIt;
 use LatamPMDevs\minerware\database\DataManager;
 use LatamPMDevs\minerware\Minerware;
 use LatamPMDevs\minerware\tasks\ArenaTask;
@@ -32,10 +30,9 @@ use LatamPMDevs\minerware\tasks\ArenaTask;
 use LatamPMDevs\minerware\utils\PointHolder;
 use LatamPMDevs\minerware\utils\Utils;
 
+use pocketmine\event\entity\EntityDamageEvent;
 use pocketmine\event\entity\EntityTeleportEvent;
 use pocketmine\event\Listener;
-use pocketmine\event\entity\EntityDamageByEntityEvent;
-use pocketmine\event\entity\EntityDamageEvent;
 use pocketmine\event\player\PlayerExhaustEvent;
 use pocketmine\event\player\PlayerQuitEvent;
 use pocketmine\player\GameMode;
@@ -212,12 +209,12 @@ final class Arena implements Listener {
 					foreach ($this->pointHolder->getOrderedByHigherScore() as $user => $point) {
 						$i++;
 						if ($user === $player->getName()) {
-							$lines[] = "§f" . "§a". $point . " §8" . $user;
+							$lines[] = "§f" . "§a" . $point . " §8" . $user;
 							$isOnTop = true;
 						} elseif ($i === 5 && !$isOnTop) {
-							$lines[] = "§f" . "§a". $this->pointHolder->getPlayerPoints($player) . " §8" . $player->getName();
+							$lines[] = "§f" . "§a" . $this->pointHolder->getPlayerPoints($player) . " §8" . $player->getName();
 						} else {
-							$lines[] = "§f" . "§e". $point . " §8" . $user;
+							$lines[] = "§f" . "§e" . $point . " §8" . $user;
 						}
 						if ($i === 5) {
 							break;
@@ -225,7 +222,7 @@ final class Arena implements Listener {
 					}
 					$lines[] = "§1";
 					$lines[] = "§5Microgame:";
-					$lines[] = "§f".($this->status->equals(Status::INBETWEEN()) ? "In-between" : $this->getCurrentMicrogame()->getName());
+					$lines[] = "§f" . ($this->status->equals(Status::INBETWEEN()) ? "In-between" : $this->getCurrentMicrogame()->getName());
 					$lines[] = "§5(§f" . ($this->status->equals(Status::INBETWEEN()) ? 0 : $this->currentMicrogame + 1) . "§5/§f" . count($this->microgamesQueue) . "§5)";
 					$lines[] = "§2";
 					$lines[] = "§6" . DataManager::getInstance()->getServerIp();

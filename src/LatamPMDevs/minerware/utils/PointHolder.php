@@ -24,6 +24,8 @@ namespace LatamPMDevs\minerware\utils;
 
 use pocketmine\player\Player;
 use pocketmine\utils\AssumptionFailedError;
+use function array_reverse;
+use function asort;
 
 final class PointHolder {
 
