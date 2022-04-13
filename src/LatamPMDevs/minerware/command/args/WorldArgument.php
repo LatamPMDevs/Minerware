@@ -23,7 +23,6 @@ declare(strict_types=1);
 namespace LatamPMDevs\minerware\command\args;
 
 use CortexPE\Commando\args\RawStringArgument;
-use LatamPMDevs\minerware\Minerware;
 use pocketmine\command\CommandSender;
 
 class WorldArgument extends RawStringArgument {
