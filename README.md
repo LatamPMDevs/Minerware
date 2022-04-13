@@ -1,6 +1,6 @@
 <div align="center">
   <h1>Minerware 🎮</h1>
-  <p>Private minerware plugin inspired in CubeCraft's</p>
+  <p>Minerware plugin inspired of CubeCraft's</p>
 </div>
 
 ## Description:
@@ -30,12 +30,16 @@ git clone https://github.com/dktapps-pm-pl/pmforms.git
 ## Project information:
 | Plugin version | Pocketmine version | PHP version | Status |
 |---|---|---|---|
-| 1.0.0-dev5 | 4.0.0 | 8.0 minimum | Development |
+| 1.0.0-dev5 | 4.0.0 minimum | 8.0 minimum | Development |
 
 ## Copyright:
 ```
-This is a private project, your not allow to redistribute nor resell it.
-The only ones with that power are this project's contributors.
+A game written in PHP for PocketMine-MP software.
 
-Copyright 2022 © Minerware
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU Lesser General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+Copyright 2022 © LatamPMDevs
 ```
