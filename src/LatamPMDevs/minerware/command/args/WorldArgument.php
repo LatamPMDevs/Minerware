@@ -28,7 +28,7 @@ use pocketmine\command\CommandSender;
 
 class WorldArgument extends RawStringArgument {
 
-	public function __construct(private Minerware $plugin) {
+	public function __construct() {
 		parent::__construct("world", true);
 	}
 

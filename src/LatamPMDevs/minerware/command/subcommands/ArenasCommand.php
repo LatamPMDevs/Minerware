@@ -44,7 +44,7 @@ final class ArenasCommand extends BaseSubCommand {
 		$this->addConstraint(new InGameRequiredConstraint($this));
 		$this->addConstraint(new ArgumentNotProvided($this, "world"));
 		$this->registerArgument(0, new ArenaActionArgument("action"));
-		$this->registerArgument(1, new WorldArgument($this->plugin));
+		$this->registerArgument(1, new WorldArgument());
 	}
 
 	/**

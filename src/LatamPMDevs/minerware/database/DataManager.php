@@ -74,13 +74,6 @@ final class DataManager {
 
 		$this->plugin->saveResource("languages/en_US.ini", true);
 		$this->plugin->saveResource("languages/es_MX.ini", true);
-
-		$name = $this->plugin->getConfig()->get("lobby", null);
-		if ($name !== null) {
-			if ($this->plugin->getServer()->getWorldManager()->loadWorld($name, true)) {
-				$this->lobby = $this->plugin->getServer()->getWorldManager()->getWorldByName($name);
-			}
-		}
 	}
 
 	/**

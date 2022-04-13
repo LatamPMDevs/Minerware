@@ -35,19 +35,8 @@ use function shuffle;
 final class ArenaManager {
 	use SingletonTrait;
 
-	private Minerware $plugin;
-
-	private ?World $lobby;
-
 	/** @var array<string, Arena> */
 	private array $arenas = [];
-
-	/** @var array<string, World> */
-	private array $registeredMaps = [];
-
-	public function __construct() {
-		$this->plugin = Minerware::getInstance();
-	}
 
 	public function getArenas() : array {
 		return $this->arenas;

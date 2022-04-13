@@ -20,7 +20,7 @@
 
 declare(strict_types=1);
 
-namespace LatamPMDevs\microgame\arena\minigame;
+namespace LatamPMDevs\minerware\arena\microgame;
 
 interface GameLevel {
 

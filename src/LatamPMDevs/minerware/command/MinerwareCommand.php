@@ -28,7 +28,6 @@ use LatamPMDevs\minerware\command\subcommands\CreditsCommand;
 use LatamPMDevs\minerware\command\subcommands\HelpCommand;
 use LatamPMDevs\minerware\command\subcommands\JoinCommand;
 use LatamPMDevs\minerware\command\subcommands\LanguageCommand;
-use LatamPMDevs\minerware\command\subcommands\SetLobbyCommand;
 use LatamPMDevs\minerware\Minerware;
 use pocketmine\command\CommandSender;
 
@@ -46,7 +45,6 @@ final class MinerwareCommand extends BaseCommand {
 		$this->registerSubcommand(new HelpCommand());
 		$this->registerSubcommand(new JoinCommand());
 		$this->registerSubcommand(new LanguageCommand($this->plugin));
-		$this->registerSubCommand(new SetLobbyCommand($this->plugin));
 	}
 
 	public function onRun(CommandSender $sender, string $aliasUsed, array $args) : void {

@@ -55,7 +55,7 @@ final class ArgumentNotProvided extends BaseConstraint {
 		$context = $this->context;
 		$sender->sendMessage(Minerware::getInstance()->getTranslator()->translate(
 			$sender, "command.usage", [
-				"{%usage}" => $context->getParent()->getName() . " " . $context->getUsageMessage()
+				"{%usage}" => $context->getName() . " " . $context->getUsageMessage()
 			]
 		));
 	}

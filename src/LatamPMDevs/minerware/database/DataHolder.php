@@ -28,7 +28,7 @@ use function json_encode;
 final class DataHolder {
 
 	/**
-	 * @param array<string, mixed>
+	 * @param array<string, mixed> $data
 	 */
 	public function __construct(private array $data) { }
 
