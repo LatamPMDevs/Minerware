@@ -24,6 +24,7 @@ namespace LatamPMDevs\minerware\tasks;
 
 use LatamPMDevs\minerware\arena\Arena;
 use LatamPMDevs\minerware\arena\ArenaManager;
+use LatamPMDevs\minerware\arena\Status;
 use LatamPMDevs\minerware\database\DataManager;
 use LatamPMDevs\minerware\Minerware;
 use LatamPMDevs\minerware\utils\Utils;
@@ -40,106 +41,89 @@ final class ArenaTask extends Task {
 
 	public function onRun() : void {
 		$arena = $this->arena;
+		$status = $arena->getStatus();
 		$players = $arena->getPlayers();
 		$world = $arena->getWorld();
-		switch ($arena->getStatus()) {
-			case "waiting":
+		switch (true) {
+			case ($status->equals(Status::WAITING())):
 				if (count($players) < Arena::MIN_PLAYERS) {
-				   $arena->waitingtime = 40;
 					foreach ($players as $player) {
 						$player->sendTip($this->plugin->getTranslator()->translate($player, "game.arena.needMorePlayers"));
 					}
 				} else {
-					$arena->waitingtime--;
-					if (count($players) == Arena::MAX_PLAYERS) {
-						foreach ($players as $player) {
-							$player->sendMessage($this->plugin->getTranslator()->translate($player, "game.arena.startingByReachCapacity"));
-						}
-						$arena->setStatus("starting");
-					}
-					foreach ($players as $player) {
-						if ($arena->waitingtime >= 6 && $arena->waitingtime <= 40) {
-							$player->sendMessage($this->plugin->getTranslator()->translate(
-								$player, "game.arena.starting", [
-									"{%time}" => $arena->waitingtime
-								]
-							));
-						} elseif ($arena->waitingtime >= 1 && $arena->waitingtime <= 5) {
-							$player->sendMessage($this->plugin->getTranslator()->translate(
-								$player, "game.arena.starting", [
-									"{%time}" => "§c" . $arena->waitingtime
-								]
-							));
-							Utils::playSound($player, "random.click");
-						}
-					}
-					if ($arena->waitingtime == 0) {
-						$arena->setStatus("starting");
-					}
+					$arena->setStatus(Status::STARTING());
 				}
-			break;
+				break;
 
-			case "starting":
+			case ($status->equals(Status::STARTING())):
 				$arena->startingtime--;
-				if ($arena->startingtime == 11) {
-					$map = $arena->getVoteCounter()->getWinner();
-					$world = $map->generateWorld($arena->getId());
-					$arena->setMap($map);
-					$arena->setWorld($world);
-					foreach ($players as $player) {
-						$player->getInventory()->clearAll();
-						$player->getArmorInventory()->clearAll();
-						$player->getCursorInventory()->clearAll();
-						$arena->tpSpawn($player);
-					}
-				}
 				if (count($players) < Arena::MIN_PLAYERS) {
-					$arena->setStatus("waiting");
-					$lobby = DataManager::getInstance()->getLobby();
-					foreach ($players as $player) {
-						$player->sendMessage($this->plugin->getTranslator()->translate($player, "game.arena.countCancelled"));
-						$lobby->loadChunk($lobby->getSafeSpawn()->getFloorX(), $lobby->getSafeSpawn()->getFloorZ());
-						$player->teleport($lobby->getSafeSpawn(), 0, 0);
-						$player->getInventory()->clearAll();
-						$player->getArmorInventory()->clearAll();
-						$player->getCursorInventory()->clearAll();
-						$arena->deleteMap();
-					}
-				}
-				if ($arena->startingtime >= 4 && $arena->startingtime <= 10) {
-					foreach ($players as $player) {
-						$player->sendTip($this->plugin->getTranslator()->translate(
-							$player, "game.arena.start", [
-								"{%time}" => "§e" . Utils::getStartingBar($arena->startingtime, 10) . "§f " . $arena->startingtime
-							]
-						));
-					}
-				}
-				if ($arena->startingtime >= 1 && $arena->startingtime <= 3) {
-					foreach ($players as $player) {
-						$player->sendTip($this->plugin->getTranslator()->translate(
-							$player, "game.arena.start", [
-								"{%time}" => "§c" . Utils::getStartingBar($arena->startingtime, 10) . "§f " . $arena->startingtime
-							]
-						));
-						Utils::playSound($player, "random.toast", 1, 1.5);
-					}
-				}
-				if ($arena->startingtime == 0) {
-					$arena->setStatus("ingame");
-				}
-			break;
+					$arena->startingtime = Arena::STARTING_TIME;
+					$arena->setStatus(Status::WAITING());
+				} else {
 
-			case "ingame":
-				$arena->gametime++;
+					if ($arena->startingtime > 15 && count($players) >= Arena::MAX_PLAYERS) {
+						foreach ($players as $player) {
+							$player->sendMessage($this->plugin->getTranslator()->translate(
+								$player, "game.arena.startingByReachCapacity", [
+									"{%time}" => 15 . " " . $this->plugin->getTranslator()->translate($player, "text.seconds")
+								]
+							));
+						}
+						$arena->startingtime = 15;
+					}
+					foreach ($players as $player) {
+						$player->getXpManager()->setXpLevel($arena->startingtime);
+					}
+					if ($arena->startingtime <= 0) {
+						$arena->setStatus(Status::INBETWEEN());
+						$arena->isInFirstInBetween = true;
+						$arena->getPointHolder()->clear();
+						foreach ($players as $player) {
+							$arena->getPointHolder()->addPlayer($player);
+						}
+					}
+				}
+				break;
+
+			case ($status->equals(Status::INBETWEEN())):
+				$arena->inbetweentime--;
+				if ($arena->inbetweentime === 6) {
+					if ($arena->initNextMicrogame() === null) {
+						# TODO: Finish game!
+					}
+				}
+				if ($arena->isInFirstInBetween) {
+					if ($arena->inbetweentime === 6) {
+						foreach ($players as $player) {
+							$player->sendTitle("§6MinerWare", "§5By LatamPMDevs", 10, 10, 10);
+						}
+					} elseif ($arena->inbetweentime === 4) {
+						foreach ($players as $player) {
+							$player->sendTitle("§1§2", "§5Win the most microgames", 10, 10, 10);
+						}
+					}
+				}
+				if ($arena->inbetweentime >= 3 && $arena->inbetweentime <= 1) {
+					foreach ($players as $player) {
+						$player->sendTitle("§k§4|||§6" . $arena->inbetweentime . "§k§4|||", "§5".$arena->getCurrentMicrogame()->getName(), 1, 1, 1);
+					}
+				}
+				if ($arena->inbetweentime <= 0) {
+					$arena->setStatus(Status::INGAME());
+					$arena->inbetweentime = Arena::INBETWEEN_TIME;
+				}
+				break;
+
+			case ($status->equals(Status::INGAME())):
 				$microgame = $arena->getCurrentMicrogame();
 				if ($arena->gametime == 1) {
 					$microgame = $arena->startNextMicrogame();
 				}
 				$microgame->tick();
-			break;
+				break;
 
-			case "ending":
+			case ($status->equals(Status::ENDING())):
 				$arena->endingtime--;
 				if ($arena->endingtime == 0) {
 					foreach ($players as $player) {
@@ -148,7 +132,8 @@ final class ArenaTask extends Task {
 					$arena->deleteMap();
 					ArenaManager::getInstance()->deleteArena($arena);
 				}
-			break;
+				break;
 		}
+		$arena->updateScoreboard();
 	}
 }

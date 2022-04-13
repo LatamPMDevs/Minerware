@@ -57,16 +57,11 @@ final class ArenasCommand extends BaseSubCommand {
 		}
 		switch ($args["action"]) {
 			case ArenaActionArgument::CREATE_ARENA:
-				if (DataManager::getInstance()->getLobby() === null) {
-					$sender->sendMessage($this->plugin->getTranslator()->translate($sender, "database.lobby.notSet"));
-					return;
-				}
-
-				if ($this->plugin->getServer()->getWorldManager()->loadWorld($args["world"], true) ||
-				($world = $this->plugin->getServer()->getWorldManager()->getWorldByName($args["world"]))) {
+				if (!$this->plugin->getServer()->getWorldManager()->loadWorld($args["world"], true) ||
+				($world = $this->plugin->getServer()->getWorldManager()->getWorldByName($args["world"])) === null) {
 					$sender->sendMessage($this->plugin->getTranslator()->translate(
 						$sender, "command.arguments.worldNotFound", [
-							"{%world}" => [$args["world"]]
+							"{%world}" => $args["world"]
 						]
 					));
 					return;

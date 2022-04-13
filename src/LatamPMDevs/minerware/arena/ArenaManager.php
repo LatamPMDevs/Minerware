@@ -47,7 +47,6 @@ final class ArenaManager {
 
 	public function __construct() {
 		$this->plugin = Minerware::getInstance();
-		$this->lobby = DataManager::getInstance()->getLobby();
 	}
 
 	public function getArenas() : array {
@@ -58,13 +57,9 @@ final class ArenaManager {
 		return (isset($this->arenas[$id]) ? $this->arenas[$id] : null);
 	}
 
-	public function getLobby() : ?World {
-		return $this->lobby;
-	}
-
-	public function createArena() : Arena {
+	public function createArena(?Map $map = null) : Arena {
 		$id = $this->generateId();
-		$arena = new Arena($id);
+		$arena = new Arena($id, $map ?? Map::$maps[array_rand(Map::$maps)]);
 		$this->arenas[$id] = $arena;
 		return $arena;
 	}
@@ -74,13 +69,13 @@ final class ArenaManager {
 		unset($this->arenas[$id]);
 	}
 
-	public function getAvaible() : Arena {
+	public function getAvaible(?Map $map = null) : Arena {
 		foreach ($this->arenas as $arena) {
-			if ($arena->getStatus() === "waiting" && count($arena->getPlayers()) < Arena::MAX_PLAYERS) {
+			if (($arena->getStatus()->equals(Status::WAITING()) || $arena->getStatus()->equals(Status::STARTING())) && ($map === null || $arena->getMap() === $map) && count($arena->getPlayers()) < Arena::MAX_PLAYERS) {
 				return $arena;
 			}
 		}
-		return $this->createArena();
+		return $this->createArena($map);
 	}
 
 	public function generateId() : string {
@@ -94,13 +89,9 @@ final class ArenaManager {
 		return $name;
 	}
 
-	public function join(Player $player, Arena $arena = null) : void {
-		if ($this->lobby === null) {
-			$player->sendMessage($this->plugin->getTranslator()->translate($player, "error.lobby.isNotSet"));
-			return;
-		}
+	public function join(Player $player, Arena $arena = null, Map $map = null) : void {
 		if ($arena === null) {
-			$arena = $this->getAvaible();
+			$arena = $this->getAvaible($map);
 		}
 		$arena->join($player);
 	}

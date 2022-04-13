@@ -22,19 +22,21 @@ declare(strict_types=1);
 
 namespace LatamPMDevs\minerware\arena;
 
-use LatamPMDevs\minerware\arena\minigame\IgniteTNT;
-use LatamPMDevs\minerware\arena\minigame\Microgame;
-use LatamPMDevs\minerware\arena\minigame\WaitForIt;
+use LatamPMDevs\minerware\arena\microgame\IgniteTNT;
+use LatamPMDevs\minerware\arena\microgame\Microgame;
+use LatamPMDevs\minerware\arena\microgame\WaitForIt;
 use LatamPMDevs\minerware\database\DataManager;
 use LatamPMDevs\minerware\Minerware;
 use LatamPMDevs\minerware\tasks\ArenaTask;
 
 use LatamPMDevs\minerware\utils\PointHolder;
 use LatamPMDevs\minerware\utils\Utils;
-use LatamPMDevs\minerware\utils\VoteCounter;
 
 use pocketmine\event\entity\EntityTeleportEvent;
 use pocketmine\event\Listener;
+use pocketmine\event\entity\EntityDamageByEntityEvent;
+use pocketmine\event\entity\EntityDamageEvent;
+use pocketmine\event\player\PlayerExhaustEvent;
 use pocketmine\event\player\PlayerQuitEvent;
 use pocketmine\player\GameMode;
 
@@ -47,90 +49,72 @@ use function count;
 final class Arena implements Listener {
 
 	public const MIN_PLAYERS = 2;
-
 	public const MAX_PLAYERS = 12;
+
+	public const STARTING_TIME = 121;
+	public const INBETWEEN_TIME = 7;
+	public const ENDING_TIME = 10;
 
 	private Minerware $plugin;
 
-	private string $status = "waiting";
+	private Status $status;
 
-	private ?World $world = null;
-
-	private ?Map $map = null;
+	private World $world;
 
 	/** @var Player[] */
 	private array $players = [];
 
 	private PointHolder $pointHolder;
 
-	private VoteCounter $voteCounter;
-
 	/** @var Microgame[] */
 	private array $microgamesQueue = [];
 
 	private ?Microgame $currentMicrogame = null;
 
-	public int $waitingtime = 40;
+	private int $currentMicrogameIndex = -1;
 
-	public int $startingtime = 12;
+	public int $startingtime = self::STARTING_TIME;
 
-	public int $gametime = 0;
+	public int $inbetweentime = self::INBETWEEN_TIME;
 
-	public int $endingtime = 10;
+	public int $endingtime = self::ENDING_TIME;
 
-	public function __construct(private string $id) {
+	public bool $isInFirstInBetween = false;
+
+	public function __construct(private string $id, private Map $map) {
 		$this->plugin = Minerware::getInstance();
+		$this->world = $this->map->generateWorld($this->id);
+		$this->status = Status::WAITING();
 		$this->pointHolder = new PointHolder();
-		$this->voteCounter = new VoteCounter();
 		$this->plugin->getServer()->getPluginManager()->registerEvents($this, $this->plugin);
 		$this->plugin->getScheduler()->scheduleRepeatingTask(new ArenaTask($this), 20);
+		$this->plugin->getServer()->getPluginManager()->registerEvents($this, $this->plugin);
 
-		$easyGames = [WaitForIt::class];
-		$randEasy = [array_rand($easyGames, 1)]; //7, remove []
-		$mediumGames = [IgniteTNT::class];
-		$randMedium = [array_rand($mediumGames, 1)]; //8, remove []
-		$bossGames = [BowSpleef::class];
-		$randBoss = array_rand($bossGames);
-
-		foreach ($randEasy as $index) {
-			$this->microgamesQueue[] = $easyGames[$index];
-		}
-		foreach ($randMedium as $index) {
-			$this->microgamesQueue[] = $mediumGames[$index];
-		}
-		$this->microgamesQueue[] = $bossGames[$randBoss];
+		# TODO: Microgames!
 	}
 
 	public function getId() : string {
 		return $this->id;
 	}
 
-	public function getWorld() : ?World {
+	public function getWorld() : World {
 		return $this->world;
-	}
-
-	public function setWorld(?World $world) : void {
-		$this->world = $world;
 	}
 
 	public function getMap() : ?Map {
 		return $this->map;
 	}
 
-	public function setMap(Map $map) : void {
-		$this->map = $map;
-	}
-
-	public function getStatus() : string {
+	public function getStatus() : Status {
 		return $this->status;
 	}
 
-	public function setStatus(string $value) : void {
-		$this->status = $value;
+	public function setStatus(Status $status) : void {
+		$this->status = $status;
 	}
 
 	public function join(Player $player) : void {
-		$this->players[$player->getName()] = $player;
+		$this->players[$player->getId()] = $player;
 		foreach ($this->players as $pl) {
 			$pl->sendMessage($this->plugin->getTranslator()->translate(
 				$pl, "game.player.join", [
@@ -139,18 +123,18 @@ final class Arena implements Listener {
 				]
 			));
 		}
-		//TODO:: #2 Fix $lobby no being null.
-		$lobby = ArenaManager::getInstance()->getLobby();
-		$lobby->loadChunk($lobby->getSafeSpawn()->getFloorX(), $lobby->getSafeSpawn()->getFloorZ());
-		$player->teleport($lobby->getSafeSpawn(), 0, 0);
+		$spawns = $this->map->getSpawns();
+		$spawn = Position::fromObject($spawns[array_rand($spawns)], $this->world);
+		$player->teleport($spawn);
 		$player->getInventory()->clearAll();
 		$player->getArmorInventory()->clearAll();
 		$player->getCursorInventory()->clearAll();
-		$player->setGamemode(GameMode::fromMagicNumber(2));
+		$player->setGamemode(GameMode::ADVENTURE());
 	}
 
 	public function quit(Player $player) : void {
-		unset($this->players[$player->getName()]);
+		unset($this->players[$player->getId()]);
+		$this->pointHolder->removePlayer($player);
 		foreach ($this->players as $pl) {
 			$pl->sendMessage($this->plugin->getTranslator()->translate(
 				$pl, "game.player.quit", [
@@ -168,12 +152,7 @@ final class Arena implements Listener {
 	}
 
 	public function inGame(Player $player) : bool {
-		foreach ($this->players as $name => $pl) {
-			if ($pl == $player) {
-				return true;
-			}
-		}
-		return false;
+		return isset($this->players[$player->getId()]);
 	}
 
 	public function getPlayers() : array {
@@ -184,31 +163,18 @@ final class Arena implements Listener {
 		return $this->pointHolder;
 	}
 
-	public function getVoteCounter() : VoteCounter {
-		return $this->voteCounter;
-	}
-
 	public function getCurrentMicrogame() : ?Microgame {
 		return $this->currentMicrogame;
 	}
 
-	public function startNextMicrogame() : Microgame {
-		$microgame = new $this->microgamesQueue[0]($this);
-		$this->currentMicrogame = $microgame;
-		unset($this->microgamesQueue[0]);
-		return $microgame;
-	}
-
-	public function tpSpawn(Player $player) : void {
-		$expectedSpawns = [];
-		$spawns = $this->map->getData()->getArray("spawns");
-		foreach ($spawns as $index => $data) {
-			$expectedSpawns[] = $index;
+	public function initNextMicrogame() : ?Microgame {
+		$microgame = null;
+		$this->currentMicrogameIndex++;
+		if (isset($this->microgamesQueue[$this->currentMicrogameIndex])) {
+			$this->currentMicrogame = new $this->microgamesQueue[$this->currentMicrogameIndex]($this);
+			$microgame = $this->currentMicrogame;
 		}
-		$spawn = $spawns[$expectedSpawns[array_rand($expectedSpawns)]];
-		$pos = new Position($spawn["X"], $spawn["Y"], $spawn["Z"], $this->world);
-		$this->world->loadChunk($pos->getFloorX(), $pos->getFloorZ());
-		$player->teleport($pos);
+		return $microgame;
 	}
 
 	public function deleteMap() : void {
@@ -216,7 +182,71 @@ final class Arena implements Listener {
 			$worldPath = $this->plugin->getServer()->getDataPath() . "worlds" . DIRECTORY_SEPARATOR . $this->world->getFolderName() . DIRECTORY_SEPARATOR;
 			$this->plugin->getServer()->getWorldManager()->unloadWorld($this->world, true);
 			Utils::removeDir($worldPath);
-			$this->world = null;
+		}
+	}
+
+	public function updateScoreboard() : void {
+		$scoreboard = $this->plugin->getScoreboard();
+		$translator = $this->plugin->getTranslator();
+		foreach ($this->players as $player) {
+			$remove = false;
+			switch (true) {
+				case ($this->status->equals(Status::WAITING())):
+				case ($this->status->equals(Status::STARTING())):
+					$lines = [];
+					$lines[] = "§5" . $translator->translate($player, "text.map") . ":";
+					$lines[] = "§f" . $this->map->getName();
+					$lines[] = "§1";
+					$lines[] = "§5" . $translator->translate($player, "text.players") . ":";
+					$lines[] = "§f" . count($this->players) . "/" . self::MAX_PLAYERS;
+					$lines[] = "§2";
+					$lines[] = "§6" . DataManager::getInstance()->getServerIp();
+					break;
+
+				case ($this->status->equals(Status::INBETWEEN())):
+				case ($this->status->equals(Status::INGAME())):
+					$isOnTop = false;
+					$i = 0;
+					$lines = [];
+					$lines[] = "§5" . $translator->translate($player, "text.scores") . ":";
+					foreach ($this->pointHolder->getOrderedByHigherScore() as $user => $point) {
+						$i++;
+						if ($user === $player->getName()) {
+							$lines[] = "§f" . "§a". $point . " §8" . $user;
+							$isOnTop = true;
+						} elseif ($i === 5 && !$isOnTop) {
+							$lines[] = "§f" . "§a". $this->pointHolder->getPlayerPoints($player) . " §8" . $player->getName();
+						} else {
+							$lines[] = "§f" . "§e". $point . " §8" . $user;
+						}
+						if ($i === 5) {
+							break;
+						}
+					}
+					$lines[] = "§1";
+					$lines[] = "§5Microgame:";
+					$lines[] = "§f".($this->status->equals(Status::INBETWEEN()) ? "In-between" : $this->getCurrentMicrogame()->getName());
+					$lines[] = "§5(§f" . ($this->status->equals(Status::INBETWEEN()) ? 0 : $this->currentMicrogame + 1) . "§5/§f" . count($this->microgamesQueue) . "§5)";
+					$lines[] = "§2";
+					$lines[] = "§6" . DataManager::getInstance()->getServerIp();
+					break;
+
+				default:
+					$remove = true;
+					break;
+			}
+			if ($remove) {
+				$scoreboard->remove($player);
+			} else {
+				$from = 0;
+				$scoreboard->new($player, $player->getName(), '§l§eMinerWare');
+				foreach ($lines as $line) {
+					if ($from < 15) {
+						$from++;
+						$scoreboard->setLine($player, $from, $line);
+					}
+				}
+			}
 		}
 	}
 
@@ -229,22 +259,33 @@ final class Arena implements Listener {
 		}
 	}
 
+	/**
+	 * @ignoreCancelled
+	 * @priority MONITOR
+	 */
 	public function onWorldChange(EntityTeleportEvent $event) : void {
 		$player = $event->getEntity();
 		if (!$player instanceof Player) return;
+		if ($event->getTo()->getWorld() === $this->world) return;
 		if ($event->getFrom()->getWorld() === $event->getTo()->getWorld()) return;
 		if ($this->inGame($player)) {
-			if ($this->status === "waiting") {
-				if ($event->getTo()->getWorld() !== DataManager::getInstance()->getLobby()) {
-					$this->quit($player);
-				}
-			} elseif ($this->status === "starting") {
-				if ($event->getTo()->getWorld() !== $this->world) {
-					$this->quit($player);
-				}
-			} else {
-				$this->quit($player);
-			}
+			$this->quit($player);
+		}
+	}
+
+	public function onExhaust(PlayerExhaustEvent $event) : void {
+		$player = $event->getPlayer();
+		if ($this->inGame($player)) {
+			$event->cancel();
+		}
+	}
+
+	public function onDamage(EntityDamageEvent $event) : void {
+		$player = $event->getEntity();
+		if (!$player instanceof Player) return;
+		if (!$this->inGame($player)) return;
+		if ($this->status->equals(Status::WAITING()) || $this->status->equals(Status::STARTING())) {
+			$event->cancel();
 		}
 	}
 }

@@ -55,8 +55,6 @@ final class DataManager {
 	/** @var array<string, int> */
 	private array $formats;
 
-	private ?World $lobby = null;
-
 	public function __construct() {
 		$this->plugin = Minerware::getInstance();
 		$this->pluginPath = $this->plugin->getDataFolder();
@@ -143,14 +141,7 @@ final class DataManager {
 		Map::$maps[] = new Map($dataHolder);
 	}
 
-	public function getLobby() : ?World {
-		return $this->lobby;
-	}
-
-	public function setLobby(World $lobby) : void {
-		$this->lobby = $lobby;
-		$config = $this->plugin->getConfig();
-		$config->set("lobby", $lobby->getDisplayName());
-		$config->save();
+	public function getServerIp() : string {
+		return $this->plugin->getConfig()->get("server-ip", "yourserverip.net");
 	}
 }

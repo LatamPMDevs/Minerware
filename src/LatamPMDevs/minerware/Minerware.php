@@ -27,6 +27,7 @@ use IvanCraft623\languages\Translator;
 use LatamPMDevs\minerware\arena\ArenaManager;
 use LatamPMDevs\minerware\command\MinerwareCommand;
 use LatamPMDevs\minerware\database\DataManager;
+use LatamPMDevs\minerware\utils\Scoreboard;
 use pocketmine\plugin\PluginBase;
 use pocketmine\utils\SingletonTrait;
 
@@ -35,6 +36,8 @@ final class Minerware extends PluginBase {
 		setInstance as protected;
 		reset as protected;
 	}
+
+	private Scoreboard $scoreboard;
 
 	private Translator $translator;
 
@@ -53,6 +56,7 @@ final class Minerware extends PluginBase {
 		}
 
 		DataManager::getInstance()->loadMaps();
+		$this->scoreboard = new Scoreboard($this);
 	}
 
 	protected function onDisable() : void {
@@ -64,6 +68,10 @@ final class Minerware extends PluginBase {
 
 	public function getPrefix() : string {
 		return $this->getDescription()->getPrefix();
+	}
+
+	public function getScoreboard() : Scoreboard {
+		return $this->scoreboard;
 	}
 
 	public function getTranslator() : Translator {

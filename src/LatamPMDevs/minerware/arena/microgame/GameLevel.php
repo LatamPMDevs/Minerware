@@ -20,54 +20,11 @@
 
 declare(strict_types=1);
 
-namespace LatamPMDevs\minerware\utils;
+namespace LatamPMDevs\microgame\arena\minigame;
 
-use LatamPMDevs\minerware\arena\Map;
-use pocketmine\player\Player;
-use function array_rand;
-use function count;
+interface GameLevel {
 
-final class VoteCounter {
-
-	/** @var array<Map, Player[]> */
-	private array $votes = [];
-
-	public function __construct() {
-		// code...
-	}
-
-	public function vote(Player $player, Map|string $map) : void {
-		$this->votes[($map instanceof Map) ? $map->getName() : $map][] = $player;
-	}
-
-	public function getVote(Player $player) : ?string {
-		foreach ($this->votes as $map => $voters) {
-			foreach ($voters as $voter) {
-				if ($voter->getName() === $player->getName()) {
-					return $map;
-				}
-			}
-		}
-
-		return null;
-	}
-
-	public function getWinner() : Map {
-		$winner = null;
-		$lastCount = -1;
-		foreach ($this->votes as $map => $voters) {
-			if ($lastCount === -1 || $lastCount < count($voters)) {
-				$winner = $map;
-				$lastCount = count($voters);
-			}
-		}
-
-		if ($winner === null) {
-			$maps = Map::$maps;
-			$randMap = $maps[array_rand($maps)];
-			$winner = $randMap->getName();
-		}
-
-		return Map::getByName($winner);
-	}
+	public const LEVEL_NORMAL = 0;
+	public const LEVEL_MEDIUM = 1;
+	public const LEVEL_BOSS = 2;
 }

@@ -23,7 +23,7 @@ declare(strict_types=1);
 namespace LatamPMDevs\minerware\utils;
 
 use pocketmine\player\Player;
-use function strtolower;
+use pocketmine\utils\AssumptionFailedError;
 
 final class PointHolder {
 
@@ -31,15 +31,19 @@ final class PointHolder {
 	private array $points = [];
 
 	public function addPlayer(Player $player) : void {
-		$this->points[strtolower($player->getName())] = 0;
+		$this->points[$player->getName()] = 0;
 	}
 
-	public function getPlayerPoints(Player $player) : int {
-		return $this->points[strtolower($player->getName())];
+	public function removePlayer(Player $player) : void {
+		unset($this->points[$player->getName()]);
+	}
+
+	public function getPlayerPoints(Player $player) : ?int {
+		return $this->points[$player->getName()] ?? null;
 	}
 
 	public function addPlayerPoint(Player $player, int $points = 1) : void {
-		$this->points[strtolower($player->getName())] += $points;
+		$this->points[$player->getName()] += $points;
 	}
 
 	/**
@@ -47,5 +51,20 @@ final class PointHolder {
 	 */
 	public function getPoints() : array {
 		return $this->points;
+	}
+
+	public function clear() : void {
+		$this->points = [];
+	}
+
+	/**
+	 * @return array<string, int>
+	 */
+	public function getOrderedByHigherScore() : array {
+		$array = $this->points;
+		if (asort($array) === false) {
+			throw new AssumptionFailedError("Failed to sort points");
+		}
+		return array_reverse($array, true);
 	}
 }

@@ -46,14 +46,6 @@ final class LanguageArgument extends StringEnumArgument {
 		return $this->plugin->getTranslator()->getLanguage($string);
 	}
 
-	public function getEnumValues(): array {
-		$values = [];
-		foreach ($this->plugin->getTranslator()->getLanguages() as $lang) {
-			$values[] = $lang->getLocale();
-		}
-		return $values;
-	}
-
 	public function getTypeName() : string {
 		return "string";
 	}

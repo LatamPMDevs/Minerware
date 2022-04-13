@@ -121,6 +121,6 @@ final class Utils {
 		$maxY = max($pos1->y, $pos2->y);
 		$maxZ = max($pos1->z, $pos2->z);
 
-		return ["Min" => new Vector3($minX, $minY, $minZ), "Max" => new Vector3($maxX, $maxY, $maxZ)];
+		return [new Vector3($minX, $minY, $minZ), new Vector3($maxX, $maxY, $maxZ)];
 	}
 }

@@ -75,7 +75,6 @@ final class MapRegisterer implements Listener {
 			"X" => $secondPoint->getX(),
 			"Y" => $secondPoint->getY(),
 			"Z" => $secondPoint->getZ()];
-		$this->data["platform"]["parameter"] = Utils::calculateParameter($firstPoint, $secondPoint);
 	}
 
 	private function setCages(Vector3 $winners, Vector3 $lossers) : void {

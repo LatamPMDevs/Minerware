@@ -5,14 +5,18 @@
 #  ██║ ╚═╝ ██║██║██║ ╚████║███████╗██║  ██║╚███╔███╔╝██║  ██║██║  ██║███████╗
 #  ╚═╝     ╚═╝╚═╝╚═╝  ╚═══╝╚══════╝╚═╝  ╚═╝ ╚══╝╚══╝ ╚═╝  ╚═╝╚═╝  ╚═╝╚══════╝
 #
-# This is a private project, your not allow to redistribute nor resell it.
-# The only ones with that power are this project's contributors.
+# A game written in PHP for PocketMine-MP software.
 #
-# Copyright 2022 © Minerware
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Lesser General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+
+# Copyright 2022 © LatamPMDevs
 
 #Settings
 default-language: en_US #See languages folder
-lobby: null #Waiting lobby (null = disabled)
+server-ip: "yourserverip.net" #For scoreboard
 
 storage-format:
   player-data: json

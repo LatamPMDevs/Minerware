@@ -28,19 +28,27 @@ use LatamPMDevs\minerware\utils\Utils;
 use pocketmine\math\Vector3;
 use pocketmine\nbt\NBT;
 use pocketmine\nbt\tag\CompoundTag;
+use pocketmine\utils\AssumptionFailedError;
 use pocketmine\world\World;
 use ZipArchive;
 use function mkdir;
 
 final class Map {
 
+	public static array $maps = [];
+
 	private string $name;
 
-	private array $platform;
+	private Vector3 $platformMinPos;
 
-	private array $platformMinAndMaxPos;
+	private Vector3 $platformMaxPos;
 
-	public static array $maps = [];
+	/** @var Vector3[] */
+	private array $spawns = [];
+
+	private Vector3 $winnersCage;
+
+	private Vector3 $lossersCage;
 
 	public static function getByName(string $name) : ?self {
 		foreach (self::$maps as $map) {
@@ -56,12 +64,19 @@ final class Map {
 		$this->name = $data->getString("name");
 
 		$platform = $data->getArray("platform");
+		$minMax = Utils::calculateMinAndMaxPos(
+			new Vector3($platform["pos1"]["X"], $platform["pos1"]["Y"], $platform["pos1"]["Z"]),
+			new Vector3($platform["pos2"]["X"], $platform["pos2"]["Y"], $platform["pos2"]["Z"])
+		);
+		$this->platformMinPos = $minMax[0];
+		$this->platformMaxPos = $minMax[1];
 
-		$this->platform = [
-			"pos1" => new Vector3($platform["pos1"]["X"], $platform["pos1"]["Y"], $platform["pos1"]["Z"]),
-			"pos2" => new Vector3($platform["pos2"]["X"], $platform["pos2"]["Y"], $platform["pos2"]["Z"])
-		];
-		$this->platformMinAndMaxPos = Utils::calculateMinAndMaxPos($this->platform["pos1"], $this->platform["pos2"]);
+		foreach ($data->getArray("spawns") as $spawnData) {
+			$this->spawns[] = new Vector3($spawnData["X"], $spawnData["Y"], $spawnData["Z"]);
+		}
+		$cages = $data->getArray("cages");
+		$this->winnersCage = new Vector3($cages["winners"]["X"], $cages["winners"]["Y"], $cages["winners"]["Z"]);
+		$this->lossersCage = new Vector3($cages["lossers"]["X"], $cages["lossers"]["Y"], $cages["lossers"]["Z"]);
 
 		self::$maps[] = $this;
 	}
@@ -70,12 +85,24 @@ final class Map {
 		return $this->name;
 	}
 
-	public function getPlatform() : array {
-		return $this->platform;
+	public function getPlatformMinPos() : Vector3 {
+		return $this->platformMinPos;
 	}
 
-	public function getPlatformMinAndMaxPos() : array {
-		return $this->platformMinAndMaxPos;
+	public function getPlatformMaxPos() : Vector3 {
+		return $this->platformMaxPos;
+	}
+
+	public function getSpawns() : array {
+		return $this->spawns;
+	}
+
+	public function getWinnersCage() : Vector3 {
+		return $this->winnersCage;
+	}
+
+	public function getLossersCage() : Vector3 {
+		return $this->lossersCage;
 	}
 
 	public function getData() : DataHolder {
@@ -86,7 +113,7 @@ final class Map {
 		return Minerware::getInstance()->getDataFolder() . "database" . DIRECTORY_SEPARATOR . "backups" . DIRECTORY_SEPARATOR . $this->name . ".zip";
 	}
 
-	public function generateWorld(string $uniqueId) : ?World {
+	public function generateWorld(string $uniqueId) : World {
 		$worldPath = Minerware::getInstance()->getServer()->getDataPath() . "worlds" . DIRECTORY_SEPARATOR . $this->name . "-" . $uniqueId . DIRECTORY_SEPARATOR;
 
 		# Create files
@@ -97,21 +124,11 @@ final class Map {
 		$zip->extractTo($worldPath);
 		$zip->close();
 
-		# TODO: Edit NBT
-		/*$nbt = new BigEndianNBTStream();
-		$compound = $nbt->readCompressed(file_get_contents($path));
-		if (!$compound instanceof CompoundTag) {
-			throw new RuntimeException("Invalid data found in \"" . $this->name . ".dat\", expected " . CompoundTag::class . ", got " . (is_object($compound) ? get_class($compound): gettype($compound)));
-		}
-		$compound->setString("LevelName", $this->name . "-" . $uniqueId);
-		$nbt2 = new BigEndianNBTStream();
-		file_put_contents($path, $nbt2->writeCompressed($nbt));*/
-
 		#Get World
 		if (Minerware::getInstance()->getServer()->getWorldManager()->loadWorld($this->name . "-" . $uniqueId)) {
 			return Minerware::getInstance()->getServer()->getWorldManager()->getWorldByName($this->name . "-" . $uniqueId);
 		}
 
-		return null;
+		throw new AssumptionFailedError("Error Generating world");
 	}
 }
