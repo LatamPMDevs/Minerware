@@ -38,7 +38,7 @@ use pocketmine\utils\EnumTrait;
 final class Status {
 	use EnumTrait;
 
-	protected static function setup(): void {
+	protected static function setup() : void {
 		self::registerAll(
 			new self("waiting"),
 			new self("starting"),
