@@ -32,6 +32,7 @@ use pocketmine\utils\EnumTrait;
  * @method static Status WAITING()
  * @method static Status STARTING()
  * @method static Status INGAME()
+ * @method static Status INBETWEEN()
  * @method static Status ENDING()
  */
 final class Status {

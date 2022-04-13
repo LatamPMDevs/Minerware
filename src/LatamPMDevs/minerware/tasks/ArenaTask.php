@@ -102,7 +102,7 @@ final class ArenaTask extends Task {
 						}
 					}
 				}
-				if ($arena->inbetweentime >= 3 && $arena->inbetweentime <= 1) {
+				if ($arena->inbetweentime <= 3 && $arena->inbetweentime >= 1) {
 					foreach ($players as $player) {
 						$player->sendTitle("§k§4|||§6" . $arena->inbetweentime . "§k§4|||", "§5" . $arena->getCurrentMicrogame()->getName(), 1, 1, 1);
 					}
@@ -114,11 +114,7 @@ final class ArenaTask extends Task {
 				break;
 
 			case ($status->equals(Status::INGAME())):
-				$microgame = $arena->getCurrentMicrogame();
-				if ($arena->gametime == 1) {
-					$microgame = $arena->startNextMicrogame();
-				}
-				$microgame->tick();
+				// TODO!
 				break;
 
 			case ($status->equals(Status::ENDING())):

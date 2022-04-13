@@ -223,7 +223,7 @@ final class Arena implements Listener {
 					$lines[] = "§1";
 					$lines[] = "§5Microgame:";
 					$lines[] = "§f" . ($this->status->equals(Status::INBETWEEN()) ? "In-between" : $this->getCurrentMicrogame()->getName());
-					$lines[] = "§5(§f" . ($this->status->equals(Status::INBETWEEN()) ? 0 : $this->currentMicrogame + 1) . "§5/§f" . count($this->microgamesQueue) . "§5)";
+					$lines[] = "§5(§f" . ($this->status->equals(Status::INBETWEEN()) ? 0 : $this->currentMicrogameIndex + 1) . "§5/§f" . count($this->microgamesQueue) . "§5)";
 					$lines[] = "§2";
 					$lines[] = "§6" . DataManager::getInstance()->getServerIp();
 					break;

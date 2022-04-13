@@ -39,10 +39,6 @@ abstract class Microgame implements Listener, GameLevel {
 		$this->winners[] = $player;
 	}
 
-	public function getWinner() : ?Player {
-		return $this->winners[0] ?? null;
-	}
-
 	/**
 	 * @return Player[]
 	 */
@@ -65,6 +61,7 @@ abstract class Microgame implements Listener, GameLevel {
 		return $this->level;
 	}
 
+	abstract public function getName() : string;
 	abstract public function start() : void;
 	abstract public function tick() : void;
 	abstract public function end() : void;
