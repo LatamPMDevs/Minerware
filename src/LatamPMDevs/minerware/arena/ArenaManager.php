@@ -22,11 +22,11 @@ declare(strict_types=1);
 
 namespace LatamPMDevs\minerware\arena;
 
-use LatamPMDevs\minerware\database\DataManager;
 use LatamPMDevs\minerware\Minerware;
 use pocketmine\player\Player;
 use pocketmine\utils\SingletonTrait;
 use pocketmine\world\World;
+use function array_rand;
 use function count;
 use function rand;
 use function range;

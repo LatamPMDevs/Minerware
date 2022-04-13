@@ -29,7 +29,6 @@ use LatamPMDevs\minerware\arena\MapRegisterer;
 use LatamPMDevs\minerware\command\args\ArenaActionArgument;
 use LatamPMDevs\minerware\command\args\WorldArgument;
 use LatamPMDevs\minerware\command\constraints\ArgumentNotProvided;
-use LatamPMDevs\minerware\database\DataManager;
 use LatamPMDevs\minerware\Minerware;
 use pocketmine\command\CommandSender;
 use pocketmine\player\Player;

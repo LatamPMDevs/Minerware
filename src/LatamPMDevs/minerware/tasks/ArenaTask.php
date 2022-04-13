@@ -25,9 +25,7 @@ namespace LatamPMDevs\minerware\tasks;
 use LatamPMDevs\minerware\arena\Arena;
 use LatamPMDevs\minerware\arena\ArenaManager;
 use LatamPMDevs\minerware\arena\Status;
-use LatamPMDevs\minerware\database\DataManager;
 use LatamPMDevs\minerware\Minerware;
-use LatamPMDevs\minerware\utils\Utils;
 use pocketmine\scheduler\Task;
 use function count;
 
@@ -106,7 +104,7 @@ final class ArenaTask extends Task {
 				}
 				if ($arena->inbetweentime >= 3 && $arena->inbetweentime <= 1) {
 					foreach ($players as $player) {
-						$player->sendTitle("§k§4|||§6" . $arena->inbetweentime . "§k§4|||", "§5".$arena->getCurrentMicrogame()->getName(), 1, 1, 1);
+						$player->sendTitle("§k§4|||§6" . $arena->inbetweentime . "§k§4|||", "§5" . $arena->getCurrentMicrogame()->getName(), 1, 1, 1);
 					}
 				}
 				if ($arena->inbetweentime <= 0) {
