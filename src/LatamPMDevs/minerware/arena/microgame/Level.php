@@ -35,7 +35,7 @@ use pocketmine\utils\EnumTrait;
 final class Level {
 	use EnumTrait;
 
-	protected static function setup(): void {
+	protected static function setup() : void {
 		self::registerAll(
 			new self("normal"),
 			new self("boss")

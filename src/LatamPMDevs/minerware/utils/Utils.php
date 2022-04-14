@@ -22,10 +22,10 @@ declare(strict_types=1);
 
 namespace LatamPMDevs\minerware\utils;
 
+use pocketmine\block\utils\DyeColor;
 use pocketmine\math\Vector3;
 use pocketmine\network\mcpe\protocol\PlaySoundPacket;
 use pocketmine\player\Player;
-use pocketmine\block\utils\DyeColor;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
 use ZipArchive;
@@ -129,7 +129,7 @@ final class Utils {
 		return [DyeColor::RED(), DyeColor::BLUE(), DyeColor::LIME(), DyeColor::CYAN(), DyeColor::PURPLE(), DyeColor::GREEN(), DyeColor::LIGHT_BLUE(), DyeColor::PINK(), DyeColor::ORANGE(), DyeColor::YELLOW(), DyeColor::MAGENTA(), DyeColor::BROWN()];
 	}
 
-	public static function getPlayersNames(array $players): array {
+	public static function getPlayersNames(array $players) : array {
 		$names = [];
 		foreach ($players as $player) {
 			$names[] = $player->getName();

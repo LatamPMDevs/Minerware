@@ -22,8 +22,8 @@ declare(strict_types=1);
 
 namespace LatamPMDevs\minerware\arena;
 
-use pocketmine\player\Player;
 use pocketmine\event\HandlerListManager;
+use pocketmine\player\Player;
 use pocketmine\utils\SingletonTrait;
 use function array_rand;
 use function count;

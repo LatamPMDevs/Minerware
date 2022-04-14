@@ -25,14 +25,21 @@ namespace LatamPMDevs\minerware\arena\microgame;
 use LatamPMDevs\minerware\utils\Utils;
 use pocketmine\block\Block;
 use pocketmine\block\VanillaBlocks;
-use pocketmine\event\HandlerListManager;
-use pocketmine\event\Listener;
 use pocketmine\event\block\BlockBreakEvent;
 use pocketmine\event\block\BlockPlaceEvent;
 use pocketmine\event\entity\EntityDamageEvent;
+use pocketmine\event\HandlerListManager;
+use pocketmine\event\Listener;
 use pocketmine\player\GameMode;
 use pocketmine\player\Player;
 use pocketmine\utils\AssumptionFailedError;
+use function array_key_first;
+use function array_reverse;
+use function asort;
+use function count;
+use function implode;
+use function microtime;
+use function shuffle;
 
 class StackBlocks extends Microgame implements Listener {
 
@@ -152,7 +159,7 @@ class StackBlocks extends Microgame implements Listener {
 		}
 	}
 
-	public function getAssignedBlock(Player $player) : ?Block{
+	public function getAssignedBlock(Player $player) : ?Block {
 		return $this->assignedBlock[$player->getId()] ?? null;
 	}
 

@@ -25,7 +25,6 @@ namespace LatamPMDevs\minerware;
 use CortexPE\Commando\PacketHooker;
 use IvanCraft623\languages\Translator;
 use LatamPMDevs\minerware\arena\ArenaManager;
-use LatamPMDevs\minerware\arena\microgame\Microgame;
 use LatamPMDevs\minerware\arena\microgame\StackBlocks;
 use LatamPMDevs\minerware\command\MinerwareCommand;
 use LatamPMDevs\minerware\database\DataManager;

@@ -22,10 +22,11 @@ declare(strict_types=1);
 
 namespace LatamPMDevs\minerware\arena\microgame;
 
-use LatamPMDevs\minerware\Minerware;
 use LatamPMDevs\minerware\arena\Arena;
+use LatamPMDevs\minerware\Minerware;
 
 use pocketmine\player\Player;
+use function microtime;
 
 abstract class Microgame {
 
@@ -47,7 +48,7 @@ abstract class Microgame {
 		$this->plugin = $this->arena->getPlugin();
 	}
 
-	public function getPlugin() : Minerware{
+	public function getPlugin() : Minerware {
 		return $this->plugin;
 	}
 

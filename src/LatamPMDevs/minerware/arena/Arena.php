@@ -99,7 +99,7 @@ final class Arena implements Listener {
 		$microgame = $this->plugin->getNormalMicrogames()[0];
 		$this->microgamesQueue[] = new $microgame($this); // Temp for tests.
 
-		$this->plugin->getScheduler()->scheduleRepeatingTask(new ClosureTask(function(): void {
+		$this->plugin->getScheduler()->scheduleRepeatingTask(new ClosureTask(function () : void {
 			if ($this->status->equals(Status::ENDING())) {
 				throw new CancelTaskException("Arena is no more in-game");
 			}
@@ -193,7 +193,7 @@ final class Arena implements Listener {
 		return $this->currentMicrogame;
 	}
 
-	public function getCurrentMicrogameNonNull(): Microgame {
+	public function getCurrentMicrogameNonNull() : Microgame {
 		if ($this->currentMicrogame === null) {
 			throw new AssumptionFailedError("Microgame is null");
 		}
@@ -204,9 +204,9 @@ final class Arena implements Listener {
 		return $this->microgamesQueue[$this->nextMicrogameIndex] ?? null;
 	}
 
-	public function getNextMicrogameNonNull(): Microgame {
+	public function getNextMicrogameNonNull() : Microgame {
 		return $this->microgamesQueue[$this->nextMicrogameIndex] ?? throw new AssumptionFailedError("Next Microgame is null");
-		
+
 	}
 
 	public function startNextMicrogame() : ?Microgame {
