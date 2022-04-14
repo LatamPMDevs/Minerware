@@ -75,7 +75,6 @@ final class ArenaTask extends Task {
 					}
 					if ($arena->startingtime <= 0) {
 						$arena->setStatus(Status::INBETWEEN());
-						$arena->isInFirstInBetween = true;
 						$arena->getPointHolder()->clear();
 						foreach ($players as $player) {
 							$arena->getPointHolder()->addPlayer($player);
@@ -86,35 +85,39 @@ final class ArenaTask extends Task {
 
 			case ($status->equals(Status::INBETWEEN())):
 				$arena->inbetweentime--;
-				if ($arena->inbetweentime === 6) {
-					if ($arena->initNextMicrogame() === null) {
+				if ($arena->inbetweentime === 3) {
+					if ($arena->getNextMicrogame() === null) {
 						# TODO: Finish game!
 					}
 				}
-				if ($arena->isInFirstInBetween) {
-					if ($arena->inbetweentime === 6) {
-						foreach ($players as $player) {
-							$player->sendTitle("§6MinerWare", "§5By LatamPMDevs", 10, 10, 10);
-						}
-					} elseif ($arena->inbetweentime === 4) {
-						foreach ($players as $player) {
-							$player->sendTitle("§1§2", "§5Win the most microgames", 10, 10, 10);
-						}
+				if ($arena->inbetweentime === 10) {
+					foreach ($players as $player) {
+						$player->sendTitle("§6MinerWare", "§5By LatamPMDevs", 10, 10, 10);
+					}
+				} elseif ($arena->inbetweentime === 6) {
+					foreach ($players as $player) {
+						$player->sendTitle("§1§2", "§5Win the most microgames", 10, 10, 10);
 					}
 				}
 				if ($arena->inbetweentime <= 3 && $arena->inbetweentime >= 1) {
 					foreach ($players as $player) {
-						$player->sendTitle("§k§4|||§6" . $arena->inbetweentime . "§k§4|||", "§5" . $arena->getCurrentMicrogame()->getName(), 1, 1, 1);
+						$player->sendTitle("§k§4|||§r§6" . $arena->inbetweentime . "§k§4|||", "§5" . $arena->getNextMicrogameNonNull()->getName(), 10, 10, 10);
 					}
 				}
 				if ($arena->inbetweentime <= 0) {
+					foreach ($players as $player) {
+						$player->sendTitle("§6GO", "", 10, 10, 10);
+					}
 					$arena->setStatus(Status::INGAME());
 					$arena->inbetweentime = Arena::INBETWEEN_TIME;
+					$arena->startNextMicrogame();
 				}
 				break;
 
 			case ($status->equals(Status::INGAME())):
-				// TODO!
+				if ($arena->getCurrentMicrogame() === null) {
+					$this->arena->setStatus(Status::INBETWEEN());
+				}
 				break;
 
 			case ($status->equals(Status::ENDING())):

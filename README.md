@@ -21,7 +21,7 @@ composer install
 mkdir virions
 cd your/server/path/virions
 git clone https://github.com/CortexPE/Commando.git
-git clone https://github.com/dktapps-pm-pl/pmforms.git
+git clone https://github.com/IvanCraft623/languages.git
 # NOTE: Remember to include this folder (yourspace/virions) in your development workspace if possible.
 ```
 ## Microgames list:
@@ -30,7 +30,7 @@ git clone https://github.com/dktapps-pm-pl/pmforms.git
 ## Project information:
 | Plugin version | Pocketmine version | PHP version | Status |
 |---|---|---|---|
-| 1.0.0-dev5 | 4.0.0 minimum | 8.0 minimum | Development |
+| 1.0.0-dev6 | 4.1.0 minimum | 8.0 minimum | Development |
 
 ## Copyright:
 ```

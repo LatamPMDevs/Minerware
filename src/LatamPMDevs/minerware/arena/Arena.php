@@ -22,11 +22,11 @@ declare(strict_types=1);
 
 namespace LatamPMDevs\minerware\arena;
 
+use LatamPMDevs\minerware\arena\microgame\Level;
 use LatamPMDevs\minerware\arena\microgame\Microgame;
 use LatamPMDevs\minerware\database\DataManager;
 use LatamPMDevs\minerware\Minerware;
 use LatamPMDevs\minerware\tasks\ArenaTask;
-
 use LatamPMDevs\minerware\utils\PointHolder;
 use LatamPMDevs\minerware\utils\Utils;
 
@@ -36,8 +36,10 @@ use pocketmine\event\Listener;
 use pocketmine\event\player\PlayerExhaustEvent;
 use pocketmine\event\player\PlayerQuitEvent;
 use pocketmine\player\GameMode;
-
 use pocketmine\player\Player;
+use pocketmine\scheduler\CancelTaskException;
+use pocketmine\scheduler\ClosureTask;
+use pocketmine\utils\AssumptionFailedError;
 use pocketmine\world\Position;
 use pocketmine\world\World;
 use function array_rand;
@@ -48,9 +50,11 @@ final class Arena implements Listener {
 	public const MIN_PLAYERS = 2;
 	public const MAX_PLAYERS = 12;
 
-	public const STARTING_TIME = 121;
-	public const INBETWEEN_TIME = 7;
+	public const STARTING_TIME = 10;//121
+	public const INBETWEEN_TIME = 5;
 	public const ENDING_TIME = 10;
+
+	public const NORMAL_MICROGAMES = 15;
 
 	private Minerware $plugin;
 
@@ -68,26 +72,42 @@ final class Arena implements Listener {
 
 	private ?Microgame $currentMicrogame = null;
 
-	private int $currentMicrogameIndex = -1;
+	private int $nextMicrogameIndex = 0;
 
 	public int $startingtime = self::STARTING_TIME;
 
-	public int $inbetweentime = self::INBETWEEN_TIME;
+	public int $inbetweentime = 11;
 
 	public int $endingtime = self::ENDING_TIME;
-
-	public bool $isInFirstInBetween = false;
 
 	public function __construct(private string $id, private Map $map) {
 		$this->plugin = Minerware::getInstance();
 		$this->world = $this->map->generateWorld($this->id);
 		$this->status = Status::WAITING();
 		$this->pointHolder = new PointHolder();
-		$this->plugin->getServer()->getPluginManager()->registerEvents($this, $this->plugin);
 		$this->plugin->getScheduler()->scheduleRepeatingTask(new ArenaTask($this), 20);
 		$this->plugin->getServer()->getPluginManager()->registerEvents($this, $this->plugin);
 
 		# TODO: Microgames!
+		/*$normalMicrogames = $this->plugin->getNormalMicrogames();
+		shuffle($normalMicrogames);
+		foreach(array_rand($normalMicrogames, min(self::NORMAL_MICROGAMES, count($normalMicrogames))) as $key) {
+			$this->microgamesQueue[] = new $normalMicrogames[$key];
+		}
+		$bossMicrogames = $this->plugin->getBossMicrogames();
+		$this->microgamesQueue[] = new $bossMicrogames[array_rand($bossMicrogames)];*/
+		$microgame = $this->plugin->getNormalMicrogames()[0];
+		$this->microgamesQueue[] = new $microgame($this); // Temp for tests.
+
+		$this->plugin->getScheduler()->scheduleRepeatingTask(new ClosureTask(function(): void {
+			if ($this->status->equals(Status::ENDING())) {
+				throw new CancelTaskException("Arena is no more in-game");
+			}
+			if ($this->currentMicrogame !== null && $this->currentMicrogame->isRunning()) {
+				$this->currentMicrogame->tick();
+			};
+		}), 2);
+
 	}
 
 	public function getId() : string {
@@ -100,6 +120,10 @@ final class Arena implements Listener {
 
 	public function getMap() : ?Map {
 		return $this->map;
+	}
+
+	public function getPlugin() : Minerware {
+		return $this->plugin;
 	}
 
 	public function getStatus() : Status {
@@ -126,6 +150,7 @@ final class Arena implements Listener {
 		$player->getInventory()->clearAll();
 		$player->getArmorInventory()->clearAll();
 		$player->getCursorInventory()->clearAll();
+		$player->getOffHandInventory()->clearAll();
 		$player->setGamemode(GameMode::ADVENTURE());
 	}
 
@@ -160,16 +185,36 @@ final class Arena implements Listener {
 		return $this->pointHolder;
 	}
 
+	public function setCurrentMicrogame(?Microgame $microgame) : void {
+		$this->currentMicrogame = $microgame;
+	}
+
 	public function getCurrentMicrogame() : ?Microgame {
 		return $this->currentMicrogame;
 	}
 
-	public function initNextMicrogame() : ?Microgame {
-		$microgame = null;
-		$this->currentMicrogameIndex++;
-		if (isset($this->microgamesQueue[$this->currentMicrogameIndex])) {
-			$this->currentMicrogame = new $this->microgamesQueue[$this->currentMicrogameIndex]($this);
-			$microgame = $this->currentMicrogame;
+	public function getCurrentMicrogameNonNull(): Microgame {
+		if ($this->currentMicrogame === null) {
+			throw new AssumptionFailedError("Microgame is null");
+		}
+		return $this->currentMicrogame;
+	}
+
+	public function getNextMicrogame() : ?Microgame {
+		return $this->microgamesQueue[$this->nextMicrogameIndex] ?? null;
+	}
+
+	public function getNextMicrogameNonNull(): Microgame {
+		return $this->microgamesQueue[$this->nextMicrogameIndex] ?? throw new AssumptionFailedError("Next Microgame is null");
+		
+	}
+
+	public function startNextMicrogame() : ?Microgame {
+		$microgame = $this->getNextMicrogame();
+		if ($microgame !== null) {
+			$this->setCurrentMicrogame($microgame);
+			$microgame->start();
+			$this->nextMicrogameIndex++;
 		}
 		return $microgame;
 	}
@@ -185,12 +230,17 @@ final class Arena implements Listener {
 	public function updateScoreboard() : void {
 		$scoreboard = $this->plugin->getScoreboard();
 		$translator = $this->plugin->getTranslator();
+		$isBoss = false;
+		$currentMicrogame = $this->getCurrentMicrogame();
+		if ($currentMicrogame !== null && $currentMicrogame->getLevel()->equals(Level::BOSS())) {
+			$isBoss = true;
+		}
 		foreach ($this->players as $player) {
+			$lines = [];
 			$remove = false;
 			switch (true) {
 				case ($this->status->equals(Status::WAITING())):
 				case ($this->status->equals(Status::STARTING())):
-					$lines = [];
 					$lines[] = "§5" . $translator->translate($player, "text.map") . ":";
 					$lines[] = "§f" . $this->map->getName();
 					$lines[] = "§1";
@@ -204,7 +254,6 @@ final class Arena implements Listener {
 				case ($this->status->equals(Status::INGAME())):
 					$isOnTop = false;
 					$i = 0;
-					$lines = [];
 					$lines[] = "§5" . $translator->translate($player, "text.scores") . ":";
 					foreach ($this->pointHolder->getOrderedByHigherScore() as $user => $point) {
 						$i++;
@@ -222,8 +271,8 @@ final class Arena implements Listener {
 					}
 					$lines[] = "§1";
 					$lines[] = "§5Microgame:";
-					$lines[] = "§f" . ($this->status->equals(Status::INBETWEEN()) ? "In-between" : $this->getCurrentMicrogame()->getName());
-					$lines[] = "§5(§f" . ($this->status->equals(Status::INBETWEEN()) ? 0 : $this->currentMicrogameIndex + 1) . "§5/§f" . count($this->microgamesQueue) . "§5)";
+					$lines[] = "§e" . ($this->status->equals(Status::INBETWEEN()) ? "§fIn-between" : $this->getCurrentMicrogameNonNull()->getName());
+					$lines[] = "§5(§f" . ($isBoss ? "Bossgame" : $this->nextMicrogameIndex . "§5/§f" . count($this->microgamesQueue) - 1) . "§5)";
 					$lines[] = "§2";
 					$lines[] = "§6" . DataManager::getInstance()->getServerIp();
 					break;
@@ -281,7 +330,7 @@ final class Arena implements Listener {
 		$player = $event->getEntity();
 		if (!$player instanceof Player) return;
 		if (!$this->inGame($player)) return;
-		if ($this->status->equals(Status::WAITING()) || $this->status->equals(Status::STARTING())) {
+		if ($this->status->equals(Status::WAITING()) || $this->status->equals(Status::STARTING()) || $this->status->equals(Status::INBETWEEN())) {
 			$event->cancel();
 		}
 	}

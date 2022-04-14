@@ -38,9 +38,6 @@ The platform is split into two sides, one side is red clay, and the other is gre
 All 2x2 mini platforms are in snow blocks and everyone receives 16 snowballs and a pumpkin. Create a snow block with your snowballs and create a snow golem to make a friend and get a point!
 - [ ] Done
 
-
-## Medium Games
-
 # Loot Chests & Kill all
 Chests filled with an assortment of armour, weapons and other items spawn randomly around the platform. Grab something to defend yourself with and live to tell the tale so you achieve a point!
 - [ ] Done

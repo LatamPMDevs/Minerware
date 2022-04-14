@@ -1,7 +1,7 @@
 name: Minerware
-version: 1.0.0-dev5
+version: 1.0.0-dev6
 main: LatamPMDevs\minerware\Minerware
-api: 4.0.0
+api: "4.1.0"
 prefix: "§aMinerware§r "
 authors:
   - TheModDev

@@ -22,9 +22,23 @@ declare(strict_types=1);
 
 namespace LatamPMDevs\minerware\arena\microgame;
 
-interface GameLevel {
+use pocketmine\utils\EnumTrait;
 
-	public const LEVEL_NORMAL = 0;
-	public const LEVEL_MEDIUM = 1;
-	public const LEVEL_BOSS = 2;
+/**
+ * This doc-block is generated automatically, do not modify it manually.
+ * This must be regenerated whenever registry members are added, removed or changed.
+ * @generate-registry-docblock
+ *
+ * @method static Status NORMAL()
+ * @method static Status BOSS()
+ */
+final class Level {
+	use EnumTrait;
+
+	protected static function setup(): void {
+		self::registerAll(
+			new self("normal"),
+			new self("boss")
+		);
+	}
 }

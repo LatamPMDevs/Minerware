@@ -23,6 +23,7 @@ declare(strict_types=1);
 namespace LatamPMDevs\minerware\arena;
 
 use pocketmine\player\Player;
+use pocketmine\event\HandlerListManager;
 use pocketmine\utils\SingletonTrait;
 use function array_rand;
 use function count;
@@ -51,9 +52,9 @@ final class ArenaManager {
 		return $arena;
 	}
 
-	public function deleteArena(Arena|string $arena) : void {
-		$id = ($arena instanceof Arena) ? $arena->getId() : $arena;
-		unset($this->arenas[$id]);
+	public function deleteArena(Arena $arena) : void {
+		HandlerListManager::global()->unregisterAll($arena);
+		unset($this->arenas[$arena->getId()]);
 	}
 
 	public function getAvaible(?Map $map = null) : Arena {

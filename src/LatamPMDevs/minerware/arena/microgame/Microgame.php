@@ -22,10 +22,20 @@ declare(strict_types=1);
 
 namespace LatamPMDevs\minerware\arena\microgame;
 
-use pocketmine\event\Listener;
+use LatamPMDevs\minerware\Minerware;
+use LatamPMDevs\minerware\arena\Arena;
+
 use pocketmine\player\Player;
 
-abstract class Microgame implements Listener, GameLevel {
+abstract class Microgame {
+
+	protected Minerware $plugin;
+
+	protected bool $hasStarted = false;
+
+	protected bool $hasEnded = false;
+
+	protected float $startTime;
 
 	/** @var Player[] */
 	protected array $winners = [];
@@ -33,10 +43,40 @@ abstract class Microgame implements Listener, GameLevel {
 	/** @var Player[] */
 	protected array $losers = [];
 
-	protected int $level = self::LEVEL_NORMAL;
+	public function __construct(protected arena $arena) {
+		$this->plugin = $this->arena->getPlugin();
+	}
+
+	public function getPlugin() : Minerware{
+		return $this->plugin;
+	}
+
+	public function hasStarted() : bool {
+		return $this->hasStarted;
+	}
+
+	public function hasEnded() : bool {
+		return $this->hasEnded;
+	}
+
+	public function isRunning() : bool {
+		return $this->hasStarted && !$this->hasEnded;
+	}
+
+	public function getStartTime() : float {
+		return $this->startTime;
+	}
+
+	public function getTimeLeft() : float {
+		return ($this->startTime + $this->getGameDuration()) - microtime(true);
+	}
 
 	public function addWinner(Player $player) : void {
-		$this->winners[] = $player;
+		$this->winners[$player->getId()] = $player;
+	}
+
+	public function isWinner(Player $player) : bool {
+		return isset($this->winners[$player->getId()]);
 	}
 
 	/**
@@ -47,7 +87,11 @@ abstract class Microgame implements Listener, GameLevel {
 	}
 
 	public function addLoser(Player $player) : void {
-		$this->losers[] = $player;
+		$this->losers[$player->getId()] = $player;
+	}
+
+	public function isLoser(Player $player) : bool {
+		return isset($this->losers[$player->getId()]);
 	}
 
 	/**
@@ -57,11 +101,10 @@ abstract class Microgame implements Listener, GameLevel {
 		return $this->losers;
 	}
 
-	public function getLevel() : int {
-		return $this->level;
-	}
-
 	abstract public function getName() : string;
+	abstract public function getLevel() : Level;
+	abstract public function getGameDuration() : float; // in seconds
+	abstract public function getRecompensePoints() : int;
 	abstract public function start() : void;
 	abstract public function tick() : void;
 	abstract public function end() : void;
