@@ -45,10 +45,10 @@ class StackBlocks extends Microgame implements Listener {
 
 	public const STACK_SIZE = 10;
 
-	/** @var array<int Block> */
+	/** @var array<int, Block> */
 	protected array $assignedBlock = [];
 
-	/** @var array<int int> */
+	/** @var array<int, int> */
 	protected array $stackedBlocks = [];
 
 	public function getName() : string {
