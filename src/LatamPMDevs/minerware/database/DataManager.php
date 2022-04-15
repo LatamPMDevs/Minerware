@@ -27,9 +27,9 @@ use IvanCraft623\languages\Language;
 use LatamPMDevs\minerware\arena\Map;
 use LatamPMDevs\minerware\Minerware;
 use pocketmine\player\Player;
+use pocketmine\utils\AssumptionFailedError;
 use pocketmine\utils\Config;
 use pocketmine\utils\SingletonTrait;
-use pocketmine\utils\Utils;
 use function array_map;
 use function basename;
 use function file_exists;
@@ -108,7 +108,11 @@ final class DataManager {
 		$translator = $this->plugin->getTranslator();
 		foreach (glob($this->pluginPath . "languages" . DIRECTORY_SEPARATOR . "*.ini") as $file) {
 			$locale = basename($file, ".ini");
-			$data = array_map('\stripcslashes', Utils::assumeNotFalse(parse_ini_file($file, false, INI_SCANNER_RAW), "Missing or inaccessible required resource files"));
+			$content = parse_ini_file($file, false, INI_SCANNER_RAW);
+			if ($content === false) {
+				throw new AssumptionFailedError("Missing or inaccessible required resource files");
+			}
+			$data = array_map('\stripcslashes', $content);
 			$translator->registerLanguage(new Language($locale, $data));
 		}
 		$l = $this->plugin->getConfig()->get("default-language", "en_US");

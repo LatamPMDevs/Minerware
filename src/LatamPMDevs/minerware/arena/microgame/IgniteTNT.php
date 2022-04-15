@@ -176,7 +176,7 @@ class IgniteTNT extends Microgame implements Listener {
 		$event->cancel();
 		if ($event->getCause() === EntityDamageEvent::CAUSE_VOID && !$this->isWinner($player)) {
 			$this->addLoser($player);
-			$this->arena->sendToLosersCage();
+			$this->arena->sendToLosersCage($player);
 		}
 	}
 

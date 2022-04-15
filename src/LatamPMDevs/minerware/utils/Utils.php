@@ -23,10 +23,12 @@ declare(strict_types=1);
 namespace LatamPMDevs\minerware\utils;
 
 use InvalidArgumentException;
+use pocketmine\block\Block;
 use pocketmine\math\Vector3;
 use pocketmine\network\mcpe\protocol\PlaySoundPacket;
 use pocketmine\player\Player;
 use pocketmine\world\format\Chunk;
+use pocketmine\world\Position;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
 use ZipArchive;
