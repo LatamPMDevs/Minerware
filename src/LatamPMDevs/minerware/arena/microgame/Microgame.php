@@ -30,6 +30,9 @@ use function microtime;
 
 abstract class Microgame {
 
+	public const DEFAULT_RECOMPENSE_POINTS = 1;
+	public const BOSS_RECOMPENSE_POINTS = 3;
+
 	protected Minerware $plugin;
 
 	protected bool $hasStarted = false;

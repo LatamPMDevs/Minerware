@@ -25,7 +25,8 @@ git clone https://github.com/IvanCraft623/languages.git
 # NOTE: Remember to include this folder (yourspace/virions) in your development workspace if possible.
 ```
 ## Microgames list:
-- none yet
+- Stack Blocks
+- Ignite the TNT
 
 ## Project information:
 | Plugin version | Pocketmine version | PHP version | Status |

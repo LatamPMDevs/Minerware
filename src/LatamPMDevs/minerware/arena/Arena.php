@@ -88,16 +88,14 @@ final class Arena implements Listener {
 		$this->plugin->getScheduler()->scheduleRepeatingTask(new ArenaTask($this), 20);
 		$this->plugin->getServer()->getPluginManager()->registerEvents($this, $this->plugin);
 
-		# TODO: Microgames!
-		/*$normalMicrogames = $this->plugin->getNormalMicrogames();
+		# TODO: More Microgames!
+		$normalMicrogames = $this->plugin->getNormalMicrogames();
 		shuffle($normalMicrogames);
-		foreach(array_rand($normalMicrogames, min(self::NORMAL_MICROGAMES, count($normalMicrogames))) as $key) {
-			$this->microgamesQueue[] = new $normalMicrogames[$key];
+		foreach($normalMicrogames as $microgame) {
+			$this->microgamesQueue[] = new $microgame($this);
 		}
-		$bossMicrogames = $this->plugin->getBossMicrogames();
+		/*$bossMicrogames = $this->plugin->getBossMicrogames();
 		$this->microgamesQueue[] = new $bossMicrogames[array_rand($bossMicrogames)];*/
-		$microgame = $this->plugin->getNormalMicrogames()[0];
-		$this->microgamesQueue[] = new $microgame($this); // Temp for tests.
 
 		$this->plugin->getScheduler()->scheduleRepeatingTask(new ClosureTask(function () : void {
 			if ($this->status->equals(Status::ENDING())) {
@@ -294,6 +292,74 @@ final class Arena implements Listener {
 				}
 			}
 		}
+	}
+
+	public function endCurrentMicrogame() : void {
+		$microgame = $this->getCurrentMicrogameNonNull();
+		if ($microgame->isRunning()) {
+			$winners = $microgame->getWinners();
+			$winnersCount = count($winners);
+			foreach ($this->players as $player) {
+				$player->sendMessage("\n§l§e" . $microgame->getName());
+				if ($winnersCount <= 0) {
+					$player->sendMessage($this->plugin->getTranslator()->translate(
+						$player, "microgame.nowinners", [
+							"{%count}" => count($this->players)
+						]
+					));
+				} elseif ($winnersCount <= 3) {
+					$player->sendMessage($this->plugin->getTranslator()->translate(
+						$player, "microgame.winners", [
+							"{%players}" => implode(", ", Utils::getPlayersNames($winners))
+						]
+					));
+				} else {
+					$player->sendMessage($this->plugin->getTranslator()->translate(
+						$player, "microgame.winners2", [
+							"{%winners_count}" => $winnersCount,
+							"{%players_count}" => count($this->players)
+						]
+					));
+				}
+			}
+			$microgame->end();
+			$recompense = $microgame->getRecompensePoints();
+			$showWorthMessage = $recompense > Microgame::DEFAULT_RECOMPENSE_POINTS;
+			foreach ($this->players as $player) {
+				$player->getInventory()->clearAll();
+				$player->getArmorInventory()->clearAll();
+				$player->getCursorInventory()->clearAll();
+				$player->getOffHandInventory()->clearAll();
+				$player->setGamemode(GameMode::ADVENTURE());
+				if ($microgame->isWinner($player)) {
+					$this->pointHolder->addPlayerPoint($player, $recompense);
+					$player->sendTitle("§1§2", $this->plugin->getTranslator()->translate($player, "microgame.success"), 1, 20, 1);
+				} else {
+					$player->sendTitle("§1§2", $this->plugin->getTranslator()->translate($player, "microgame.failed"), 1, 20, 1);
+				}
+				if ($showWorthMessage) {
+					$player->sendMessage($this->plugin->getTranslator()->translate(
+						$player, "microgame.worth", [
+							"{%points}" => $recompense
+						]
+					));
+				}
+			}
+			foreach ($this->world->getEntities() as $entity) {
+				if (!$entity instanceof Player) {
+					$entity->flagForDespawn();
+				}
+			}
+			$this->setCurrentMicrogame(null);
+		}
+	}
+
+	public function sendToWinnersCage(Player $player) : void {
+		# TODO!
+	}
+
+	public function sendToLosersCage(Player $player) : void {
+		# TODO!
 	}
 
 	#Listener

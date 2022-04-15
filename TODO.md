@@ -12,7 +12,7 @@ Chests are placed on the platforms with buckets and cows are spawned, players mu
 
 # Stack 10 blocks high tower
 Players are given 20 blocks of wool of a random color, they must make a pillar of 10 blocks
-- [ ] Done
+- [x] Done
 
 # Be last Knight standing
 Chests with loot are placed on the platforms and the players must kill each other, the last player(s) alive wins
@@ -72,7 +72,7 @@ The platform is turned into a giant slime block trampoline, and your job is to c
 
 # Ignite the TNT
 Players are given Flint ‘n Steel upon game start. There are TNT blocks in one corner of each of the mini platforms that need to be lit. There is not enough TNT for everyone and one person can light multiple blocks of TNT. Be one of the few players to successfully light at least one block of TNT and you get a point!
-- [ ] Done
+- [x] Done
 
 # Cactus Slap
 Cacti are spawned around the platform, and all players are given a knockback stick. Hit your opponents into the cacti and avoid getting hit into them to win the point!

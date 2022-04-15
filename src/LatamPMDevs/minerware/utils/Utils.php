@@ -22,10 +22,10 @@ declare(strict_types=1);
 
 namespace LatamPMDevs\minerware\utils;
 
-use pocketmine\block\utils\DyeColor;
 use pocketmine\math\Vector3;
 use pocketmine\network\mcpe\protocol\PlaySoundPacket;
 use pocketmine\player\Player;
+use pocketmine\world\format\Chunk;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
 use ZipArchive;
@@ -125,15 +125,42 @@ final class Utils {
 		return [new Vector3($minX, $minY, $minZ), new Vector3($maxX, $maxY, $maxZ)];
 	}
 
-	public static function getDyeColors() : array {
-		return [DyeColor::RED(), DyeColor::BLUE(), DyeColor::LIME(), DyeColor::CYAN(), DyeColor::PURPLE(), DyeColor::GREEN(), DyeColor::LIGHT_BLUE(), DyeColor::PINK(), DyeColor::ORANGE(), DyeColor::YELLOW(), DyeColor::MAGENTA(), DyeColor::BROWN()];
-	}
-
 	public static function getPlayersNames(array $players) : array {
 		$names = [];
 		foreach ($players as $player) {
 			$names[] = $player->getName();
 		}
 		return $names;
+	}
+
+	/**
+	 * @return Block[]
+	 */
+	public static function fill(Position $pos1, Position $pos2, Block $block, bool $update = false): array {
+		$changedBlocks = [];
+		$world = $pos1->getWorld();
+
+		if ($world !== $pos2->getWorld()) {
+			throw new \InvalidArgumentException("First and second position must be in the same world!");
+		}
+
+		$minX = min($pos1->x, $pos2->x);
+		$minY = max($world->getMinY(), min($pos1->y, $pos2->y));
+		$minZ = min($pos1->z, $pos2->z);
+
+		$maxX = max($pos1->x, $pos2->x);
+		$maxY = min($world->getMaxY(), max($pos1->y, $pos2->y));
+		$maxZ = max($pos1->z, $pos2->z);
+
+		for ($x = $minX; $x <= $maxX; ++$x) {
+			for ($z = $minZ; $z <= $maxZ; ++$z) {
+				$world->loadChunk($x >> Chunk::COORD_BIT_SIZE, $z >> Chunk::COORD_BIT_SIZE);
+				for ($y = $minY; $y <= $maxY; ++$y) {
+					$changedBlocks[] = $world->getBlockAt((int) $x, (int) $y, (int) $z);
+					$world->setBlockAt((int) $x, (int) $y, (int) $z, $block, $update);
+				}
+			}
+		}
+		return $changedBlocks;
 	}
 }

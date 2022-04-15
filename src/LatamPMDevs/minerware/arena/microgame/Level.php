@@ -29,8 +29,8 @@ use pocketmine\utils\EnumTrait;
  * This must be regenerated whenever registry members are added, removed or changed.
  * @generate-registry-docblock
  *
- * @method static Status NORMAL()
- * @method static Status BOSS()
+ * @method static Level NORMAL()
+ * @method static Level BOSS()
  */
 final class Level {
 	use EnumTrait;
