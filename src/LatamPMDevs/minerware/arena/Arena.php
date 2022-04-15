@@ -44,6 +44,8 @@ use pocketmine\world\Position;
 use pocketmine\world\World;
 use function array_rand;
 use function count;
+use function implode;
+use function shuffle;
 
 final class Arena implements Listener {
 

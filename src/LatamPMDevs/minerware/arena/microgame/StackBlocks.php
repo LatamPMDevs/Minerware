@@ -23,8 +23,8 @@ declare(strict_types=1);
 namespace LatamPMDevs\minerware\arena\microgame;
 
 use pocketmine\block\Block;
-use pocketmine\block\VanillaBlocks;
 use pocketmine\block\utils\DyeColor;
+use pocketmine\block\VanillaBlocks;
 use pocketmine\event\block\BlockBreakEvent;
 use pocketmine\event\block\BlockPlaceEvent;
 use pocketmine\event\entity\EntityDamageEvent;
@@ -37,7 +37,6 @@ use function array_key_first;
 use function array_reverse;
 use function asort;
 use function count;
-use function implode;
 use function microtime;
 use function shuffle;
 

@@ -32,14 +32,18 @@ use pocketmine\event\block\BlockBreakEvent;
 use pocketmine\event\block\BlockPlaceEvent;
 use pocketmine\event\entity\EntityDamageEvent;
 use pocketmine\event\entity\ExplosionPrimeEvent;
-use pocketmine\event\player\PlayerInteractEvent;
 use pocketmine\event\HandlerListManager;
 use pocketmine\event\Listener;
+use pocketmine\event\player\PlayerInteractEvent;
 use pocketmine\item\FlintSteel;
 use pocketmine\item\VanillaItems;
 use pocketmine\player\GameMode;
 use pocketmine\player\Player;
 use pocketmine\utils\AssumptionFailedError;
+use function array_rand;
+use function array_reverse;
+use function asort;
+use function microtime;
 
 class IgniteTNT extends Microgame implements Listener {
 
@@ -77,8 +81,8 @@ class IgniteTNT extends Microgame implements Listener {
 		$world = $this->arena->getWorld();
 		foreach (Map::MINI_PLATFORMS as $platformBlocks) {
 			$blockPos = $platformBlocks[array_rand($platformBlocks)];
-			$this->changedBlocks[] = $world->getBlockAt((int)($minPos->x + $blockPos[0]), (int)($minPos->y + $blockPos[1]), (int)($minPos->z + $blockPos[2]));
-			$world->setBlockAt((int)($minPos->x + $blockPos[0]), (int)($minPos->y + $blockPos[1]), (int)($minPos->z + $blockPos[2]), VanillaBlocks::TNT(), false);
+			$this->changedBlocks[] = $world->getBlockAt((int) ($minPos->x + $blockPos[0]), (int) ($minPos->y + $blockPos[1]), (int) ($minPos->z + $blockPos[2]));
+			$world->setBlockAt((int) ($minPos->x + $blockPos[0]), (int) ($minPos->y + $blockPos[1]), (int) ($minPos->z + $blockPos[2]), VanillaBlocks::TNT(), false);
 		}
 
 		foreach ($this->arena->getPlayers() as $player) {

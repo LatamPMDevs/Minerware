@@ -22,6 +22,7 @@ declare(strict_types=1);
 
 namespace LatamPMDevs\minerware\utils;
 
+use InvalidArgumentException;
 use pocketmine\math\Vector3;
 use pocketmine\network\mcpe\protocol\PlaySoundPacket;
 use pocketmine\player\Player;
@@ -136,12 +137,12 @@ final class Utils {
 	/**
 	 * @return Block[]
 	 */
-	public static function fill(Position $pos1, Position $pos2, Block $block, bool $update = false): array {
+	public static function fill(Position $pos1, Position $pos2, Block $block, bool $update = false) : array {
 		$changedBlocks = [];
 		$world = $pos1->getWorld();
 
 		if ($world !== $pos2->getWorld()) {
-			throw new \InvalidArgumentException("First and second position must be in the same world!");
+			throw new InvalidArgumentException("First and second position must be in the same world!");
 		}
 
 		$minX = min($pos1->x, $pos2->x);
