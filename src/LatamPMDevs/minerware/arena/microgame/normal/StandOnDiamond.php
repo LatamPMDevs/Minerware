@@ -34,14 +34,18 @@ use pocketmine\event\entity\EntityDamageByEntityEvent;
 use pocketmine\event\entity\EntityDamageEvent;
 use pocketmine\event\HandlerListManager;
 use pocketmine\event\Listener;
-use pocketmine\item\enchantment\EnchantmentInstance; 
-use pocketmine\item\enchantment\VanillaEnchantments; 
+use pocketmine\item\enchantment\EnchantmentInstance;
+use pocketmine\item\enchantment\VanillaEnchantments;
 use pocketmine\item\VanillaItems;
 use pocketmine\player\GameMode;
 use pocketmine\player\Player;
 use pocketmine\utils\AssumptionFailedError;
 use pocketmine\world\Position;
+use function array_key_first;
 use function array_rand;
+use function array_reverse;
+use function asort;
+use function in_array;
 use function microtime;
 
 class StandOnDiamond extends Microgame implements Listener {
@@ -170,7 +174,7 @@ class StandOnDiamond extends Microgame implements Listener {
 			$minPos = Position::fromObject($map->getPlatformMinPos(), $world);
 			$maxPos = Position::fromObject($map->getPlatformMaxPos(), $world);
 			foreach (Map::MINI_PLATFORMS as $key => $value) {
-				if (!in_array($key, $this->diamondPlatforms)) {
+				if (!in_array($key, $this->diamondPlatforms, true)) {
 					foreach (Map::MINI_PLATFORMS[$key] as $blockPos) {
 						$this->changedBlocks[] = $world->getBlockAt((int) ($minPos->x + $blockPos[0]), (int) ($minPos->y + $blockPos[1]), (int) ($minPos->z + $blockPos[2]));
 						$world->setBlockAt((int) ($minPos->x + $blockPos[0]), (int) ($minPos->y + $blockPos[1]), (int) ($minPos->z + $blockPos[2]), VanillaBlocks::AIR(), true);
