@@ -20,43 +20,51 @@
 
 declare(strict_types=1);
 
-namespace LatamPMDevs\minerware\arena\microgame;
+namespace LatamPMDevs\minerware\arena\microgame\normal;
 
 use LatamPMDevs\minerware\arena\Map;
+use LatamPMDevs\minerware\arena\microgame\Level;
+use LatamPMDevs\minerware\arena\microgame\Microgame;
+use LatamPMDevs\minerware\utils\Utils;
 
-use pocketmine\block\Block;
-use pocketmine\block\TNT;
 use pocketmine\block\VanillaBlocks;
-use pocketmine\entity\object\PrimedTNT;
 use pocketmine\event\block\BlockBreakEvent;
 use pocketmine\event\block\BlockPlaceEvent;
+use pocketmine\event\entity\EntityDamageByEntityEvent;
 use pocketmine\event\entity\EntityDamageEvent;
-use pocketmine\event\entity\ExplosionPrimeEvent;
 use pocketmine\event\HandlerListManager;
 use pocketmine\event\Listener;
-use pocketmine\event\player\PlayerInteractEvent;
-use pocketmine\item\FlintSteel;
+use pocketmine\item\enchantment\EnchantmentInstance; 
+use pocketmine\item\enchantment\VanillaEnchantments; 
 use pocketmine\item\VanillaItems;
 use pocketmine\player\GameMode;
 use pocketmine\player\Player;
 use pocketmine\utils\AssumptionFailedError;
+use pocketmine\world\Position;
 use function array_rand;
-use function array_reverse;
-use function asort;
 use function microtime;
 
-class IgniteTNT extends Microgame implements Listener {
+class StandOnDiamond extends Microgame implements Listener {
+
+	public const DIAMOND_PLATFORMS = 4;
+
+	public const KNOCKBACK_LEVEL = 2;
+
+	public const FLOOR_BREAK_AT = 3;
 
 	/** @var Block[] */
 	protected array $changedBlocks = [];
 
 	/** @var array<int, int> */
-	protected array $ignitedTNTs = [];
+	protected array $hitsCount = [];
 
-	protected int $totalIgnitedTNTs = 0;
+	/** @var Int[] */
+	protected array $diamondPlatforms = [];
+
+	protected bool $isFloorBroken = false;
 
 	public function getName() : string {
-		return "Ignite The TNT";
+		return "Stand on Diamond";
 	}
 
 	public function getLevel() : Level {
@@ -64,7 +72,7 @@ class IgniteTNT extends Microgame implements Listener {
 	}
 
 	public function getGameDuration() : float {
-		return 15.0;
+		return 16.0;
 	}
 
 	public function getRecompensePoints() : int {
@@ -79,35 +87,41 @@ class IgniteTNT extends Microgame implements Listener {
 		$map = $this->arena->getMap();
 		$minPos = $map->getPlatformMinPos();
 		$world = $this->arena->getWorld();
-		foreach (Map::MINI_PLATFORMS as $platformBlocks) {
-			$blockPos = $platformBlocks[array_rand($platformBlocks)];
-			$this->changedBlocks[] = $world->getBlockAt((int) ($minPos->x + $blockPos[0]), (int) ($minPos->y + $blockPos[1]), (int) ($minPos->z + $blockPos[2]));
-			$world->setBlockAt((int) ($minPos->x + $blockPos[0]), (int) ($minPos->y + $blockPos[1]), (int) ($minPos->z + $blockPos[2]), VanillaBlocks::TNT(), false);
+		foreach (array_rand(Map::MINI_PLATFORMS, self::DIAMOND_PLATFORMS) as $key) {
+			$this->diamondPlatforms[] = $key;
+			foreach (Map::MINI_PLATFORMS[$key] as $blockPos) {
+				$this->changedBlocks[] = $world->getBlockAt((int) ($minPos->x + $blockPos[0]), (int) ($minPos->y + $blockPos[1]), (int) ($minPos->z + $blockPos[2]));
+				$world->setBlockAt((int) ($minPos->x + $blockPos[0]), (int) ($minPos->y + $blockPos[1]), (int) ($minPos->z + $blockPos[2]), VanillaBlocks::DIAMOND(), false);
+			}
 		}
 
+		$knockback = VanillaEnchantments::KNOCKBACK();
 		foreach ($this->arena->getPlayers() as $player) {
-			$player->getInventory()->clearAll();
-			$player->getArmorInventory()->clearAll();
-			$player->getCursorInventory()->clearAll();
-			$player->getOffHandInventory()->clearAll();
-			$player->setGamemode(GameMode::SURVIVAL());
-			$player->getInventory()->setItem(0, VanillaItems::FLINT_AND_STEEL());
+			Utils::initPlayer($player);
+			$stick = VanillaItems::STICK();
+			$stick->setCustomName($this->plugin->getTranslator()->translate($player, "microgame.item.powerstick"));
+			$stick->addEnchantment(new EnchantmentInstance($knockback, self::KNOCKBACK_LEVEL));
+			$player->setGamemode(GameMode::ADVENTURE());
+			$player->getInventory()->setItem(0, $stick);
 			$player->getInventory()->setHeldItemIndex(0);
-
-			$this->ignitedTNTs[$player->getId()] = 0;
 		}
+		$this->arena->buildWinnersCage();
+		$this->arena->buildLosersCage();
 	}
 
 	public function tick() : void {
 		$timeLeft = $this->getTimeLeft();
 		if ($timeLeft <= 0) {
 			foreach ($this->arena->getPlayers() as $player) {
-				if (!$this->isWinner($player) && !$this->isLoser($player)) {
-					$this->addLoser($player);
+				if (!$this->isLoser($player)) {
+					$this->addWinner($player);
 				}
 			}
 			$this->arena->endCurrentMicrogame();
 			return;
+		}
+		if ($timeLeft <= self::FLOOR_BREAK_AT && !$this->isFloorBroken) {
+			$this->breakFloor();
 		}
 		foreach ($this->arena->getPlayers() as $player) {
 			$player->getXpManager()->setXpAndProgress((int) $timeLeft, $timeLeft / $this->getGameDuration());
@@ -119,16 +133,25 @@ class IgniteTNT extends Microgame implements Listener {
 		HandlerListManager::global()->unregisterAll($this);
 
 		$players = $this->arena->getPlayers();
+		$hits = $this->getPlayersHitsOrderedByHigherScore();
+		$hitter = null;
+		if ($hits !== []) {
+			$id = $stackedBlocks[array_key_first($stackedBlocks)];
+			$stacker = $players[$id] ?? null;
+		}
 		foreach ($players as $player) {
-			$player->sendMessage($this->plugin->getTranslator()->translate(
-				$player, "microgame.ignitetnt.total", [
-					"{%count}" => $this->totalIgnitedTNTs
-				]
-			));
+			if ($hitter !== null) {
+				$player->sendMessage($this->plugin->getTranslator()->translate(
+					$player, "microgame.standondiamond.hitscount", [
+						"{%player}" => $hitter->getName(),
+						"{%hits_count}" => $this->getHits($player)
+					]
+				));
+			}
 			if ($this->isWinner($player)) {
-				$player->sendMessage($this->plugin->getTranslator()->translate($player, "microgame.ignitetnt.won"));
-			} else {
-				# TODO: Loser message
+				$player->sendMessage($this->plugin->getTranslator()->translate($player, "microgame.standondiamond.won"));
+			} elseif ($this->isLoser($player)) {
+				$player->sendMessage($this->plugin->getTranslator()->translate($player, "microgame.standondiamond.lose"));
 			}
 		}
 		foreach ($this->changedBlocks as $block) {
@@ -136,23 +159,46 @@ class IgniteTNT extends Microgame implements Listener {
 		}
 	}
 
-	public function getIgnitedTNTs(Player $player) : int {
-		return $this->ignitedTNTs[$player->getId()] ?? 0;
+	public function isFloorBroken() : bool {
+		return $this->isFloorBroken;
+	}
+
+	public function breakFloor() : bool {
+		if (!$this->isFloorBroken) {
+			$map = $this->arena->getMap();
+			$world = $this->arena->getWorld();
+			$minPos = Position::fromObject($map->getPlatformMinPos(), $world);
+			$maxPos = Position::fromObject($map->getPlatformMaxPos(), $world);
+			foreach (Map::MINI_PLATFORMS as $key => $value) {
+				if (!in_array($key, $this->diamondPlatforms)) {
+					foreach (Map::MINI_PLATFORMS[$key] as $blockPos) {
+						$this->changedBlocks[] = $world->getBlockAt((int) ($minPos->x + $blockPos[0]), (int) ($minPos->y + $blockPos[1]), (int) ($minPos->z + $blockPos[2]));
+						$world->setBlockAt((int) ($minPos->x + $blockPos[0]), (int) ($minPos->y + $blockPos[1]), (int) ($minPos->z + $blockPos[2]), VanillaBlocks::AIR(), true);
+					}
+				}
+			}
+			foreach (Utils::fill($minPos, $maxPos, VanillaBlocks::AIR(), true) as $changedBlock) {
+				$this->changedBlocks[] = $changedBlock;
+			}
+			$this->isFloorBroken = true;
+			return true;
+		}
+		return false;
+	}
+
+	public function getHits(Player $player) : int {
+		return $this->hitsCount[$player->getId()] ?? 0;
 	}
 
 	/**
 	 * @return array<int, int>
 	 */
-	public function getIgnitedTNTsOrderedByHigherScore() : array {
-		$array = $this->ignitedTNTs;
+	public function getPlayersHitsOrderedByHigherScore() : array {
+		$array = $this->hitsCount;
 		if (asort($array) === false) {
 			throw new AssumptionFailedError("Failed to sort score");
 		}
 		return array_reverse($array, true);
-	}
-
-	public function getTotalIgnitedTNTs() : int {
-		return $this->totalIgnitedTNTs;
 	}
 
 	# Listener
@@ -173,38 +219,15 @@ class IgniteTNT extends Microgame implements Listener {
 		$player = $event->getEntity();
 		if (!$player instanceof Player) return;
 		if (!$this->arena->inGame($player)) return;
+		if ($event instanceof EntityDamageByEntityEvent) {
+			$event->setBaseDamage(0);
+			return;
+		}
 		$event->cancel();
 		if ($event->getCause() === EntityDamageEvent::CAUSE_VOID && !$this->isWinner($player)) {
 			$this->addLoser($player);
 			$this->arena->sendToLosersCage($player);
-		}
-	}
-
-	/**
-	 * @ignoreCancelled
-	 * @priority HIGH
-	 */
-	public function onInteract(PlayerInteractEvent $event) : void {
-		$player = $event->getPlayer();
-		if (!$this->arena->inGame($player)) return;
-		if ($event->getItem() instanceof FlintSteel) {
-			if ($event->getBlock() instanceof TNT) {
-				$this->ignitedTNTs[$player->getId()] = $this->getIgnitedTNTs($player) + 1;
-				$this->totalIgnitedTNTs++;
-				if (!$this->isWinner($player) && !$this->isLoser($player)) {
-					$this->addWinner($player);
-				}
-			} else {
-				$event->cancel();
-			}
-		}
-	}
-
-	public function onExplosion(ExplosionPrimeEvent $event) : void {
-		$entity = $event->getEntity();
-		if ($entity->getWorld() !== $this->arena->getWorld()) return;
-		if ($entity instanceof PrimedTNT) {
-			$event->setBlockBreaking(false);
+			$player->sendMessage($this->plugin->getTranslator()->translate($player, "microgame.felloffplatform"));
 		}
 	}
 }

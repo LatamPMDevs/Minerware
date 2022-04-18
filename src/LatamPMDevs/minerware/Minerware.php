@@ -25,8 +25,9 @@ namespace LatamPMDevs\minerware;
 use CortexPE\Commando\PacketHooker;
 use IvanCraft623\languages\Translator;
 use LatamPMDevs\minerware\arena\ArenaManager;
-use LatamPMDevs\minerware\arena\microgame\IgniteTNT;
-use LatamPMDevs\minerware\arena\microgame\StackBlocks;
+use LatamPMDevs\minerware\arena\microgame\normal\IgniteTNT;
+use LatamPMDevs\minerware\arena\microgame\normal\StackBlocks;
+use LatamPMDevs\minerware\arena\microgame\normal\StandOnDiamond;
 use LatamPMDevs\minerware\command\MinerwareCommand;
 use LatamPMDevs\minerware\database\DataManager;
 use LatamPMDevs\minerware\utils\Scoreboard;
@@ -81,7 +82,7 @@ final class Minerware extends PluginBase {
 	}
 
 	public function getNormalMicrogames() : array {
-		return [IgniteTNT::class, StackBlocks::class];
+		return [IgniteTNT::class, StackBlocks::class, StandOnDiamond::class];
 	}
 
 	public function getBossMicrogames() : array {

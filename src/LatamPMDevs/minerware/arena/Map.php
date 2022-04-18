@@ -59,7 +59,7 @@ final class Map {
 
 	private Vector3 $winnersCage;
 
-	private Vector3 $lossersCage;
+	private Vector3 $losersCage;
 
 	public static function getByName(string $name) : ?self {
 		foreach (self::$maps as $map) {
@@ -87,7 +87,7 @@ final class Map {
 		}
 		$cages = $data->getArray("cages");
 		$this->winnersCage = new Vector3($cages["winners"]["X"], $cages["winners"]["Y"], $cages["winners"]["Z"]);
-		$this->lossersCage = new Vector3($cages["lossers"]["X"], $cages["lossers"]["Y"], $cages["lossers"]["Z"]);
+		$this->losersCage = new Vector3($cages["losers"]["X"], $cages["losers"]["Y"], $cages["losers"]["Z"]);
 
 		self::$maps[] = $this;
 	}
@@ -112,8 +112,8 @@ final class Map {
 		return $this->winnersCage;
 	}
 
-	public function getLossersCage() : Vector3 {
-		return $this->lossersCage;
+	public function getLosersCage() : Vector3 {
+		return $this->losersCage;
 	}
 
 	public function getData() : DataHolder {

@@ -77,15 +77,15 @@ final class MapRegisterer implements Listener {
 			"Z" => $secondPoint->getZ()];
 	}
 
-	private function setCages(Vector3 $winners, Vector3 $lossers) : void {
+	private function setCages(Vector3 $winners, Vector3 $losers) : void {
 		$this->data["cages"]["winners"] = [
 			"X" => $winners->getX(),
 			"Y" => $winners->getY(),
 			"Z" => $winners->getZ()];
-		$this->data["cages"]["lossers"] = [
-			"X" => $lossers->getX(),
-			"Y" => $lossers->getY(),
-			"Z" => $lossers->getZ()];
+		$this->data["cages"]["losers"] = [
+			"X" => $losers->getX(),
+			"Y" => $losers->getY(),
+			"Z" => $losers->getZ()];
 	}
 
 	private function setSpawn(Vector3 $spawn) : void {
@@ -186,11 +186,11 @@ final class MapRegisterer implements Listener {
 			if ($itemId == 369 && $itemName === "§r§aSet cages\n§7Break a block.") {
 				if (!isset($this->tempData[strtolower($player->getName())]["cages"]["winners"])) {
 					$this->tempData[strtolower($player->getName())]["cages"]["winners"] = $block->getPosition()->asVector3();
-					$player->sendMessage($this->plugin->getTranslator()->translate($player, "configurator.mode.setcage.lossers"));
+					$player->sendMessage($this->plugin->getTranslator()->translate($player, "configurator.mode.setcage.losers"));
 				} else {
 					$winners = $this->tempData[strtolower($player->getName())]["cages"]["winners"];
-					$lossers = $block->getPosition()->asVector3();
-					$this->setCages($winners, $lossers);
+					$losers = $block->getPosition()->asVector3();
+					$this->setCages($winners, $losers);
 					$player->sendMessage($this->plugin->getTranslator()->translate($player, "configurator.mode.setcage.successfully"));
 					$player->getInventory()->removeItem($item);
 					unset($this->tempData[strtolower($player->getName())]["cages"]);

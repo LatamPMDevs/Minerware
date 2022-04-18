@@ -25,13 +25,14 @@ git clone https://github.com/IvanCraft623/languages.git
 # NOTE: Remember to include this folder (yourspace/virions) in your development workspace if possible.
 ```
 ## Microgames list:
-- Stack Blocks
 - Ignite the TNT
+- Stand on Diamond
+- Stack Blocks
 
 ## Project information:
 | Plugin version | Pocketmine version | PHP version | Status |
 |---|---|---|---|
-| 1.0.0-dev6 | 4.1.0 minimum | 8.0 minimum | Development |
+| 1.0.0-dev6 | 4.0.0 minimum | 8.0 minimum | Development |
 
 ## Copyright:
 ```

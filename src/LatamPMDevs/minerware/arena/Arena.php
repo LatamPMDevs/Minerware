@@ -30,6 +30,8 @@ use LatamPMDevs\minerware\tasks\ArenaTask;
 use LatamPMDevs\minerware\utils\PointHolder;
 use LatamPMDevs\minerware\utils\Utils;
 
+use pocketmine\block\VanillaBlocks;
+use pocketmine\block\utils\DyeColor;
 use pocketmine\event\entity\EntityDamageEvent;
 use pocketmine\event\entity\EntityTeleportEvent;
 use pocketmine\event\Listener;
@@ -82,6 +84,10 @@ final class Arena implements Listener {
 
 	public int $endingtime = self::ENDING_TIME;
 
+	public bool $isWinnersCageSet = false;
+
+	public bool $isLosersCageSet = false;
+
 	public function __construct(private string $id, private Map $map) {
 		$this->plugin = Minerware::getInstance();
 		$this->world = $this->map->generateWorld($this->id);
@@ -106,7 +112,7 @@ final class Arena implements Listener {
 			if ($this->currentMicrogame !== null && $this->currentMicrogame->isRunning()) {
 				$this->currentMicrogame->tick();
 			};
-		}), 2);
+		}), 3);
 
 	}
 
@@ -147,10 +153,7 @@ final class Arena implements Listener {
 		$spawns = $this->map->getSpawns();
 		$spawn = Position::fromObject($spawns[array_rand($spawns)], $this->world);
 		$player->teleport($spawn);
-		$player->getInventory()->clearAll();
-		$player->getArmorInventory()->clearAll();
-		$player->getCursorInventory()->clearAll();
-		$player->getOffHandInventory()->clearAll();
+		Utils::initPlayer($player);
 		$player->setGamemode(GameMode::ADVENTURE());
 	}
 
@@ -301,12 +304,15 @@ final class Arena implements Listener {
 		if ($microgame->isRunning()) {
 			$winners = $microgame->getWinners();
 			$winnersCount = count($winners);
+			$playersCount = count($this->players);
 			foreach ($this->players as $player) {
 				$player->sendMessage("\n§l§e" . $microgame->getName());
-				if ($winnersCount <= 0) {
+				if ($winnersCount >= $playersCount) {
+					$player->sendMessage($this->plugin->getTranslator()->translate($player, "microgame.nolosers"));
+				} elseif ($winnersCount <= 0) {
 					$player->sendMessage($this->plugin->getTranslator()->translate(
 						$player, "microgame.nowinners", [
-							"{%count}" => count($this->players)
+							"{%count}" => $playersCount
 						]
 					));
 				} elseif ($winnersCount <= 3) {
@@ -319,7 +325,7 @@ final class Arena implements Listener {
 					$player->sendMessage($this->plugin->getTranslator()->translate(
 						$player, "microgame.winners2", [
 							"{%winners_count}" => $winnersCount,
-							"{%players_count}" => count($this->players)
+							"{%players_count}" => $playersCount
 						]
 					));
 				}
@@ -328,15 +334,13 @@ final class Arena implements Listener {
 			$recompense = $microgame->getRecompensePoints();
 			$showWorthMessage = $recompense > Microgame::DEFAULT_RECOMPENSE_POINTS;
 			foreach ($this->players as $player) {
-				$player->getInventory()->clearAll();
-				$player->getArmorInventory()->clearAll();
-				$player->getCursorInventory()->clearAll();
-				$player->getOffHandInventory()->clearAll();
+				Utils::initPlayer($player);
 				$player->setGamemode(GameMode::ADVENTURE());
+				$player->sendMessage("\n");
 				if ($microgame->isWinner($player)) {
 					$this->pointHolder->addPlayerPoint($player, $recompense);
 					$player->sendTitle("§1§2", $this->plugin->getTranslator()->translate($player, "microgame.success"), 1, 20, 1);
-				} else {
+				} elseif ($microgame->isLoser($player)) {
 					$player->sendTitle("§1§2", $this->plugin->getTranslator()->translate($player, "microgame.failed"), 1, 20, 1);
 				}
 				if ($showWorthMessage) {
@@ -354,14 +358,46 @@ final class Arena implements Listener {
 			}
 			$this->setCurrentMicrogame(null);
 		}
+		$this->unsetWinnersCage();
+		$this->unsetLosersCage();
+	}
+
+	public function buildWinnersCage() : void {
+		Utils::buildCage(Position::fromObject($this->map->getWinnersCage(), $this->world), VanillaBlocks::STAINED_GLASS()->setColor(DyeColor::LIME()));
+		$this->isWinnersCageSet = true;
+	}
+
+	public function unsetWinnersCage() : void {
+		Utils::buildCage(Position::fromObject($this->map->getWinnersCage(), $this->world), VanillaBlocks::AIR());
+		$this->isWinnersCageSet = false;
+	}
+
+	public function buildLosersCage() : void {
+		Utils::buildCage(Position::fromObject($this->map->getLosersCage(), $this->world), VanillaBlocks::STAINED_GLASS()->setColor(DyeColor::RED()));
+		$this->isLosersCageSet = true;
+	}
+
+	public function unsetLosersCage() : void {
+		Utils::buildCage(Position::fromObject($this->map->getLosersCage(), $this->world), VanillaBlocks::AIR());
+		$this->isLosersCageSet = false;
 	}
 
 	public function sendToWinnersCage(Player $player) : void {
-		# TODO!
+		if (!$this->isWinnersCageSet) {
+			$this->buildWinnersCage();
+		}
+		Utils::initPlayer($player);
+		$player->setGamemode(GameMode::ADVENTURE());
+		$player->teleport($this->map->getWinnersCage()->add(0, 2, 0));
 	}
 
 	public function sendToLosersCage(Player $player) : void {
-		# TODO!
+		if (!$this->isLosersCageSet) {
+			$this->buildLosersCage();
+		}
+		Utils::initPlayer($player);
+		$player->setGamemode(GameMode::ADVENTURE());
+		$player->teleport($this->map->getLosersCage()->add(0, 2, 0));
 	}
 
 	#Listener
@@ -398,7 +434,7 @@ final class Arena implements Listener {
 		$player = $event->getEntity();
 		if (!$player instanceof Player) return;
 		if (!$this->inGame($player)) return;
-		if ($this->status->equals(Status::WAITING()) || $this->status->equals(Status::STARTING()) || $this->status->equals(Status::INBETWEEN())) {
+		if ($this->currentMicrogame === null) {
 			$event->cancel();
 		}
 	}

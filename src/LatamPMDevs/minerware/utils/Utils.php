@@ -166,4 +166,30 @@ final class Utils {
 		}
 		return $changedBlocks;
 	}
+
+	public static function buildCage(Position $center, Block $block) : void {
+		$world = $center->getWorld();
+		$pos1 = new Position($center->x + 3, $center->y, $center->z + 3, $world);
+		$pos2 = new Position($center->x - 3, $center->y, $center->z - 3, $world);
+		self::fill($pos1, $pos2, $block, false);
+		$pos3 = new Position($center->x + 3, $center->y + 4, $center->z - 3, $world);
+		self::fill($pos1, $pos3, $block, false);
+		self::fill($pos3, $pos2, $block, false);
+		$pos4 = new Position($center->x - 3, $center->y + 4, $center->z + 3, $world);
+		self::fill($pos2, $pos4, $block, false);
+		self::fill($pos4, $pos1, $block, false);
+	}
+
+	public static function initPlayer(Player $player) : void {
+		$player->setFlying(false);
+		$player->setAllowFlight(false);
+		$player->setMaxHealth(20);
+		$player->setHealth(20);
+		$player->getHungerManager()->setFood(20);;
+		$player->getEffects()->clear();
+		$player->getInventory()->clearAll();
+		$player->getArmorInventory()->clearAll();
+		$player->getCursorInventory()->clearAll();
+		$player->getOffHandInventory()->clearAll();
+	}
 }

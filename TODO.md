@@ -56,7 +56,7 @@ The platform is turned into an assortment of different coloured wool. Stand on t
 
 # Stand on diamond
 Some of the 2x2 platforms are turned into diamond blocks. When the time runs out, every platform will disappear except the diamond block ones., so you'd better be standing on one when the time runs out or you will lose out on a point!
-- [ ] Done
+- [x] Done
 
 # Shear 12 Sheep
 The platform is turned into a pen full of sheep. Equipped with shears, you are required to shear sheep and gain at least 12 pieces of wool to achieve another point!
