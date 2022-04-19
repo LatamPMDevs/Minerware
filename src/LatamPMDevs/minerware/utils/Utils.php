@@ -192,4 +192,12 @@ final class Utils {
 		$player->getCursorInventory()->clearAll();
 		$player->getOffHandInventory()->clearAll();
 	}
+
+	public static function chunkScores(array $array) : array {
+		$result = [];
+		foreach ($array as $key => $score) {
+			$result[$score][] = $key;
+		}
+		return $result;
+	}
 }

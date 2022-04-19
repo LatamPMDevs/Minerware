@@ -27,6 +27,7 @@ use LatamPMDevs\minerware\arena\microgame\Level;
 use LatamPMDevs\minerware\arena\microgame\Microgame;
 use LatamPMDevs\minerware\utils\Utils;
 
+use pocketmine\block\Block;
 use pocketmine\block\VanillaBlocks;
 use pocketmine\event\block\BlockBreakEvent;
 use pocketmine\event\block\BlockPlaceEvent;
@@ -140,8 +141,7 @@ class StandOnDiamond extends Microgame implements Listener {
 		$hits = $this->getPlayersHitsOrderedByHigherScore();
 		$hitter = null;
 		if ($hits !== []) {
-			$id = $stackedBlocks[array_key_first($stackedBlocks)];
-			$stacker = $players[$id] ?? null;
+			$hitter = $players[array_key_first($hits)] ?? null;
 		}
 		foreach ($players as $player) {
 			if ($hitter !== null) {
@@ -224,6 +224,10 @@ class StandOnDiamond extends Microgame implements Listener {
 		if (!$player instanceof Player) return;
 		if (!$this->arena->inGame($player)) return;
 		if ($event instanceof EntityDamageByEntityEvent) {
+			$damager = $event->getDamager();
+			if ($damager instanceof Player && $this->arena->inGame($damager)) {
+				$this->hitsCount[$damager->getId()] = $this->getHits($damager) + 1;
+			}
 			$event->setBaseDamage(0);
 			return;
 		}

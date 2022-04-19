@@ -119,8 +119,7 @@ class StackBlocks extends Microgame implements Listener {
 		$stacker = null;
 		$stackedBlocks = $this->getStackedBlocksOrderedByHigherScore();
 		if ($stackedBlocks !== []) {
-			$id = $stackedBlocks[array_key_first($stackedBlocks)];
-			$stacker = $players[$id] ?? null;
+			$stacker = $players[array_key_first($stackedBlocks)] ?? null;
 		}
 		foreach ($players as $player) {
 			if ($stacker !== null) {

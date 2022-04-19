@@ -25,6 +25,7 @@ namespace LatamPMDevs\minerware;
 use CortexPE\Commando\PacketHooker;
 use IvanCraft623\languages\Translator;
 use LatamPMDevs\minerware\arena\ArenaManager;
+use LatamPMDevs\minerware\arena\microgame\boss\ColorFloor;
 use LatamPMDevs\minerware\arena\microgame\normal\IgniteTNT;
 use LatamPMDevs\minerware\arena\microgame\normal\StackBlocks;
 use LatamPMDevs\minerware\arena\microgame\normal\StandOnDiamond;
@@ -86,6 +87,6 @@ final class Minerware extends PluginBase {
 	}
 
 	public function getBossMicrogames() : array {
-		return [];
+		return [ColorFloor::class];
 	}
 }

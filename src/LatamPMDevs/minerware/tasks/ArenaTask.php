@@ -25,6 +25,7 @@ namespace LatamPMDevs\minerware\tasks;
 use LatamPMDevs\minerware\arena\Arena;
 use LatamPMDevs\minerware\arena\ArenaManager;
 use LatamPMDevs\minerware\arena\Status;
+use LatamPMDevs\minerware\arena\microgame\Level;
 use LatamPMDevs\minerware\Minerware;
 use pocketmine\scheduler\Task;
 use function count;
@@ -71,7 +72,7 @@ final class ArenaTask extends Task {
 						$arena->startingtime = 15;
 					}
 					foreach ($players as $player) {
-						$player->getXpManager()->setXpLevel($arena->startingtime);
+						$player->getXpManager()->setXpAndProgress($arena->startingtime, 0);
 					}
 					if ($arena->startingtime <= 0) {
 						$arena->setStatus(Status::INBETWEEN());
@@ -87,7 +88,8 @@ final class ArenaTask extends Task {
 				$arena->inbetweentime--;
 				if ($arena->inbetweentime === 3) {
 					if ($arena->getNextMicrogame() === null) {
-						# TODO: Finish game!
+						$arena->end();
+						return;
 					}
 				}
 				if ($arena->inbetweentime === 10) {
@@ -100,8 +102,13 @@ final class ArenaTask extends Task {
 					}
 				}
 				if ($arena->inbetweentime <= 3 && $arena->inbetweentime >= 1) {
+					$isBoss = $arena->getNextMicrogameNonNull()->getLevel()->equals(Level::BOSS());
 					foreach ($players as $player) {
-						$player->sendTitle("§k§4|||§r§6" . $arena->inbetweentime . "§k§4|||", "§5" . $arena->getNextMicrogameNonNull()->getName(), 10, 10, 10);
+						if ($isBoss) {
+							$player->sendTitle("§6BOSS GAME", "§c" . $arena->getNextMicrogameNonNull()->getName(), 10, 10, 10);
+						} else {
+							$player->sendTitle("§k§4|||§r§6" . $arena->inbetweentime . "§k§4|||", "§5" . $arena->getNextMicrogameNonNull()->getName(), 10, 10, 10);
+						}
 					}
 				}
 				if ($arena->inbetweentime <= 0) {

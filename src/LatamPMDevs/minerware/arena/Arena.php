@@ -35,6 +35,7 @@ use pocketmine\block\VanillaBlocks;
 use pocketmine\event\entity\EntityDamageEvent;
 use pocketmine\event\entity\EntityTeleportEvent;
 use pocketmine\event\Listener;
+use pocketmine\event\player\PlayerDropItemEvent;
 use pocketmine\event\player\PlayerExhaustEvent;
 use pocketmine\event\player\PlayerQuitEvent;
 use pocketmine\player\GameMode;
@@ -54,7 +55,7 @@ final class Arena implements Listener {
 	public const MIN_PLAYERS = 2;
 	public const MAX_PLAYERS = 12;
 
-	public const STARTING_TIME = 10;//121
+	public const STARTING_TIME = 121;
 	public const INBETWEEN_TIME = 5;
 	public const ENDING_TIME = 10;
 
@@ -102,8 +103,9 @@ final class Arena implements Listener {
 		foreach($normalMicrogames as $microgame) {
 			$this->microgamesQueue[] = new $microgame($this);
 		}
-		/*$bossMicrogames = $this->plugin->getBossMicrogames();
-		$this->microgamesQueue[] = new $bossMicrogames[array_rand($bossMicrogames)];*/
+		$bossMicrogames = $this->plugin->getBossMicrogames();
+		$bossgame = $bossMicrogames[array_rand($bossMicrogames)];
+		$this->microgamesQueue[] = new $bossgame($this);
 
 		$this->plugin->getScheduler()->scheduleRepeatingTask(new ClosureTask(function () : void {
 			if ($this->status->equals(Status::ENDING())) {
@@ -258,8 +260,9 @@ final class Arena implements Listener {
 					$isOnTop = false;
 					$i = 0;
 					$lines[] = "§5" . $translator->translate($player, "text.scores") . ":";
-					foreach ($this->pointHolder->getOrderedByHigherScore() as $user => $point) {
+					foreach ($this->pointHolder->getOrderedByHigherScore() as $playerId => $point) {
 						$i++;
+						$user = $this->players[$playerId]->getName();
 						if ($user === $player->getName()) {
 							$lines[] = "§f" . "§a" . $point . " §8" . $user;
 							$isOnTop = true;
@@ -336,7 +339,6 @@ final class Arena implements Listener {
 			foreach ($this->players as $player) {
 				Utils::initPlayer($player);
 				$player->setGamemode(GameMode::ADVENTURE());
-				$player->sendMessage("\n");
 				if ($microgame->isWinner($player)) {
 					$this->pointHolder->addPlayerPoint($player, $recompense);
 					$player->sendTitle("§1§2", $this->plugin->getTranslator()->translate($player, "microgame.success"), 1, 20, 1);
@@ -350,6 +352,7 @@ final class Arena implements Listener {
 						]
 					));
 				}
+				$player->sendMessage("\n");
 			}
 			foreach ($this->world->getEntities() as $entity) {
 				if (!$entity instanceof Player) {
@@ -360,6 +363,37 @@ final class Arena implements Listener {
 		}
 		$this->unsetWinnersCage();
 		$this->unsetLosersCage();
+	}
+
+	public function end() : void {
+		$this->status = Status::ENDING();
+		$winners = [];
+		$scores = array_slice(Utils::chunkScores($this->pointHolder->getOrderedByHigherScore()), 0, 3);
+		$tops = [];
+		$i = 0;
+		foreach ($scores as $points => $playersIds) {
+			foreach ($playersIds as $id) {
+				$pl = $this->players[$id];
+				$tops[$i][] = $pl;
+				$winners[$id] = $pl;
+			}
+			$i++;
+		}
+		foreach ($this->players as $player) {
+			$player->sendMessage("§7" . str_repeat("-", 31));
+			foreach ($tops as $key => $players) {
+				$player->sendMessage($this->plugin->getTranslator()->translate(
+					$player, "game.arena.top" . $key + 1, [
+						"{%players}" => implode("§a, §8", Utils::getPlayersNames($players)),
+						"{%points}" => $this->pointHolder->getPlayerPoints($players[array_key_first($players)])
+					]
+				));
+			}
+			$player->sendMessage("§7" . str_repeat("-", 31));
+			if (isset($winners[$player->getId()])) {
+				$player->sendMessage($this->plugin->getTranslator()->translate($player, "game.arena.youwin"));
+			}
+		}
 	}
 
 	public function buildWinnersCage() : void {
@@ -420,6 +454,13 @@ final class Arena implements Listener {
 		if ($event->getFrom()->getWorld() === $event->getTo()->getWorld()) return;
 		if ($this->inGame($player)) {
 			$this->quit($player);
+		}
+	}
+
+	public function onDropItem(PlayerDropItemEvent $event) : void {
+		$player = $event->getPlayer();
+		if ($this->inGame($player)) {
+			$event->cancel();
 		}
 	}
 
