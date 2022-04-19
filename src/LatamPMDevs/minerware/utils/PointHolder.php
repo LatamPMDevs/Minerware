@@ -29,7 +29,7 @@ use function asort;
 
 final class PointHolder {
 
-	/** @var array<string, int> */
+	/** @var array<int, int> */
 	private array $points = [];
 
 	public function addPlayer(Player $player) : void {

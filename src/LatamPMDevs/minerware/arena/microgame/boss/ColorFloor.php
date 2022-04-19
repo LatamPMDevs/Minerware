@@ -32,6 +32,7 @@ use pocketmine\block\Block;
 use pocketmine\block\StainedHardenedClay;
 use pocketmine\block\utils\DyeColor;
 use pocketmine\block\VanillaBlocks;
+use pocketmine\entity\projectile\SplashPotion;
 use pocketmine\event\block\BlockBreakEvent;
 use pocketmine\event\block\BlockPlaceEvent;
 use pocketmine\event\entity\EntityDamageEvent;
@@ -41,6 +42,7 @@ use pocketmine\event\HandlerListManager;
 use pocketmine\event\Listener;
 use pocketmine\event\player\PlayerInteractEvent;
 use pocketmine\item\Hoe;
+use pocketmine\item\ItemFactory;
 use pocketmine\item\PotionType;
 use pocketmine\item\VanillaItems;
 use pocketmine\player\GameMode;
@@ -319,6 +321,7 @@ class ColorFloor extends Microgame implements Listener {
 		if (!$this->arena->inGame($player)) return;
 		$item = $player->getInventory()->getItemInHand();
 		if (!$item->equals(VanillaItems::LEAPING_SPLASH_POTION(), true, false)) return;
+		if (!$projectile instanceof SplashPotion) return;
 		if ($this->getAssignedColor($player) !== null) {
 			$event->cancel();
 			$missile = new ColorMissile($projectile->getLocation(), $player, $projectile->getPotionType());
@@ -330,7 +333,7 @@ class ColorFloor extends Microgame implements Listener {
 			# Remove item
 			$item->setCount($item->getCount() - 1);
 			if ($item->getCount() <= 0) {
-				$item = VanillaItems::AIR();
+				$item = ItemFactory::air();
 			}
 			$player->getInventory()->setItemInHand($item);
 		}
