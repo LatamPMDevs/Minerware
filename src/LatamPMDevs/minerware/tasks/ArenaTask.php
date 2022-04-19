@@ -24,8 +24,8 @@ namespace LatamPMDevs\minerware\tasks;
 
 use LatamPMDevs\minerware\arena\Arena;
 use LatamPMDevs\minerware\arena\ArenaManager;
-use LatamPMDevs\minerware\arena\Status;
 use LatamPMDevs\minerware\arena\microgame\Level;
+use LatamPMDevs\minerware\arena\Status;
 use LatamPMDevs\minerware\Minerware;
 use pocketmine\scheduler\Task;
 use function count;

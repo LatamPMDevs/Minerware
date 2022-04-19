@@ -41,17 +41,18 @@ use pocketmine\event\HandlerListManager;
 use pocketmine\event\Listener;
 use pocketmine\event\player\PlayerInteractEvent;
 use pocketmine\item\Hoe;
-use pocketmine\item\PotionType;
 use pocketmine\item\VanillaItems;
 use pocketmine\player\GameMode;
 use pocketmine\player\Player;
 use pocketmine\utils\AssumptionFailedError;
 use pocketmine\world\Position;
 use pocketmine\world\sound\ThrowSound;
-use function array_rand;
 use function array_reverse;
+use function array_slice;
 use function asort;
+use function count;
 use function microtime;
+use function shuffle;
 
 class ColorFloor extends Microgame implements Listener {
 
