@@ -45,10 +45,13 @@ use pocketmine\scheduler\ClosureTask;
 use pocketmine\utils\AssumptionFailedError;
 use pocketmine\world\Position;
 use pocketmine\world\World;
+use function array_key_first;
 use function array_rand;
+use function array_slice;
 use function count;
 use function implode;
 use function shuffle;
+use function str_repeat;
 
 final class Arena implements Listener {
 
