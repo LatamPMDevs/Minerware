@@ -22,7 +22,6 @@ declare(strict_types=1);
 
 namespace LatamPMDevs\minerware\arena\microgame\normal;
 
-use LatamPMDevs\minerware\arena\Map;
 use LatamPMDevs\minerware\arena\microgame\Level;
 use LatamPMDevs\minerware\arena\microgame\Microgame;
 use LatamPMDevs\minerware\utils\Utils;
@@ -39,10 +38,12 @@ use pocketmine\item\enchantment\VanillaEnchantments;
 use pocketmine\item\VanillaItems;
 use pocketmine\player\GameMode;
 use pocketmine\player\Player;
-use pocketmine\utils\AssumptionFailedError;
 use pocketmine\world\format\Chunk;
 use function array_rand;
 use function microtime;
+use function mt_rand;
+use function str_replace;
+use function strtolower;
 
 class MineOre extends Microgame implements Listener {
 
@@ -91,7 +92,6 @@ class MineOre extends Microgame implements Listener {
 		$oreKey = array_rand($ores);
 		$this->ore = $ores[$oreKey];
 		unset($ores[$oreKey]);
-
 
 		$map = $this->arena->getMap();
 		$minPos = $map->getPlatformMinPos();

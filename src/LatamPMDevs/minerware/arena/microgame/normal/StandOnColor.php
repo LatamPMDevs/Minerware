@@ -98,7 +98,7 @@ class StandOnColor extends Microgame implements Listener {
 		$world = $this->arena->getWorld();
 		foreach (Map::MINI_PLATFORMS as $key => $value) {
 			foreach (Map::MINI_PLATFORMS[$key] as $blockPos) {
-				$this->changedBlocks[] = $world->getBlockAt((int) ($minPos->x + $blockPos[0]), (int)($minPos->y + $blockPos[1]), (int) ($minPos->z + $blockPos[2]));
+				$this->changedBlocks[] = $world->getBlockAt((int) ($minPos->x + $blockPos[0]), (int) ($minPos->y + $blockPos[1]), (int) ($minPos->z + $blockPos[2]));
 				$world->setBlockAt((int) ($minPos->x + $blockPos[0]), (int) ($minPos->y + $blockPos[1]), (int) ($minPos->z + $blockPos[2]), VanillaBlocks::AIR(), true);
 			}
 		}

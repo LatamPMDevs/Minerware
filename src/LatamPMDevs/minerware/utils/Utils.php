@@ -260,7 +260,7 @@ final class Utils {
 			case ($dyeColor->equals(DyeColor::BLACK())):
 				return TextFormat::BLACK;
 				break;
-			
+
 			default:
 				return TextFormat::WHITE;
 				break;
