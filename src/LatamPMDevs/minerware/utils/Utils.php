@@ -208,62 +208,20 @@ final class Utils {
 	 * in these cases return TextFormat::WHITE
 	 */
 	public static function DyeColor2TextFormat(DyeColor $dyeColor) : string {
-		switch (true) {
-			case ($dyeColor->equals(DyeColor::ORANGE())):
-				return TextFormat::GOLD;
-				break;
-
-			case ($dyeColor->equals(DyeColor::MAGENTA())):
-				return TextFormat::DARK_PURPLE;
-				break;
-
-			case ($dyeColor->equals(DyeColor::LIGHT_BLUE())):
-				return TextFormat::AQUA;
-				break;
-
-			case ($dyeColor->equals(DyeColor::YELLOW())):
-				return TextFormat::YELLOW;
-				break;
-
-			case ($dyeColor->equals(DyeColor::LIME())):
-				return TextFormat::GREEN;
-				break;
-
-			case ($dyeColor->equals(DyeColor::PINK())):
-				return TextFormat::LIGHT_PURPLE;
-				break;
-
-			case ($dyeColor->equals(DyeColor::GRAY())):
-				return TextFormat::DARK_GRAY;
-				break;
-
-			case ($dyeColor->equals(DyeColor::LIGHT_GRAY())):
-				return TextFormat::GRAY;
-				break;
-
-			case ($dyeColor->equals(DyeColor::CYAN())):
-				return TextFormat::DARK_AQUA;
-				break;
-
-			case ($dyeColor->equals(DyeColor::BLUE())):
-				return TextFormat::BLUE;
-				break;
-
-			case ($dyeColor->equals(DyeColor::GREEN())):
-				return TextFormat::DARK_GREEN;
-				break;
-
-			case ($dyeColor->equals(DyeColor::RED())):
-				return TextFormat::DARK_RED;
-				break;
-
-			case ($dyeColor->equals(DyeColor::BLACK())):
-				return TextFormat::BLACK;
-				break;
-
-			default:
-				return TextFormat::WHITE;
-				break;
-		}
+		return match (true) {
+			$dyeColor->equals(DyeColor::ORANGE()) => TextFormat::GOLD,
+			$dyeColor->equals(DyeColor::MAGENTA()) => TextFormat::DARK_PURPLE,
+			$dyeColor->equals(DyeColor::LIGHT_BLUE()) => TextFormat::AQUA,
+			$dyeColor->equals(DyeColor::LIME()) => TextFormat::GREEN,
+			$dyeColor->equals(DyeColor::PINK()) => TextFormat::LIGHT_PURPLE,
+			$dyeColor->equals(DyeColor::GRAY()) => TextFormat::DARK_GRAY,
+			$dyeColor->equals(DyeColor::LIGHT_GRAY()) => TextFormat::GRAY,
+			$dyeColor->equals(DyeColor::CYAN()) => TextFormat::DARK_AQUA,
+			$dyeColor->equals(DyeColor::BLUE()) => TextFormat::BLUE,
+			$dyeColor->equals(DyeColor::GREEN()) => TextFormat::DARK_GREEN,
+			$dyeColor->equals(DyeColor::RED()) => TextFormat::DARK_RED,
+			$dyeColor->equals(DyeColor::BLACK()) => TextFormat::BLACK,
+			default => TextFormat::WHITE,
+		};
 	}
 }
