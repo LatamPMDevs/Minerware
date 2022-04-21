@@ -476,7 +476,7 @@ final class Arena implements Listener {
 		if ($this->world->getBlock($pos)->isFullCube()) {
 			$pos->y = (int) $pos->y;
 			$maxY = $this->world->getMaxY() - 2;
-			for (; $pos->y < $maxY; $pos->y++) { 
+			for (; $pos->y < $maxY; $pos->y++) {
 				if (!$this->world->getBlock($pos)->isFullCube()) {
 					break;
 				}
