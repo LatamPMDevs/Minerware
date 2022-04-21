@@ -482,7 +482,7 @@ final class Arena implements Listener {
 				}
 			}
 		}
-		$safe = $this->world->getSafeSpawn($pos):
+		$safe = $this->world->getSafeSpawn($pos);
 		$safe->y = $safe->y + 2;
 		$player->teleport($safe);
 	}
