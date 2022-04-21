@@ -24,9 +24,11 @@ namespace LatamPMDevs\minerware\utils;
 
 use InvalidArgumentException;
 use pocketmine\block\Block;
+use pocketmine\block\utils\DyeColor;
 use pocketmine\math\Vector3;
 use pocketmine\network\mcpe\protocol\PlaySoundPacket;
 use pocketmine\player\Player;
+use pocketmine\utils\TextFormat;
 use pocketmine\world\format\Chunk;
 use pocketmine\world\Position;
 use RecursiveDirectoryIterator;
@@ -199,5 +201,69 @@ final class Utils {
 			$result[$score][] = $key;
 		}
 		return $result;
+	}
+
+	/**
+	 * Some colors of DyeColor do not exist in TextFormat
+	 * in these cases return TextFormat::WHITE
+	 */
+	public static function DyeColor2TextFormat(DyeColor $dyeColor) : string {
+		switch (true) {
+			case ($dyeColor->equals(DyeColor::ORANGE())):
+				return TextFormat::GOLD;
+				break;
+
+			case ($dyeColor->equals(DyeColor::MAGENTA())):
+				return TextFormat::DARK_PURPLE;
+				break;
+
+			case ($dyeColor->equals(DyeColor::LIGHT_BLUE())):
+				return TextFormat::AQUA;
+				break;
+
+			case ($dyeColor->equals(DyeColor::YELLOW())):
+				return TextFormat::YELLOW;
+				break;
+
+			case ($dyeColor->equals(DyeColor::LIME())):
+				return TextFormat::GREEN;
+				break;
+
+			case ($dyeColor->equals(DyeColor::PINK())):
+				return TextFormat::LIGHT_PURPLE;
+				break;
+
+			case ($dyeColor->equals(DyeColor::GRAY())):
+				return TextFormat::DARK_GRAY;
+				break;
+
+			case ($dyeColor->equals(DyeColor::LIGHT_GRAY())):
+				return TextFormat::GRAY;
+				break;
+
+			case ($dyeColor->equals(DyeColor::CYAN())):
+				return TextFormat::DARK_AQUA;
+				break;
+
+			case ($dyeColor->equals(DyeColor::BLUE())):
+				return TextFormat::BLUE;
+				break;
+
+			case ($dyeColor->equals(DyeColor::GREEN())):
+				return TextFormat::DARK_GREEN;
+				break;
+
+			case ($dyeColor->equals(DyeColor::RED())):
+				return TextFormat::DARK_RED;
+				break;
+
+			case ($dyeColor->equals(DyeColor::BLACK())):
+				return TextFormat::BLACK;
+				break;
+			
+			default:
+				return TextFormat::WHITE;
+				break;
+		}
 	}
 }

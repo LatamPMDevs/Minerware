@@ -1,6 +1,10 @@
-### TODO Minigames
+### Microgames
 
 ## Normal Games
+
+# Sneaking
+Players have to keep sneaking until the time is up.
+- [x] Done
 
 # Wait for it
 The title is changed to an instruction, sneak or jump into the void.
@@ -44,7 +48,7 @@ Chests filled with an assortment of armour, weapons and other items spawn random
 
 # Mine <Ore>
 The platform turns into a large cube of cobblestone and an assortment of ores. Players will need to mine whatever ore they are commanded to mine
-- [ ] Done
+- [x] Done
 
 # Craft <Item>
 Crafting tables spawn around the platform and floating above them is the item that you are instructed to craft. Resources are inside your inventory. Craft the item before the time runs out to win a point.
@@ -52,7 +56,7 @@ Crafting tables spawn around the platform and floating above them is the item th
 
 # Stand on <Color>
 The platform is turned into an assortment of different coloured wool. Stand on the instructed colour to achieve another point!
-- [ ] Done
+- [x] Done
 
 # Stand on diamond
 Some of the 2x2 platforms are turned into diamond blocks. When the time runs out, every platform will disappear except the diamond block ones., so you'd better be standing on one when the time runs out or you will lose out on a point!
@@ -110,4 +114,4 @@ The platform is transformed into TNT and each player is given a Flame 1 Bow. Sho
 
 # Color Floor
 Players are given a diamond hoe that can be used to colour the floor. Right click to paint floor tiles your colour. You can only paint floor tiles connected to your colour already. If you’ve already been circled off by someone else, no need to worry, for you have paint bombs. These paint bombs explode your colour on 5 tiles of wherever you throw it. You can then keep painting the floor from there. Top 3 players with the most coloured tiles win!
-- [ ] Done
+- [x] Done

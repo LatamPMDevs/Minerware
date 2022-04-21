@@ -58,7 +58,7 @@ final class Arena implements Listener {
 	public const MIN_PLAYERS = 2;
 	public const MAX_PLAYERS = 12;
 
-	public const STARTING_TIME = 121;
+	public const STARTING_TIME = 10;//120
 	public const INBETWEEN_TIME = 5;
 	public const ENDING_TIME = 10;
 
@@ -90,7 +90,13 @@ final class Arena implements Listener {
 
 	public bool $isWinnersCageSet = false;
 
+	/** @var array<int, Player> */
+	public array $winnersCage = [];
+
 	public bool $isLosersCageSet = false;
+
+	/** @var array<int, Player> */
+	public array $losersCage = [];
 
 	public function __construct(private string $id, private Map $map) {
 		$this->plugin = Minerware::getInstance();
@@ -99,6 +105,8 @@ final class Arena implements Listener {
 		$this->pointHolder = new PointHolder();
 		$this->plugin->getScheduler()->scheduleRepeatingTask(new ArenaTask($this), 20);
 		$this->plugin->getServer()->getPluginManager()->registerEvents($this, $this->plugin);
+		$this->world->setTime(World::TIME_NOON);
+		$this->world->stopTime();
 
 		# TODO: More Microgames!
 		$normalMicrogames = $this->plugin->getNormalMicrogames();
@@ -155,15 +163,15 @@ final class Arena implements Listener {
 				]
 			));
 		}
-		$spawns = $this->map->getSpawns();
-		$spawn = Position::fromObject($spawns[array_rand($spawns)], $this->world);
-		$player->teleport($spawn);
+		$player->teleport($this->getRandomSpawn());
 		Utils::initPlayer($player);
 		$player->setGamemode(GameMode::ADVENTURE());
 	}
 
 	public function quit(Player $player) : void {
 		unset($this->players[$player->getId()]);
+		unset($this->winnersCage[$player->getId()]);
+		unset($this->losersCage[$player->getId()]);
 		$this->pointHolder->removePlayer($player);
 		foreach ($this->players as $pl) {
 			$pl->sendMessage($this->plugin->getTranslator()->translate(
@@ -406,7 +414,15 @@ final class Arena implements Listener {
 
 	public function unsetWinnersCage() : void {
 		Utils::buildCage(Position::fromObject($this->map->getWinnersCage(), $this->world), VanillaBlocks::AIR());
+		foreach ($this->winnersCage as $player) {
+			$this->tpSafePosition($player);
+		}
 		$this->isWinnersCageSet = false;
+		$this->winnersCage = [];
+	}
+
+	public function inWinnersCage(Player $player) : bool {
+		return isset($this->winnersCage[$player->getId()]);
 	}
 
 	public function buildLosersCage() : void {
@@ -416,7 +432,15 @@ final class Arena implements Listener {
 
 	public function unsetLosersCage() : void {
 		Utils::buildCage(Position::fromObject($this->map->getLosersCage(), $this->world), VanillaBlocks::AIR());
+		foreach ($this->losersCage as $player) {
+			$this->tpSafePosition($player);
+		}
 		$this->isLosersCageSet = false;
+		$this->losersCage = [];
+	}
+
+	public function inLosersCage(Player $player) : bool {
+		return isset($this->losersCage[$player->getId()]);
 	}
 
 	public function sendToWinnersCage(Player $player) : void {
@@ -426,6 +450,7 @@ final class Arena implements Listener {
 		Utils::initPlayer($player);
 		$player->setGamemode(GameMode::ADVENTURE());
 		$player->teleport($this->map->getWinnersCage()->add(0, 2, 0));
+		$this->winnersCage[$player->getId()] = $player;
 	}
 
 	public function sendToLosersCage(Player $player) : void {
@@ -435,6 +460,36 @@ final class Arena implements Listener {
 		Utils::initPlayer($player);
 		$player->setGamemode(GameMode::ADVENTURE());
 		$player->teleport($this->map->getLosersCage()->add(0, 2, 0));
+		$this->losersCage[$player->getId()] = $player;
+	}
+
+	public function tpSafePosition(Player $player) : void {
+		$location = $player->getLocation();
+		if ($this->inWinnersCage($player) ||
+			$this->inLosersCage($player) ||
+			$location->y < $this->map->getPlatformMinPos()->y
+		) {
+			$pos = $this->getRandomSpawn();
+		} else {
+			$pos = $location;
+		}
+		if ($this->world->getBlock($pos)->isFullCube()) {
+			$pos->y = (int) $pos->y;
+			$maxY = $this->world->getMaxY() - 2;
+			for (; $pos->y < $maxY; $pos->y++) { 
+				if (!$this->world->getBlock($pos)->isFullCube()) {
+					break;
+				}
+			}
+		}
+		$safe = $this->world->getSafeSpawn($pos):
+		$safe->y = $safe->y + 2;
+		$player->teleport($safe);
+	}
+
+	public function getRandomSpawn() : Position {
+		$spawns = $this->map->getSpawns();
+		return Position::fromObject($spawns[array_rand($spawns)], $this->world);
 	}
 
 	#Listener
@@ -479,6 +534,9 @@ final class Arena implements Listener {
 		if (!$player instanceof Player) return;
 		if (!$this->inGame($player)) return;
 		if ($this->currentMicrogame === null) {
+			if ($event->getCause() === EntityDamageEvent::CAUSE_VOID) {
+				$player->teleport($this->getRandomSpawn());
+			}
 			$event->cancel();
 		}
 	}

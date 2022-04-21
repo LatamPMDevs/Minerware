@@ -31,45 +31,25 @@ use pocketmine\block\Block;
 use pocketmine\block\VanillaBlocks;
 use pocketmine\event\block\BlockBreakEvent;
 use pocketmine\event\block\BlockPlaceEvent;
-use pocketmine\event\entity\EntityDamageByEntityEvent;
 use pocketmine\event\entity\EntityDamageEvent;
 use pocketmine\event\HandlerListManager;
 use pocketmine\event\Listener;
-use pocketmine\item\enchantment\EnchantmentInstance;
-use pocketmine\item\enchantment\VanillaEnchantments;
-use pocketmine\item\VanillaItems;
+use pocketmine\event\player\PlayerMoveEvent;
+use pocketmine\event\player\PlayerToggleSneakEvent;
 use pocketmine\player\GameMode;
 use pocketmine\player\Player;
 use pocketmine\utils\AssumptionFailedError;
-use pocketmine\world\Position;
-use function array_key_first;
-use function array_rand;
-use function array_reverse;
-use function asort;
-use function in_array;
 use function microtime;
 
-class StandOnDiamond extends Microgame implements Listener {
-
-	public const DIAMOND_PLATFORMS = 4;
-
-	public const KNOCKBACK_LEVEL = 2;
-
-	public const FLOOR_BREAK_AT = 3;
+class Sneaking extends Microgame implements Listener {
 
 	/** @var Block[] */
 	protected array $changedBlocks = [];
 
-	/** @var array<int, int> */
-	protected array $hitsCount = [];
-
-	/** @var Int[] */
-	protected array $diamondPlatforms = [];
-
-	protected bool $isFloorBroken = false;
+	protected float $totalSneakedDistance = 0;
 
 	public function getName() : string {
-		return "Stand on Diamond";
+		return "Sneaking";
 	}
 
 	public function getLevel() : Level {
@@ -77,7 +57,7 @@ class StandOnDiamond extends Microgame implements Listener {
 	}
 
 	public function getGameDuration() : float {
-		return 16.9;
+		return 12.9;
 	}
 
 	public function getRecompensePoints() : int {
@@ -92,23 +72,18 @@ class StandOnDiamond extends Microgame implements Listener {
 		$map = $this->arena->getMap();
 		$minPos = $map->getPlatformMinPos();
 		$world = $this->arena->getWorld();
-		foreach (array_rand(Map::MINI_PLATFORMS, self::DIAMOND_PLATFORMS) as $key) {
-			$this->diamondPlatforms[] = $key;
+		foreach (Map::MINI_PLATFORMS as $key => $value) {
 			foreach (Map::MINI_PLATFORMS[$key] as $blockPos) {
-				$this->changedBlocks[] = $world->getBlockAt((int) ($minPos->x + $blockPos[0]), (int) ($minPos->y + $blockPos[1]), (int) ($minPos->z + $blockPos[2]));
-				$world->setBlockAt((int) ($minPos->x + $blockPos[0]), (int) ($minPos->y + $blockPos[1]), (int) ($minPos->z + $blockPos[2]), VanillaBlocks::DIAMOND(), false);
+				$this->changedBlocks[] = $world->getBlockAt((int) ($minPos->x + $blockPos[0]), (int)($minPos->y + $blockPos[1]), (int) ($minPos->z + $blockPos[2]));
+				$world->setBlockAt((int) ($minPos->x + $blockPos[0]), (int) ($minPos->y + $blockPos[1]), (int) ($minPos->z + $blockPos[2]), VanillaBlocks::AIR(), true);
 			}
 		}
 
-		$knockback = VanillaEnchantments::KNOCKBACK();
 		foreach ($this->arena->getPlayers() as $player) {
 			Utils::initPlayer($player);
-			$stick = VanillaItems::STICK();
-			$stick->setCustomName($this->plugin->getTranslator()->translate($player, "microgame.item.powerstick"));
-			$stick->addEnchantment(new EnchantmentInstance($knockback, self::KNOCKBACK_LEVEL));
 			$player->setGamemode(GameMode::ADVENTURE());
-			$player->getInventory()->setItem(0, $stick);
 			$player->getInventory()->setHeldItemIndex(0);
+			$player->sendTitle("§1§2", $this->plugin->getTranslator()->translate($player, "microgame.sneaking.start"), 10, 20, 10);
 		}
 		$this->arena->buildWinnersCage();
 		$this->arena->buildLosersCage();
@@ -118,18 +93,22 @@ class StandOnDiamond extends Microgame implements Listener {
 		$timeLeft = $this->getTimeLeft();
 		if ($timeLeft <= 0) {
 			foreach ($this->arena->getPlayers() as $player) {
-				if (!$this->isLoser($player)) {
+				if (!$this->isWinner($player) && !$this->isLoser($player)) {
 					$this->addWinner($player);
 				}
 			}
 			$this->arena->endCurrentMicrogame();
 			return;
 		}
-		if ($timeLeft <= self::FLOOR_BREAK_AT && !$this->isFloorBroken) {
-			$this->breakFloor();
-		}
 		foreach ($this->arena->getPlayers() as $player) {
 			$player->getXpManager()->setXpAndProgress((int) $timeLeft, $timeLeft / $this->getGameDuration());
+			if (!$this->isLoser($player) &&
+				!$player->isSneaking() &&
+				($timeLeft <= ($this->getGameDuration() - 1)
+			)) {
+				$this->addLoser($player);
+				$this->arena->sendToLosersCage($player);
+			}
 		}
 	}
 
@@ -138,24 +117,16 @@ class StandOnDiamond extends Microgame implements Listener {
 		HandlerListManager::global()->unregisterAll($this);
 
 		$players = $this->arena->getPlayers();
-		$hits = $this->getPlayersHitsOrderedByHigherScore();
-		$hitter = null;
-		if ($hits !== []) {
-			$hitter = $players[array_key_first($hits)] ?? null;
-		}
 		foreach ($players as $player) {
-			if ($hitter !== null) {
-				$player->sendMessage($this->plugin->getTranslator()->translate(
-					$player, "microgame.standondiamond.hitscount", [
-						"{%player}" => $hitter->getName(),
-						"{%hits_count}" => $this->getHits($player)
-					]
-				));
-			}
+			$player->sendMessage($this->plugin->getTranslator()->translate(
+				$player, "microgame.sneaking.total", [
+					"{%distance}" => (int) $this->totalSneakedDistance
+				]
+			));
 			if ($this->isWinner($player)) {
-				$player->sendMessage($this->plugin->getTranslator()->translate($player, "microgame.standondiamond.won"));
+				$player->sendMessage($this->plugin->getTranslator()->translate($player, "microgame.sneaking.won"));
 			} elseif ($this->isLoser($player)) {
-				$player->sendMessage($this->plugin->getTranslator()->translate($player, "microgame.standondiamond.lose"));
+				$player->sendMessage($this->plugin->getTranslator()->translate($player, "microgame.sneaking.lose"));
 			}
 		}
 		foreach ($this->changedBlocks as $block) {
@@ -163,46 +134,8 @@ class StandOnDiamond extends Microgame implements Listener {
 		}
 	}
 
-	public function isFloorBroken() : bool {
-		return $this->isFloorBroken;
-	}
-
-	public function breakFloor() : bool {
-		if (!$this->isFloorBroken) {
-			$map = $this->arena->getMap();
-			$world = $this->arena->getWorld();
-			$minPos = Position::fromObject($map->getPlatformMinPos(), $world);
-			$maxPos = Position::fromObject($map->getPlatformMaxPos(), $world);
-			foreach (Map::MINI_PLATFORMS as $key => $value) {
-				if (!in_array($key, $this->diamondPlatforms, true)) {
-					foreach (Map::MINI_PLATFORMS[$key] as $blockPos) {
-						$this->changedBlocks[] = $world->getBlockAt((int) ($minPos->x + $blockPos[0]), (int) ($minPos->y + $blockPos[1]), (int) ($minPos->z + $blockPos[2]));
-						$world->setBlockAt((int) ($minPos->x + $blockPos[0]), (int) ($minPos->y + $blockPos[1]), (int) ($minPos->z + $blockPos[2]), VanillaBlocks::AIR(), true);
-					}
-				}
-			}
-			foreach (Utils::fill($minPos, $maxPos, VanillaBlocks::AIR(), true) as $changedBlock) {
-				$this->changedBlocks[] = $changedBlock;
-			}
-			$this->isFloorBroken = true;
-			return true;
-		}
-		return false;
-	}
-
-	public function getHits(Player $player) : int {
-		return $this->hitsCount[$player->getId()] ?? 0;
-	}
-
-	/**
-	 * @return array<int, int>
-	 */
-	public function getPlayersHitsOrderedByHigherScore() : array {
-		$array = $this->hitsCount;
-		if (asort($array) === false) {
-			throw new AssumptionFailedError("Failed to sort score");
-		}
-		return array_reverse($array, true);
+	public function getTotalSneakedDistance() : float {
+		return $this->totalSneakedDistance;
 	}
 
 	# Listener
@@ -223,19 +156,36 @@ class StandOnDiamond extends Microgame implements Listener {
 		$player = $event->getEntity();
 		if (!$player instanceof Player) return;
 		if (!$this->arena->inGame($player)) return;
-		if ($event instanceof EntityDamageByEntityEvent) {
-			$damager = $event->getDamager();
-			if ($damager instanceof Player && $this->arena->inGame($damager)) {
-				$this->hitsCount[$damager->getId()] = $this->getHits($damager) + 1;
-			}
-			$event->setBaseDamage(0);
-			return;
-		}
 		$event->cancel();
 		if ($event->getCause() === EntityDamageEvent::CAUSE_VOID && !$this->isWinner($player)) {
 			$this->addLoser($player);
 			$this->arena->sendToLosersCage($player);
 			$player->sendMessage($this->plugin->getTranslator()->translate($player, "microgame.felloffplatform"));
 		}
+	}
+
+	/**
+	 * @ignoreCancelled
+	 * @priority HIGH
+	 */
+	public function onToggleSneak(PlayerToggleSneakEvent $event) : void {
+		$player = $event->getPlayer();
+		if (!$this->arena->inGame($player)) return;
+		if ($this->isLoser($player) || $this->isWinner($player)) return;
+		if (!$event->isSneaking()) {
+			$this->addLoser($player);
+			$this->arena->sendToLosersCage($player);
+		}
+	}
+
+	/**
+	 * @ignoreCancelled
+	 * @priority HIGH
+	 */
+	public function onMove(PlayerMoveEvent $event) : void {
+		$player = $event->getPlayer();
+		if (!$this->arena->inGame($player)) return;
+		if ($this->isLoser($player) || $this->isWinner($player)) return;
+		$this->totalSneakedDistance += $event->getFrom()->distance($event->getTo());
 	}
 }

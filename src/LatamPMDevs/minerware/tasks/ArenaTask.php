@@ -27,6 +27,7 @@ use LatamPMDevs\minerware\arena\ArenaManager;
 use LatamPMDevs\minerware\arena\microgame\Level;
 use LatamPMDevs\minerware\arena\Status;
 use LatamPMDevs\minerware\Minerware;
+use pocketmine\scheduler\CancelTaskException;
 use pocketmine\scheduler\Task;
 use function count;
 
@@ -55,7 +56,6 @@ final class ArenaTask extends Task {
 				break;
 
 			case ($status->equals(Status::STARTING())):
-				$arena->startingtime--;
 				if (count($players) < Arena::MIN_PLAYERS) {
 					$arena->startingtime = Arena::STARTING_TIME;
 					$arena->setStatus(Status::WAITING());
@@ -82,10 +82,10 @@ final class ArenaTask extends Task {
 						}
 					}
 				}
+				$arena->startingtime--;
 				break;
 
 			case ($status->equals(Status::INBETWEEN())):
-				$arena->inbetweentime--;
 				if ($arena->inbetweentime === 3) {
 					if ($arena->getNextMicrogame() === null) {
 						$arena->end();
@@ -119,6 +119,7 @@ final class ArenaTask extends Task {
 					$arena->inbetweentime = Arena::INBETWEEN_TIME;
 					$arena->startNextMicrogame();
 				}
+				$arena->inbetweentime--;
 				break;
 
 			case ($status->equals(Status::INGAME())):
@@ -128,14 +129,15 @@ final class ArenaTask extends Task {
 				break;
 
 			case ($status->equals(Status::ENDING())):
-				$arena->endingtime--;
-				if ($arena->endingtime == 0) {
+				if ($arena->endingtime <= 0) {
 					foreach ($players as $player) {
 						ArenaManager::getInstance()->join($player);
 					}
 					$arena->deleteMap();
 					ArenaManager::getInstance()->deleteArena($arena);
+					throw new CancelTaskException("Arena is no more running");
 				}
+				$arena->endingtime--;
 				break;
 		}
 		$arena->updateScoreboard();

@@ -85,7 +85,7 @@ class ColorFloor extends Microgame implements Listener {
 	}
 
 	public function getGameDuration() : float {
-		return 60.0;
+		return 60.9;
 	}
 
 	public function getRecompensePoints() : int {
@@ -257,6 +257,9 @@ class ColorFloor extends Microgame implements Listener {
 	}
 
 	public function isNextToColor(Block $block, DyeColor $color) : bool {
+		if ($block instanceof StainedHardenedClay && $block->getColor()->equals($color)) {
+			return true;
+		}
 		foreach ($block->getHorizontalSides() as $side) {
 			if ($side instanceof StainedHardenedClay) {
 				if ($side->getColor()->equals($color)) {

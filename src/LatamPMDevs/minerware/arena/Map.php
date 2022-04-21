@@ -104,6 +104,9 @@ final class Map {
 		return $this->platformMaxPos;
 	}
 
+	/**
+	 * @return Vector3[]
+	 */
 	public function getSpawns() : array {
 		return $this->spawns;
 	}

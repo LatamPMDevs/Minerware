@@ -31,7 +31,6 @@ use pocketmine\block\Block;
 use pocketmine\block\VanillaBlocks;
 use pocketmine\event\block\BlockBreakEvent;
 use pocketmine\event\block\BlockPlaceEvent;
-use pocketmine\event\entity\EntityDamageByEntityEvent;
 use pocketmine\event\entity\EntityDamageEvent;
 use pocketmine\event\HandlerListManager;
 use pocketmine\event\Listener;
@@ -41,35 +40,35 @@ use pocketmine\item\VanillaItems;
 use pocketmine\player\GameMode;
 use pocketmine\player\Player;
 use pocketmine\utils\AssumptionFailedError;
-use pocketmine\world\Position;
-use function array_key_first;
+use pocketmine\world\format\Chunk;
 use function array_rand;
-use function array_reverse;
-use function asort;
-use function in_array;
 use function microtime;
 
-class StandOnDiamond extends Microgame implements Listener {
+class MineOre extends Microgame implements Listener {
 
-	public const DIAMOND_PLATFORMS = 4;
+	/**
+	 * @return Block[]
+	 */
+	public static function getOres() : array {
+		return [VanillaBlocks::COAL_ORE(), VanillaBlocks::DIAMOND_ORE(), VanillaBlocks::EMERALD_ORE(), VanillaBlocks::GOLD_ORE(), VanillaBlocks::IRON_ORE(), VanillaBlocks::LAPIS_LAZULI_ORE(), VanillaBlocks::REDSTONE_ORE()];
+	}
 
-	public const KNOCKBACK_LEVEL = 2;
+	public const EFFICIENCY_LEVEL = 3;
 
-	public const FLOOR_BREAK_AT = 3;
+	public const COBBLESTONE_LAYERS = 1;
+
+	public const ORES_LAYERS = 5;
+
+	protected Block $ore;
 
 	/** @var Block[] */
 	protected array $changedBlocks = [];
 
 	/** @var array<int, int> */
-	protected array $hitsCount = [];
-
-	/** @var Int[] */
-	protected array $diamondPlatforms = [];
-
-	protected bool $isFloorBroken = false;
+	protected array $minedBlocks = [];
 
 	public function getName() : string {
-		return "Stand on Diamond";
+		return "Mine Ore";
 	}
 
 	public function getLevel() : Level {
@@ -77,7 +76,7 @@ class StandOnDiamond extends Microgame implements Listener {
 	}
 
 	public function getGameDuration() : float {
-		return 16.9;
+		return 18.9;
 	}
 
 	public function getRecompensePoints() : int {
@@ -85,30 +84,53 @@ class StandOnDiamond extends Microgame implements Listener {
 	}
 
 	public function start() : void {
+		$ores = self::getOres();
 		$this->startTime = microtime(true);
 		$this->hasStarted = true;
 		$this->plugin->getServer()->getPluginManager()->registerEvents($this, $this->plugin);
+		$oreKey = array_rand($ores);
+		$this->ore = $ores[$oreKey];
+		unset($ores[$oreKey]);
+
 
 		$map = $this->arena->getMap();
 		$minPos = $map->getPlatformMinPos();
+		$maxPos = $map->getPlatformMaxPos();
 		$world = $this->arena->getWorld();
-		foreach (array_rand(Map::MINI_PLATFORMS, self::DIAMOND_PLATFORMS) as $key) {
-			$this->diamondPlatforms[] = $key;
-			foreach (Map::MINI_PLATFORMS[$key] as $blockPos) {
-				$this->changedBlocks[] = $world->getBlockAt((int) ($minPos->x + $blockPos[0]), (int) ($minPos->y + $blockPos[1]), (int) ($minPos->z + $blockPos[2]));
-				$world->setBlockAt((int) ($minPos->x + $blockPos[0]), (int) ($minPos->y + $blockPos[1]), (int) ($minPos->z + $blockPos[2]), VanillaBlocks::DIAMOND(), false);
+
+		$minY = $minPos->y + 1;
+		$maxY = $maxPos->y + self::ORES_LAYERS + self::COBBLESTONE_LAYERS;
+		for ($x = $minPos->x; $x <= $maxPos->x; ++$x) {
+			for ($z = $minPos->z; $z <= $maxPos->z; ++$z) {
+				$world->loadChunk($x >> Chunk::COORD_BIT_SIZE, $z >> Chunk::COORD_BIT_SIZE);
+				for ($y = $minY; $y <= $maxY; ++$y) {
+					$this->changedBlocks[] = $world->getBlockAt((int) $x, (int) $y, (int) $z);
+					if ($y <= ($maxY - self::COBBLESTONE_LAYERS)) {
+						if (mt_rand(1, 20) === 1) {
+							$block = $this->ore;
+						} else {
+							$block = $ores[array_rand($ores)];
+						}
+					} else {
+						$block = VanillaBlocks::COBBLESTONE();
+					}
+					$world->setBlockAt((int) $x, (int) $y, (int) $z, $block, false);
+				}
 			}
 		}
 
-		$knockback = VanillaEnchantments::KNOCKBACK();
+		$oreItem = $this->ore->asItem();
+		$efficiency = VanillaEnchantments::EFFICIENCY();
 		foreach ($this->arena->getPlayers() as $player) {
 			Utils::initPlayer($player);
-			$stick = VanillaItems::STICK();
-			$stick->setCustomName($this->plugin->getTranslator()->translate($player, "microgame.item.powerstick"));
-			$stick->addEnchantment(new EnchantmentInstance($knockback, self::KNOCKBACK_LEVEL));
-			$player->setGamemode(GameMode::ADVENTURE());
-			$player->getInventory()->setItem(0, $stick);
+			$pickaxe = VanillaItems::DIAMOND_PICKAXE();
+			$pickaxe->setCustomName($this->plugin->getTranslator()->translate($player, "microgame.item.pickaxe"));
+			$pickaxe->addEnchantment(new EnchantmentInstance($efficiency, self::EFFICIENCY_LEVEL));
+			$player->setGamemode(GameMode::SURVIVAL());
+			$player->getInventory()->setItem(0, $pickaxe);
+			$player->getInventory()->setItem(8, $oreItem);
 			$player->getInventory()->setHeldItemIndex(0);
+			$this->arena->tpSafePosition($player);
 		}
 		$this->arena->buildWinnersCage();
 		$this->arena->buildLosersCage();
@@ -118,15 +140,12 @@ class StandOnDiamond extends Microgame implements Listener {
 		$timeLeft = $this->getTimeLeft();
 		if ($timeLeft <= 0) {
 			foreach ($this->arena->getPlayers() as $player) {
-				if (!$this->isLoser($player)) {
-					$this->addWinner($player);
+				if (!$this->isWinner($player) && !$this->isLoser($player)) {
+					$this->addLoser($player);
 				}
 			}
 			$this->arena->endCurrentMicrogame();
 			return;
-		}
-		if ($timeLeft <= self::FLOOR_BREAK_AT && !$this->isFloorBroken) {
-			$this->breakFloor();
 		}
 		foreach ($this->arena->getPlayers() as $player) {
 			$player->getXpManager()->setXpAndProgress((int) $timeLeft, $timeLeft / $this->getGameDuration());
@@ -137,25 +156,38 @@ class StandOnDiamond extends Microgame implements Listener {
 		$this->hasEnded = true;
 		HandlerListManager::global()->unregisterAll($this);
 
-		$players = $this->arena->getPlayers();
-		$hits = $this->getPlayersHitsOrderedByHigherScore();
-		$hitter = null;
-		if ($hits !== []) {
-			$hitter = $players[array_key_first($hits)] ?? null;
+		$miner = null;
+		$minedBlocks = 0;
+		foreach ($this->losers as $loser) {
+			$mB = $this->getMinedBlocks($loser);
+			if ($miner === null || $mB > $minedBlocks) {
+				$miner = $loser;
+				$minedBlocks = $mB;
+			}
 		}
+		$blockName = str_replace(" ", "_", strtolower($this->ore->getName()));
+		$players = $this->arena->getPlayers();
 		foreach ($players as $player) {
-			if ($hitter !== null) {
+			if ($miner !== null) {
 				$player->sendMessage($this->plugin->getTranslator()->translate(
-					$player, "microgame.standondiamond.hitscount", [
-						"{%player}" => $hitter->getName(),
-						"{%hits_count}" => $this->getHits($player)
+					$player, "microgame.mineore.miner", [
+						"{%player}" => $miner->getName(),
+						"{%mined_blocks}" => $minedBlocks
 					]
 				));
 			}
 			if ($this->isWinner($player)) {
-				$player->sendMessage($this->plugin->getTranslator()->translate($player, "microgame.standondiamond.won"));
+				$player->sendMessage($this->plugin->getTranslator()->translate(
+					$player, "microgame.mineore.won", [
+						"{%ore}" => $this->plugin->getTranslator()->translate($player, "text.block." . $blockName)
+					]
+				));
 			} elseif ($this->isLoser($player)) {
-				$player->sendMessage($this->plugin->getTranslator()->translate($player, "microgame.standondiamond.lose"));
+				$player->sendMessage($this->plugin->getTranslator()->translate(
+					$player, "microgame.mineore.lose", [
+						"{%ore}" => $this->plugin->getTranslator()->translate($player, "text.block." . $blockName)
+					]
+				));
 			}
 		}
 		foreach ($this->changedBlocks as $block) {
@@ -163,54 +195,36 @@ class StandOnDiamond extends Microgame implements Listener {
 		}
 	}
 
-	public function isFloorBroken() : bool {
-		return $this->isFloorBroken;
-	}
-
-	public function breakFloor() : bool {
-		if (!$this->isFloorBroken) {
-			$map = $this->arena->getMap();
-			$world = $this->arena->getWorld();
-			$minPos = Position::fromObject($map->getPlatformMinPos(), $world);
-			$maxPos = Position::fromObject($map->getPlatformMaxPos(), $world);
-			foreach (Map::MINI_PLATFORMS as $key => $value) {
-				if (!in_array($key, $this->diamondPlatforms, true)) {
-					foreach (Map::MINI_PLATFORMS[$key] as $blockPos) {
-						$this->changedBlocks[] = $world->getBlockAt((int) ($minPos->x + $blockPos[0]), (int) ($minPos->y + $blockPos[1]), (int) ($minPos->z + $blockPos[2]));
-						$world->setBlockAt((int) ($minPos->x + $blockPos[0]), (int) ($minPos->y + $blockPos[1]), (int) ($minPos->z + $blockPos[2]), VanillaBlocks::AIR(), true);
-					}
-				}
-			}
-			foreach (Utils::fill($minPos, $maxPos, VanillaBlocks::AIR(), true) as $changedBlock) {
-				$this->changedBlocks[] = $changedBlock;
-			}
-			$this->isFloorBroken = true;
-			return true;
-		}
-		return false;
-	}
-
-	public function getHits(Player $player) : int {
-		return $this->hitsCount[$player->getId()] ?? 0;
-	}
-
-	/**
-	 * @return array<int, int>
-	 */
-	public function getPlayersHitsOrderedByHigherScore() : array {
-		$array = $this->hitsCount;
-		if (asort($array) === false) {
-			throw new AssumptionFailedError("Failed to sort score");
-		}
-		return array_reverse($array, true);
+	public function getMinedBlocks(Player $player) : int {
+		return $this->minedBlocks[$player->getId()] ?? 0;
 	}
 
 	# Listener
 
+	/**
+	 * @ignoreCancelled
+	 * @priority HIGH
+	 */
 	public function onBlockBreak(BlockBreakEvent $event) : void {
 		$player = $event->getPlayer();
 		if (!$this->arena->inGame($player)) return;
-		$event->cancel();
+		if ($this->isWinner($player) || $this->isLoser($player)) {
+			$event->cancel();
+			return;
+		}
+		$block = $event->getBlock();
+		$y = $this->arena->getMap()->getPlatformMinPos()->y;
+		$this->minedBlocks[$player->getId()] = $this->getMinedBlocks($player) + 1;
+		if ((int) $block->getPosition()->y === $y) {
+			$this->changedBlocks[] = $block;
+		}
+		if ($block->isSameType($this->ore)) {
+			$this->addWinner($player);
+			$this->arena->sendToWinnersCage($player);
+			$player->sendMessage($this->plugin->getTranslator()->translate($player, "microgame.mineore.oremined"));
+		}
+		$event->setDrops([]);
+		$event->setXpDropAmount(0);
 	}
 
 	public function onBlockPlace(BlockPlaceEvent $event) : void {
@@ -223,14 +237,6 @@ class StandOnDiamond extends Microgame implements Listener {
 		$player = $event->getEntity();
 		if (!$player instanceof Player) return;
 		if (!$this->arena->inGame($player)) return;
-		if ($event instanceof EntityDamageByEntityEvent) {
-			$damager = $event->getDamager();
-			if ($damager instanceof Player && $this->arena->inGame($damager)) {
-				$this->hitsCount[$damager->getId()] = $this->getHits($damager) + 1;
-			}
-			$event->setBaseDamage(0);
-			return;
-		}
 		$event->cancel();
 		if ($event->getCause() === EntityDamageEvent::CAUSE_VOID && !$this->isWinner($player)) {
 			$this->addLoser($player);

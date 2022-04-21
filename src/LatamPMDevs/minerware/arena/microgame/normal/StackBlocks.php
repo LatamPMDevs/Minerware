@@ -66,7 +66,7 @@ class StackBlocks extends Microgame implements Listener {
 	}
 
 	public function getGameDuration() : float {
-		return 12.0;
+		return 12.9;
 	}
 
 	public function getRecompensePoints() : int {

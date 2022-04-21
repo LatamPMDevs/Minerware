@@ -26,8 +26,11 @@ git clone https://github.com/IvanCraft623/languages.git
 ```
 ## Microgames list:
 - Ignite the TNT
-- Stand on Diamond
+- Mine Ore
+- Sneaking
 - Stack Blocks
+- Stand on Color
+- Stand on Diamond
 
 ## Project information:
 | Plugin version | Pocketmine version | PHP version | Status |
