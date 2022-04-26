@@ -1,6 +1,7 @@
 <div align="center">
   <h1>Minerware 🎮</h1>
   <p>Minerware plugin inspired of CubeCraft's</p>
+  <a href="https://poggit.pmmp.io/ci/LatamPMDevs/Minerware/" target="_blank"><img alt="Poggit CI" src="https://poggit.pmmp.io/ci.shield/LatamPMDevs/Minerware/Minerware"></a>
 </div>
 
 ## Description:
@@ -12,7 +13,7 @@ Multiple classic microgames in a single chunk. Using one of the latest PHP versi
 cd your/server/path/plugins
 git clone https://github.com/IvanCraft623/Minerware.git
 
-# Install dependencies.
+# Install development dependencies (PHPStan & PHP-CS-Fixer not necesary but recommended).
 cd Minerware
 composer install
 
