@@ -58,7 +58,7 @@ final class Arena implements Listener {
 	public const MIN_PLAYERS = 2;
 	public const MAX_PLAYERS = 12;
 
-	public const STARTING_TIME = 10;//120
+	public const STARTING_TIME = 120;
 	public const INBETWEEN_TIME = 5;
 	public const ENDING_TIME = 10;
 
