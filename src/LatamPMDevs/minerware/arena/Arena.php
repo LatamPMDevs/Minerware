@@ -98,6 +98,8 @@ final class Arena implements Listener {
 	/** @var array<int, Player> */
 	public array $losersCage = [];
 
+	public bool $areInvisibleBlocksSet = false;
+
 	public function __construct(private string $id, private Map $map) {
 		$this->plugin = Minerware::getInstance();
 		$this->world = $this->map->generateWorld($this->id);
@@ -166,6 +168,9 @@ final class Arena implements Listener {
 		$player->teleport($this->getRandomSpawn());
 		Utils::initPlayer($player);
 		$player->setGamemode(GameMode::ADVENTURE());
+		if (!$this->areInvisibleBlocksSet) {
+			$this->buildInvisibleBlocks();
+		}
 	}
 
 	public function quit(Player $player) : void {
@@ -372,6 +377,9 @@ final class Arena implements Listener {
 			}
 			$this->setCurrentMicrogame(null);
 		}
+		if ($this->areInvisibleBlocksSet) {
+			$this->unsetInvisibleBlocks();
+		}
 		$this->unsetWinnersCage();
 		$this->unsetLosersCage();
 	}
@@ -490,6 +498,39 @@ final class Arena implements Listener {
 	public function getRandomSpawn() : Position {
 		$spawns = $this->map->getSpawns();
 		return Position::fromObject($spawns[array_rand($spawns)], $this->world);
+	}
+
+	public function areInvisibleBlocksSet() : bool {
+		return $this->areInvisibleBlocksSet;
+	}
+
+	public function buildInvisibleBlocks() : void {
+		$min = $this->map->getPlatformMinPos();
+		$max = $this->map->getPlatformMaxPos();
+		$pos1 = new Position($min->x - 1, $min->y + 30, $min->z - 1, $this->world);
+		$pos2 = new Position($max->x + 1, $min->y + 30, $max->z + 1, $this->world);
+		$pos3 = new Position($pos1->x, $min->y, $pos2->z, $this->world);
+		$pos4 = new Position($pos2->x, $min->y, $pos1->z, $this->world);
+		Utils::fill($pos1, $pos3, VanillaBlocks::INVISIBLE_BEDROCK());
+		Utils::fill($pos3, $pos2, VanillaBlocks::INVISIBLE_BEDROCK());
+		Utils::fill($pos2, $pos4, VanillaBlocks::INVISIBLE_BEDROCK());
+		Utils::fill($pos4, $pos1, VanillaBlocks::INVISIBLE_BEDROCK());
+		$this->world->setBlock($pos1, VanillaBlocks::DIAMOND());
+		$this->areInvisibleBlocksSet = true;
+	}
+
+	public function unsetInvisibleBlocks() : void {
+		$min = $this->map->getPlatformMinPos();
+		$max = $this->map->getPlatformMaxPos();
+		$pos1 = new Position($min->x - 1, $min->y + 30, $min->z - 1, $this->world);
+		$pos2 = new Position($max->x + 1, $min->y + 30, $max->z + 1, $this->world);
+		$pos3 = new Position($pos1->x, $min->y, $pos2->z, $this->world);
+		$pos4 = new Position($pos2->x, $min->y, $pos1->z, $this->world);
+		Utils::fill($pos1, $pos3, VanillaBlocks::AIR());
+		Utils::fill($pos3, $pos2, VanillaBlocks::AIR());
+		Utils::fill($pos2, $pos4, VanillaBlocks::AIR());
+		Utils::fill($pos4, $pos1, VanillaBlocks::AIR());
+		$this->areInvisibleBlocksSet = false;
 	}
 
 	#Listener

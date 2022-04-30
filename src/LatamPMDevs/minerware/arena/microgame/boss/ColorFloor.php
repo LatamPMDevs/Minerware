@@ -128,11 +128,17 @@ class ColorFloor extends Microgame implements Listener {
 				$missile = VanillaItems::LEAPING_SPLASH_POTION();
 				$missile->setCustomName($this->plugin->getTranslator()->translate($player, "microgame.item.colormissile"));
 				$missile->setCount(self::COLOR_MISSILE_COUNT);
+				$assignedColor = VanillaBlocks::STAINED_CLAY()->setColor($dyeColors[$i])->asItem();
+				$assignedColor->setCustomName($this->plugin->getTranslator()->translate($player, "microgame.colorfloor.yourcolor"));
 				$player->getInventory()->setItem(0, $hoe);
 				$player->getInventory()->setItem(1, $missile);
+				$player->getInventory()->setItem(8, $assignedColor);
 				$player->getInventory()->setHeldItemIndex(0);
 			}
 			$i++;
+		}
+		if (!$this->arena->areInvisibleBlocksSet()) {
+			$this->arena->buildInvisibleBlocks();
 		}
 	}
 
@@ -178,7 +184,11 @@ class ColorFloor extends Microgame implements Listener {
 					]
 				));
 			} elseif ($this->isLoser($player)) {
-				# TODO: Loser message
+				$player->sendMessage($this->plugin->getTranslator()->translate(
+					$player, "microgame.colorfloor.lose", [
+						"{%colored_blocks_count}" => $this->getColoredBlocks($player)
+					]
+				));
 			}
 			$player->sendMessage($this->plugin->getTranslator()->translate(
 				$player, "microgame.colorfloor.top", [

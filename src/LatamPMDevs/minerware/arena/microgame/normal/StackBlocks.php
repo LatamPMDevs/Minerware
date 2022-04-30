@@ -91,8 +91,9 @@ class StackBlocks extends Microgame implements Listener {
 			}
 			$i++;
 		}
-		$this->arena->buildWinnersCage();
-		$this->arena->buildLosersCage();
+		if (!$this->arena->areInvisibleBlocksSet()) {
+			$this->arena->buildInvisibleBlocks();
+		}
 	}
 
 	public function tick() : void {
@@ -233,10 +234,5 @@ class StackBlocks extends Microgame implements Listener {
 		if (!$player instanceof Player) return;
 		if (!$this->arena->inGame($player)) return;
 		$event->cancel();
-		if ($event->getCause() === EntityDamageEvent::CAUSE_VOID && !$this->isWinner($player)) {
-			$this->addLoser($player);
-			$this->arena->sendToLosersCage($player);
-			$player->sendMessage($this->plugin->getTranslator()->translate($player, "microgame.felloffplatform"));
-		}
 	}
 }

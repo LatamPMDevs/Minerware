@@ -130,7 +130,7 @@ class IgniteTNT extends Microgame implements Listener {
 			if ($this->isWinner($player)) {
 				$player->sendMessage($this->plugin->getTranslator()->translate($player, "microgame.ignitetnt.won"));
 			} elseif ($this->isLoser($player)) {
-				# TODO: Loser message
+				$player->sendMessage($this->plugin->getTranslator()->translate($player, "microgame.ignitetnt.lose"));
 			}
 		}
 		foreach ($this->changedBlocks as $block) {

@@ -80,6 +80,9 @@ final class ArenaTask extends Task {
 						foreach ($players as $player) {
 							$arena->getPointHolder()->addPlayer($player);
 						}
+						if ($arena->areInvisibleBlocksSet()) {
+							$arena->unsetInvisibleBlocks();
+						}
 					}
 				}
 				$arena->startingtime--;

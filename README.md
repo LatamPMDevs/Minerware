@@ -31,6 +31,7 @@ git clone https://github.com/IvanCraft623/languages.git
 - Stack Blocks
 - Stand on Color
 - Stand on Diamond
+- Color Floor
 
 ## Project information:
 | Plugin version | Pocketmine version | PHP version | Status |
