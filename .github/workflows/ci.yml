@@ -2,18 +2,12 @@ name: PHP CI
 
 on:
   push:
-  pull_request:
   workflow_dispatch:
 
 jobs:
   ci:
     name: PHP CI
     runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        php: [8.0.12]
-
     steps:
       - name: Checkout
         uses: actions/checkout@v2
@@ -21,15 +15,13 @@ jobs:
           ref: ${{ github.ref }}
 
       - name: Setup PHP
-        uses: shivammathur/setup-php@2.16.0
+        uses: shivammathur/setup-php@2.18.0
         with:
-          php-version: ${{ matrix.php }}
-
-      - name: Install Composer dependencies
-        run: composer install --prefer-dist --no-interaction --ignore-platform-reqs
+          php-version: "8.0.0"
+          tools: php-cs-fixer, pocketmine/pocketmine-mp
 
       - name: Run PHP CS Fixer
-        run: ./vendor/bin/php-cs-fixer fix src/
+        run: php-cs-fixer fix src/
 
       - name: Apply automated changes
         uses: stefanzweifel/git-auto-commit-action@v4
