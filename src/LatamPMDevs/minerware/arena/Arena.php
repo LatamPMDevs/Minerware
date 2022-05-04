@@ -22,6 +22,7 @@ declare(strict_types=1);
 
 namespace LatamPMDevs\minerware\arena;
 
+use InvalidArgumentException;
 use LatamPMDevs\minerware\arena\microgame\Level;
 use LatamPMDevs\minerware\arena\microgame\Microgame;
 use LatamPMDevs\minerware\database\DataManager;
@@ -55,10 +56,8 @@ use function str_repeat;
 
 final class Arena implements Listener {
 
-	public const MIN_PLAYERS = 2;
 	public const MAX_PLAYERS = 12;
 
-	public const STARTING_TIME = 120;
 	public const INBETWEEN_TIME = 5;
 	public const ENDING_TIME = 10;
 
@@ -69,6 +68,8 @@ final class Arena implements Listener {
 	private Status $status;
 
 	private World $world;
+
+	private int $minPlayers;
 
 	/** @var Player[] */
 	private array $players = [];
@@ -82,7 +83,9 @@ final class Arena implements Listener {
 
 	private int $nextMicrogameIndex = 0;
 
-	public int $startingtime = self::STARTING_TIME;
+	public int $defaultStartingtime;
+
+	public int $startingtime;
 
 	public int $inbetweentime = 11;
 
@@ -103,6 +106,8 @@ final class Arena implements Listener {
 	public function __construct(private string $id, private Map $map) {
 		$this->plugin = Minerware::getInstance();
 		$this->world = $this->map->generateWorld($this->id);
+		$this->minPlayers = DataManager::getInstance()->getMinimumStartingPlayers();
+		$this->startingtime = $this->defaultStartingtime = DataManager::getInstance()->getArenaStartingTime();
 		$this->status = Status::WAITING();
 		$this->pointHolder = new PointHolder();
 		$this->plugin->getScheduler()->scheduleRepeatingTask(new ArenaTask($this), 20);
@@ -141,6 +146,17 @@ final class Arena implements Listener {
 
 	public function getMap() : ?Map {
 		return $this->map;
+	}
+
+	public function getMinPlayers() : int {
+		return $this->minPlayers;
+	}
+
+	public function setMinPlayers(int $minPlayers) : void {
+		if ($minPlayers < 2) {
+			throw new InvalidArgumentException("Minimum player must be at least 2, $minPlayers given.");
+		}
+		$this->minPlayers = $minPlayers;
 	}
 
 	public function getPlugin() : Minerware {

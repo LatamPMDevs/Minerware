@@ -34,6 +34,7 @@ use function array_map;
 use function basename;
 use function file_exists;
 use function glob;
+use function max;
 use function mkdir;
 use function opendir;
 use function parse_ini_file;
@@ -139,5 +140,17 @@ final class DataManager {
 
 	public function getServerIp() : string {
 		return $this->plugin->getConfig()->get("server-ip", "yourserverip.net");
+	}
+
+	public function getMaxRuntimeArenas() : int {
+		return max((int) $this->plugin->getConfig()->get("max-runtime-arenas", 15), 1);
+	}
+
+	public function getArenaStartingTime() : int {
+		return max((int) $this->plugin->getConfig()->get("arena-starting-time", 120), 5);
+	}
+
+	public function getMinimumStartingPlayers() : int {
+		return max((int) $this->plugin->getConfig()->get("minimum-starting-players", 4), 2);
 	}
 }

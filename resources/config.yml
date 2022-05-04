@@ -21,4 +21,6 @@ server-ip: "yourserverip.net" #For scoreboard
 storage-format:
   player-data: json
 
-max-runtime-arenas: 2 #15 ~ 20 recommended.
+max-runtime-arenas: 15 #15 ~ 20 recommended.
+arena-starting-time: 120 #In seconds.
+minimum-starting-players: 2 #4 ~ 6 recommended.

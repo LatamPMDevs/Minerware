@@ -22,6 +22,8 @@ declare(strict_types=1);
 
 namespace LatamPMDevs\minerware\arena;
 
+use LatamPMDevs\minerware\Minerware;
+use LatamPMDevs\minerware\database\DataManager;
 use pocketmine\event\HandlerListManager;
 use pocketmine\player\Player;
 use pocketmine\utils\SingletonTrait;
@@ -57,11 +59,14 @@ final class ArenaManager {
 		unset($this->arenas[$arena->getId()]);
 	}
 
-	public function getAvaible(?Map $map = null) : Arena {
+	public function getAvaible(?Map $map = null, bool $force = false) : ?Arena {
 		foreach ($this->arenas as $arena) {
 			if (($arena->getStatus()->equals(Status::WAITING()) || $arena->getStatus()->equals(Status::STARTING())) && ($map === null || $arena->getMap() === $map) && count($arena->getPlayers()) < Arena::MAX_PLAYERS) {
 				return $arena;
 			}
+		}
+		if ($force && count($this->arenas) >= DataManager::getInstance()->getMaxRuntimeArenas()) {
+			return null;
 		}
 		return $this->createArena($map);
 	}
@@ -80,6 +85,10 @@ final class ArenaManager {
 	public function join(Player $player, Arena $arena = null, Map $map = null) : void {
 		if ($arena === null) {
 			$arena = $this->getAvaible($map);
+			if ($arena === null) {
+				$player->sendMessage(Minerware::getInstance()->getTranslator()->translate($player, "game.noArenaAvaiable"));
+				return;
+			}
 		}
 		$arena->join($player);
 	}

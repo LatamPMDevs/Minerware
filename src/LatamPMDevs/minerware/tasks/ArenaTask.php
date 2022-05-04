@@ -46,7 +46,7 @@ final class ArenaTask extends Task {
 		$world = $arena->getWorld();
 		switch (true) {
 			case ($status->equals(Status::WAITING())):
-				if (count($players) < Arena::MIN_PLAYERS) {
+				if (count($players) < $arena->getMinPlayers()) {
 					foreach ($players as $player) {
 						$player->sendTip($this->plugin->getTranslator()->translate($player, "game.arena.needMorePlayers"));
 					}
@@ -56,8 +56,8 @@ final class ArenaTask extends Task {
 				break;
 
 			case ($status->equals(Status::STARTING())):
-				if (count($players) < Arena::MIN_PLAYERS) {
-					$arena->startingtime = Arena::STARTING_TIME;
+				if (count($players) < $arena->getMinPlayers()) {
+					$arena->startingtime = $arena->defaultStartingtime;
 					$arena->setStatus(Status::WAITING());
 				} else {
 
