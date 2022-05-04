@@ -7,6 +7,27 @@
 ## Description:
 Multiple classic microgames in a single chunk. Using one of the latest PHP versions and the most optimized code possible to give players the best possible experience.
 
+## Maps
+You can find some maps [here](https://github.com/LatamPMDevs/Minerware/tree/master/Maps). The platform of these maps have a measure of `24x24`, You can use custom maps as long as these comply with that measure.
+
+#### Avaiable maps:
+- City
+- Jungle
+- Jurassic
+<p align="center">
+	<a href="https://github.com/LatamPMDevs/Minerware/tree/master/Maps/City"><img src="https://cdn.discordapp.com/attachments/553969337661390850/971554076775039006/unknown.png"></img></a><br>
+	<b>City Map</b>
+</p>
+
+## Microgames list:
+- Ignite the TNT
+- Mine Ore
+- Sneaking
+- Stack Blocks
+- Stand on Color
+- Stand on Diamond
+- Color Floor
+
 ## Development:
 ```bash
 # Install plugin.
@@ -25,19 +46,11 @@ git clone https://github.com/CortexPE/Commando.git
 git clone https://github.com/IvanCraft623/languages.git
 # NOTE: Remember to include this folder (yourspace/virions) in your development workspace if possible.
 ```
-## Microgames list:
-- Ignite the TNT
-- Mine Ore
-- Sneaking
-- Stack Blocks
-- Stand on Color
-- Stand on Diamond
-- Color Floor
 
 ## Project information:
 | Plugin version | Pocketmine version | PHP version | Status |
 |---|---|---|---|
-| 1.0.0-beta1 | 4.0.0 minimum | 8.0 minimum | Development |
+| 1.0.0-beta2 | 4.0.0 minimum | 8.0 minimum | Development |
 
 ## Copyright:
 ```
