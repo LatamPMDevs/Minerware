@@ -11,4 +11,4 @@ authors:
 permissions:
   minerware.command:
     description: "Minerware main command"
-    default: op
+    default: default
