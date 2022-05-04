@@ -32,7 +32,8 @@ use function ucfirst;
 final class LanguageCommand extends BaseSubCommand {
 
 	public function __construct(private Minerware $plugin) {
-		parent::__construct("language", "Change the language of the plugin.");
+		parent::__construct("language", "Change the default language of the plugin.");
+		$this->setPermission("minerware.command.language");
 	}
 
 	protected function prepare() : void {

@@ -30,7 +30,8 @@ use pocketmine\command\CommandSender;
 final class HelpCommand extends BaseSubCommand {
 
 	public function __construct() {
-		parent::__construct("help", "Show the list of commands available.");
+		parent::__construct("help", "Show the list of available commands.");
+		$this->setPermission("minerware.command.help");
 	}
 
 	protected function prepare() : void {

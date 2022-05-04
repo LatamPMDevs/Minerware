@@ -33,6 +33,7 @@ final class CreditsCommand extends BaseSubCommand {
 
 	public function __construct(private Minerware $plugin) {
 		parent::__construct("credits", "Show plugin credits");
+		$this->setPermission("minerware.command.credits");
 	}
 
 	/**

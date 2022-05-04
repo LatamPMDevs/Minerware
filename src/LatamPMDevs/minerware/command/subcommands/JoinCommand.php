@@ -32,7 +32,8 @@ use pocketmine\player\Player;
 final class JoinCommand extends BaseSubCommand {
 
 	public function __construct() {
-		parent::__construct("join", "Join a random arena. (Degub purposes)");
+		parent::__construct("join", "Join a random arena.");
+		$this->setPermission("minerware.command.join");
 	}
 
 	/**

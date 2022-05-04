@@ -11,4 +11,19 @@ authors:
 permissions:
   minerware.command:
     description: "Minerware main command"
+    default: true
+  minerware.command.arenas:
+    description: "Manage minigame arenas"
+    default: op
+  minerware.command.credits:
+    description: "Show plugin credits"
+    default: true
+  minerware.command.help:
+    description: "Show the list of available commands"
+    default: true
+  minerware.command.join:
+    description: "Join a random arena"
+    default: true
+  minerware.command.language:
+    description: "Change the default language of the plugin"
     default: op

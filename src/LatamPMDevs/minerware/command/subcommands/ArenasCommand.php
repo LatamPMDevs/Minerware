@@ -37,6 +37,7 @@ final class ArenasCommand extends BaseSubCommand {
 
 	public function __construct(private Minerware $plugin) {
 		parent::__construct("arenas", "Manage all the minigame arenas.");
+		$this->setPermission("minerware.command.arenas");
 	}
 
 	protected function prepare() : void {
