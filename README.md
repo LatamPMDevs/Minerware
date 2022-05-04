@@ -37,7 +37,7 @@ git clone https://github.com/IvanCraft623/languages.git
 ## Project information:
 | Plugin version | Pocketmine version | PHP version | Status |
 |---|---|---|---|
-| 1.0.0-beta1 | 4.0.0 minimum | 8.0 minimum | Development |
+| 1.0.0-beta2 | 4.0.0 minimum | 8.0 minimum | Development |
 
 ## Copyright:
 ```
