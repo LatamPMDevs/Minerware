@@ -595,6 +595,11 @@ final class Arena implements Listener {
 				$player->teleport($this->getRandomSpawn());
 			}
 			$event->cancel();
+		} else {
+			if ($this->currentMicrogame->isLosser($player) ||
+				$this->currentMicrogame->isWinner($player)) {
+				$event->cancel(); //Winners and losers cannot be damaged
+			}
 		}
 	}
 }
