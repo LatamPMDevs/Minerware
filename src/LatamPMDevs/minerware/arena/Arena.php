@@ -596,7 +596,7 @@ final class Arena implements Listener {
 			}
 			$event->cancel();
 		} else {
-			if ($this->currentMicrogame->isLosser($player) ||
+			if ($this->currentMicrogame->isLoser($player) ||
 				$this->currentMicrogame->isWinner($player)) {
 				$event->cancel(); //Winners and losers cannot be damaged
 			}
