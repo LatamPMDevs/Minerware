@@ -27,6 +27,7 @@ use IvanCraft623\languages\Translator;
 use LatamPMDevs\minerware\arena\ArenaManager;
 use LatamPMDevs\minerware\arena\microgame\boss\ColorFloor;
 use LatamPMDevs\minerware\arena\microgame\normal\IgniteTNT;
+use LatamPMDevs\minerware\arena\microgame\normal\LastKnightStanding;
 use LatamPMDevs\minerware\arena\microgame\normal\MineOre;
 use LatamPMDevs\minerware\arena\microgame\normal\Sneaking;
 use LatamPMDevs\minerware\arena\microgame\normal\StackBlocks;
@@ -86,7 +87,7 @@ final class Minerware extends PluginBase {
 	}
 
 	public function getNormalMicrogames() : array {
-		return [IgniteTNT::class, MineOre::class, Sneaking::class, StackBlocks::class, StandOnColor::class, StandOnDiamond::class];
+		return [IgniteTNT::class, LastKnightStanding::class, MineOre::class, Sneaking::class, StackBlocks::class, StandOnColor::class, StandOnDiamond::class];
 	}
 
 	public function getBossMicrogames() : array {

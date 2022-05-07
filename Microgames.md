@@ -18,9 +18,9 @@ Chests are placed on the platforms with buckets and cows are spawned, players mu
 Players are given 20 blocks of wool of a random color, they must make a pillar of 10 blocks
 - [x] Done
 
-# Be last Knight standing
-Chests with loot are placed on the platforms and the players must kill each other, the last player(s) alive wins
-- [ ] Done
+# Last Knight Standing
+Players will fight to be the last one standing.
+- [x] Done
 
 # Dodge anvils
 The platform turns from bedrock and anvils start to rain, players must not be hit by the anvils.
