@@ -1294,16 +1294,16 @@
         },
         {
             "name": "pocketmine/pocketmine-mp",
-            "version": "4.3.1",
+            "version": "4.3.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/pmmp/PocketMine-MP.git",
-                "reference": "f7dce4af8802ce28a8286e1c8002af19cf986c62"
+                "reference": "755ca1af9b1b69226a6ed4597dc947aeec8088fe"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/pmmp/PocketMine-MP/zipball/f7dce4af8802ce28a8286e1c8002af19cf986c62",
-                "reference": "f7dce4af8802ce28a8286e1c8002af19cf986c62",
+                "url": "https://api.github.com/repos/pmmp/PocketMine-MP/zipball/755ca1af9b1b69226a6ed4597dc947aeec8088fe",
+                "reference": "755ca1af9b1b69226a6ed4597dc947aeec8088fe",
                 "shasum": ""
             },
             "require": {
@@ -1355,9 +1355,9 @@
                 "webmozart/path-util": "^2.3"
             },
             "require-dev": {
-                "phpstan/phpstan": "1.5.7",
+                "phpstan/phpstan": "1.6.7",
                 "phpstan/phpstan-phpunit": "^1.1.0",
-                "phpstan/phpstan-strict-rules": "^1.0.0",
+                "phpstan/phpstan-strict-rules": "^1.2.0",
                 "phpunit/phpunit": "^9.2"
             },
             "type": "project",
@@ -1377,7 +1377,7 @@
             "homepage": "https://pmmp.io",
             "support": {
                 "issues": "https://github.com/pmmp/PocketMine-MP/issues",
-                "source": "https://github.com/pmmp/PocketMine-MP/tree/4.3.1"
+                "source": "https://github.com/pmmp/PocketMine-MP/tree/4.3.2"
             },
             "funding": [
                 {
@@ -1389,7 +1389,7 @@
                     "type": "patreon"
                 }
             ],
-            "time": "2022-04-23T15:03:14+00:00"
+            "time": "2022-05-09T23:57:50+00:00"
         },
         {
             "name": "pocketmine/raklib",
