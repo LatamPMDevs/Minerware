@@ -566,7 +566,7 @@ final class Arena implements Listener {
 		$player = $event->getEntity();
 		if (!$player instanceof Player) return;
 		if ($event->getTo()->getWorld() === $this->world) return;
-		if ($event->getFrom()->getWorld() === $event->getTo()->getWorld()) return;
+		if ($event->getFrom()->world === $event->getTo()->getWorld()) return;
 		if ($this->inGame($player)) {
 			$this->quit($player);
 		}
