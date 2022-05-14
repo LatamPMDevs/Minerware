@@ -28,7 +28,6 @@ use IvanCraft623\languages\Language;
 use LatamPMDevs\minerware\arena\Map;
 use LatamPMDevs\minerware\Minerware;
 use LatamPMDevs\minerware\utils\Utils;
-use pocketmine\player\Player;
 use pocketmine\utils\AssumptionFailedError;
 use pocketmine\utils\Config;
 use pocketmine\utils\SingletonTrait;
@@ -45,6 +44,7 @@ use function opendir;
 use function parse_ini_file;
 use function readdir;
 use function str_replace;
+use function time;
 
 final class DataManager {
 	use SingletonTrait;
@@ -77,7 +77,7 @@ final class DataManager {
 		$this->plugin->saveResource("languages/en_US.ini", true);
 		$this->plugin->saveResource("languages/es_MX.ini", true);
 
-		$this->onError = function(SqlError $result) : void {
+		$this->onError = function (SqlError $result) : void {
 			$this->plugin->getLogger()->emergency($result->getQuery() . ' - ' . $result->getErrorMessage());
 		};
 	}
@@ -90,7 +90,7 @@ final class DataManager {
 		}
 	}
 
-	public function createContext(): void {
+	public function createContext() : void {
 		$configData = $this->config->get("database");
 		switch ((string) $configData["type"]) {
 			case 'json':
@@ -98,7 +98,7 @@ final class DataManager {
 				$this->isJsonStorageType = true;
 				$this->jsonPlayersData = new Config(Utils::resolvePath($this->pluginPath, (string) $configData["json"]["file"]), Config::JSON);
 				break;
-			
+
 			default:
 				$this->database = libasynql::create($this->plugin, $configData, [
 					"sqlite" => "database/sqlite.sql",
@@ -114,7 +114,7 @@ final class DataManager {
 		if (isset($this->database)) {
 			$this->database->executeSelect('data.players.get', [
 				"name" => $name
-			], function(array $rows) use ($name, $onSuccess, $nonNull) {
+			], function (array $rows) use ($name, $onSuccess, $nonNull) {
 				$playerdata = null;
 				if (isset($rows[0])) {
 					$playerdata = PlayerData::jsonDeserialize($rows[0]);

@@ -22,12 +22,12 @@ declare(strict_types=1);
 
 namespace LatamPMDevs\minerware\database;
 
-use function time;
 use InvalidArgumentException;
 use JsonSerializable;
+use function time;
 
 class PlayerData implements JsonSerializable {
-	
+
 	public function __construct(
 		protected string $name,
 		protected int $generationTime, //Time at which the data was obtained
@@ -77,7 +77,7 @@ class PlayerData implements JsonSerializable {
 	 *
 	 * @return mixed[]
 	 */
-	public function jsonSerialize() : array{
+	public function jsonSerialize() : array {
 		return [
 			"name" => $this->name,
 			"generationTime" => $this->generationTime,
