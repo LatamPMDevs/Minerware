@@ -38,7 +38,6 @@ use LatamPMDevs\minerware\database\DataManager;
 use LatamPMDevs\minerware\utils\Scoreboard;
 use pocketmine\plugin\PluginBase;
 use pocketmine\utils\SingletonTrait;
-use function var_dump;
 
 final class Minerware extends PluginBase {
 	use SingletonTrait {
