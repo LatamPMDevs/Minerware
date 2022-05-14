@@ -11,4 +11,5 @@ projects:
         branch: PM4
       - src: IvanCraft623/languages/languages
         version: ^0.0.1
-...
+      - src: poggit/libasynql/libasynql
+        version: ^4.0.0
