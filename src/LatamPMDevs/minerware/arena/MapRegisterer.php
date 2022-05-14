@@ -27,6 +27,7 @@ use LatamPMDevs\minerware\database\DataManager;
 use LatamPMDevs\minerware\Minerware;
 use LatamPMDevs\minerware\utils\Utils;
 use pocketmine\event\block\BlockBreakEvent;
+use pocketmine\event\HandlerListManager;
 use pocketmine\event\Listener;
 use pocketmine\event\player\PlayerChatEvent;
 use pocketmine\item\ItemFactory;
@@ -142,6 +143,8 @@ final class MapRegisterer implements Listener {
 					Utils::setZip(
 						$this->plugin->getServer()->getDataPath() . "worlds" . DIRECTORY_SEPARATOR . $folderName,
 						$this->plugin->getDataFolder() . "database" . DIRECTORY_SEPARATOR . "backups" . DIRECTORY_SEPARATOR . $this->data["name"] . ".zip"
+						# Unregiter Listener
+						HandlerListManager::global()->unregisterAll($this);
 					);
 				break;
 
