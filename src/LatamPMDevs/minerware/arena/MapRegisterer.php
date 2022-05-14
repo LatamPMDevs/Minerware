@@ -143,9 +143,9 @@ final class MapRegisterer implements Listener {
 					Utils::setZip(
 						$this->plugin->getServer()->getDataPath() . "worlds" . DIRECTORY_SEPARATOR . $folderName,
 						$this->plugin->getDataFolder() . "database" . DIRECTORY_SEPARATOR . "backups" . DIRECTORY_SEPARATOR . $this->data["name"] . ".zip"
-						# Unregiter Listener
-						HandlerListManager::global()->unregisterAll($this);
 					);
+					# Unregiter Listener
+					HandlerListManager::global()->unregisterAll($this);
 				break;
 
 				default:
