@@ -22,14 +22,18 @@ declare(strict_types=1);
 
 namespace LatamPMDevs\minerware\database;
 
+use Closure;
 use InvalidArgumentException;
 use IvanCraft623\languages\Language;
 use LatamPMDevs\minerware\arena\Map;
 use LatamPMDevs\minerware\Minerware;
-use pocketmine\player\Player;
+use LatamPMDevs\minerware\utils\Utils;
 use pocketmine\utils\AssumptionFailedError;
 use pocketmine\utils\Config;
 use pocketmine\utils\SingletonTrait;
+use poggit\libasynql\DataConnector;
+use poggit\libasynql\libasynql;
+use poggit\libasynql\SqlError;
 use function array_map;
 use function basename;
 use function file_exists;
@@ -40,6 +44,7 @@ use function opendir;
 use function parse_ini_file;
 use function readdir;
 use function str_replace;
+use function time;
 
 final class DataManager {
 	use SingletonTrait;
@@ -48,24 +53,19 @@ final class DataManager {
 
 	private string $pluginPath;
 
-	private COnfig $config;
+	private Config $config;
 
-	private string $playerStorageType;
+	private DataConnector $database;
 
-	/** @var array<string, int> */
-	private array $formats;
+	private Config $jsonPlayersData;
+
+	public Closure $onError;
 
 	public function __construct() {
 		$this->plugin = Minerware::getInstance();
 		$this->pluginPath = $this->plugin->getDataFolder();
 		$this->config = $this->plugin->getConfig();
-
-		$formats = Config::$formats;
-		$formats["nbt"] = 6;
-		$formats["namedtag"] = $formats["nbt"];
-		$this->formats = $formats;
-
-		$this->playerStorageType = $this->config->getNested("storage-format.player-data");
+		$this->createContext();
 
 		@mkdir($this->pluginPath . "database" . DIRECTORY_SEPARATOR);
 		@mkdir($this->pluginPath . "database" . DIRECTORY_SEPARATOR . "players" . DIRECTORY_SEPARATOR);
@@ -74,20 +74,213 @@ final class DataManager {
 
 		$this->plugin->saveResource("languages/en_US.ini", true);
 		$this->plugin->saveResource("languages/es_MX.ini", true);
+
+		$this->onError = function (SqlError $result) : void {
+			$this->plugin->getLogger()->emergency($result->getQuery() . ' - ' . $result->getErrorMessage());
+		};
 	}
 
-	/**
-	 * TODO:: Add multi storage type support.
-	 */
-
-	public function getPlayerData(Player|string $player) : ?DataHolder {
-		$filePath = "players" . DIRECTORY_SEPARATOR . (($player instanceof Player) ? $player->getName() : $player) . "." . $this->playerStorageType;
-		$path = $this->pluginPath . "database" . DIRECTORY_SEPARATOR . $filePath;
-		if (file_exists($path)) {
-			return new DataHolder((new Config($path, $this->formats[$this->playerStorageType]))->getAll());
+	public function closeDatabase() : void {
+		if (isset($this->database)) {
+			$this->database->close();
+		} elseif (isset($this->jsonPlayersData)) {
+			$this->jsonPlayersData->save();
 		}
+	}
 
-		return null;
+	public function createContext() : void {
+		$configData = $this->config->get("database");
+		switch ((string) $configData["type"]) {
+			case 'json':
+			case 'js':
+				$this->jsonPlayersData = new Config(Utils::resolvePath($this->pluginPath, (string) $configData["json"]["file"]), Config::JSON);
+				break;
+
+			default:
+				$this->database = libasynql::create($this->plugin, $configData, [
+					"sqlite" => "database/sqlite.sql",
+					"mysql"  => "database/mysql.sql",
+				]);
+
+				$this->database->executeGeneric('table.players');
+				break;
+		}
+	}
+
+	public function getPlayerData(string $name, callable $onSuccess, ?callable $onError = null, bool $nonNull = false) : void {
+		if (isset($this->database)) {
+			$this->database->executeSelect('data.players.get', [
+				"name" => $name
+			], function (array $rows) use ($name, $onSuccess, $nonNull) {
+				$playerdata = null;
+				if (isset($rows[0])) {
+					$playerdata = PlayerData::jsonDeserialize($rows[0]);
+				} elseif ($nonNull) {
+					$playerdata = new PlayerData($name, time(), 0, 0, 0, 0, 0, 0);
+				}
+				$onSuccess($playerdata);
+			}, $onError ?? $this->onError);
+		} elseif (isset($this->jsonPlayersData)) {
+			$playerdata = null;
+			if ($this->jsonPlayersData->exists($name)) {
+				$playerdata = PlayerData::jsonDeserialize($this->jsonPlayersData->get($name));
+			} elseif ($nonNull) {
+				$playerdata = new PlayerData($name, time(), 0, 0, 0, 0, 0, 0);
+			}
+			$onSuccess($playerdata);
+		}
+	}
+
+	public function addPlayer(
+		string $name,
+		int $gamesPlayed = 0,
+		int $gamesWon = 0,
+		int $lostGames = 0,
+		int $microgamesPlayed = 0,
+		int $microgamesWon = 0,
+		int $lostMicrogames = 0,
+		?callable $onSuccess = null,
+		?callable $onError = null
+	) : void {
+		$values = [
+			"name" => $name,
+			"gamesPlayed" => $gamesPlayed,
+			"gamesWon" => $gamesWon,
+			"lostGames" => $lostGames,
+			"microgamesPlayed" => $microgamesPlayed,
+			"microgamesWon" => $microgamesWon,
+			"lostMicrogames" => $lostMicrogames
+		];
+		if (isset($this->database)) {
+			$this->database->executeGeneric('data.players.add', $values, $onSuccess, $onError ?? $this->onError);
+		} elseif (isset($this->jsonPlayersData)) {
+			if (!$this->jsonPlayersData->exists($name)) {
+				$this->jsonPlayersData->set($name, $values);
+			}
+			if ($onSuccess !== null) {
+				$onSuccess();
+			}
+		}
+	}
+
+	public function addGamesPlayed(string $name, int $count, ?callable $onSuccess = null, ?callable $onError = null) : void {
+		if (isset($this->database)) {
+			$this->database->executeGeneric('data.players.addGamesPlayed', [
+				"name" => $name,
+				"count" => $count
+			], $onSuccess, $onError ?? $this->onError);
+		} elseif (isset($this->jsonPlayersData)) {
+			$data = $this->jsonPlayersData->get($name, null);
+			if ($data !== null) {
+				$data["gamesPlayed"] = ($data["gamesPlayed"] ?? 0) + $count;
+				$this->jsonPlayersData->set($name, $data);
+			} else {
+				$this->addPlayer($name, $count);
+			}
+			if ($onSuccess !== null) {
+				$onSuccess();
+			}
+		}
+	}
+
+	public function addGamesWon(string $name, int $count, ?callable $onSuccess = null, ?callable $onError = null) : void {
+		if (isset($this->database)) {
+			$this->database->executeGeneric('data.players.addGamesWon', [
+				"name" => $name,
+				"count" => $count
+			], $onSuccess, $onError ?? $this->onError);
+		} elseif (isset($this->jsonPlayersData)) {
+			$data = $this->jsonPlayersData->get($name, null);
+			if ($data !== null) {
+				$data["gamesWon"] = ($data["gamesWon"] ?? 0) + $count;
+				$this->jsonPlayersData->set($name, $data);
+			} else {
+				$this->addPlayer($name, 0, $count);
+			}
+			if ($onSuccess !== null) {
+				$onSuccess();
+			}
+		}
+	}
+
+	public function addLostGames(string $name, int $count, ?callable $onSuccess = null, ?callable $onError = null) : void {
+		if (isset($this->database)) {
+			$this->database->executeGeneric('data.players.addLostGames', [
+				"name" => $name,
+				"count" => $count
+			], $onSuccess, $onError ?? $this->onError);
+		} elseif (isset($this->jsonPlayersData)) {
+			$data = $this->jsonPlayersData->get($name, null);
+			if ($data !== null) {
+				$data["lostGames"] = ($data["lostGames"] ?? 0) + $count;
+				$this->jsonPlayersData->set($name, $data);
+			} else {
+				$this->addPlayer($name, 0, 0, $count);
+			}
+			if ($onSuccess !== null) {
+				$onSuccess();
+			}
+		}
+	}
+
+	public function addMicrogamesPlayed(string $name, int $count, ?callable $onSuccess = null, ?callable $onError = null) : void {
+		if (isset($this->database)) {
+			$this->database->executeGeneric('data.players.addMicrogamesPlayed', [
+				"name" => $name,
+				"count" => $count
+			], $onSuccess, $onError ?? $this->onError);
+		} elseif (isset($this->jsonPlayersData)) {
+			$data = $this->jsonPlayersData->get($name, null);
+			if ($data !== null) {
+				$data["microgamesPlayed"] = ($data["microgamesPlayed"] ?? 0) + $count;
+				$this->jsonPlayersData->set($name, $data);
+			} else {
+				$this->addPlayer($name, 0, 0, 0, $count);
+			}
+			if ($onSuccess !== null) {
+				$onSuccess();
+			}
+		}
+	}
+
+	public function addMicrogamesWon(string $name, int $count, ?callable $onSuccess = null, ?callable $onError = null) : void {
+		if (isset($this->database)) {
+			$this->database->executeGeneric('data.players.addMicrogamesWon', [
+				"name" => $name,
+				"count" => $count
+			], $onSuccess, $onError ?? $this->onError);
+		} elseif (isset($this->jsonPlayersData)) {
+			$data = $this->jsonPlayersData->get($name, null);
+			if ($data !== null) {
+				$data["microgamesWon"] = ($data["microgamesWon"] ?? 0) + $count;
+				$this->jsonPlayersData->set($name, $data);
+			} else {
+				$this->addPlayer($name, 0, 0, 0, 0, $count);
+			}
+			if ($onSuccess !== null) {
+				$onSuccess();
+			}
+		}
+	}
+
+	public function addLostMicrogames(string $name, int $count, ?callable $onSuccess = null, ?callable $onError = null) : void {
+		if (isset($this->database)) {
+			$this->database->executeGeneric('data.players.addLostMicrogames', [
+				"name" => $name,
+				"count" => $count
+			], $onSuccess, $onError ?? $this->onError);
+		} elseif (isset($this->jsonPlayersData)) {
+			$data = $this->jsonPlayersData->get($name, null);
+			if ($data !== null) {
+				$data["lostMicrogames"] = ($data["lostMicrogames"] ?? 0) + $count;
+				$this->jsonPlayersData->set($name, $data);
+			} else {
+				$this->addPlayer($name, 0, 0, 0, 0, 0, $count);
+			}
+			if ($onSuccess !== null) {
+				$onSuccess();
+			}
+		}
 	}
 
 	public function loadMaps() : bool {
@@ -116,7 +309,7 @@ final class DataManager {
 			$data = array_map('\stripcslashes', $content);
 			$translator->registerLanguage(new Language($locale, $data));
 		}
-		$l = $this->plugin->getConfig()->get("default-language", "en_US");
+		$l = $this->config->get("default-language", "en_US");
 		$lang = $translator->getLanguage($l) ?? throw new InvalidArgumentException("Language $l not found");
 		$translator->setDefaultLanguage($lang);
 	}
@@ -139,18 +332,18 @@ final class DataManager {
 	}
 
 	public function getServerIp() : string {
-		return $this->plugin->getConfig()->get("server-ip", "yourserverip.net");
+		return $this->config->get("server-ip", "yourserverip.net");
 	}
 
 	public function getMaxRuntimeArenas() : int {
-		return max((int) $this->plugin->getConfig()->get("max-runtime-arenas", 15), 1);
+		return max((int) $this->config->get("max-runtime-arenas", 15), 1);
 	}
 
 	public function getArenaStartingTime() : int {
-		return max((int) $this->plugin->getConfig()->get("arena-starting-time", 120), 5);
+		return max((int) $this->config->get("arena-starting-time", 120), 5);
 	}
 
 	public function getMinimumStartingPlayers() : int {
-		return max((int) $this->plugin->getConfig()->get("minimum-starting-players", 4), 2);
+		return max((int) $this->config->get("minimum-starting-players", 4), 2);
 	}
 }

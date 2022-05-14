@@ -29,6 +29,7 @@ use pocketmine\math\Vector3;
 use pocketmine\network\mcpe\protocol\PlaySoundPacket;
 use pocketmine\player\Player;
 use pocketmine\utils\TextFormat;
+use pocketmine\utils\Utils as PMUtils;
 use pocketmine\world\format\Chunk;
 use pocketmine\world\Position;
 use RecursiveDirectoryIterator;
@@ -223,5 +224,17 @@ final class Utils {
 			$dyeColor->equals(DyeColor::BLACK()) => TextFormat::BLACK,
 			default => TextFormat::WHITE,
 		};
+	}
+
+	public static function resolvePath(string $folder, string $path) : string {
+		if ($path[0] === "/") {
+			return $path;
+		}
+		if (PMUtils::getOS() === "win") {
+			if ($path[0] === "\\" || $path[1] === ":") {
+				return $path;
+			}
+		}
+		return $folder . $path;
 	}
 }

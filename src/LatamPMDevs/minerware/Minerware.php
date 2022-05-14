@@ -72,6 +72,7 @@ final class Minerware extends PluginBase {
 			$arena->deleteMap();
 		}
 		$this->getConfig()->set("default-language", $this->translator->getDefaultLanguage()->getLocale());
+		DataManager::getInstance()->closeDatabase();
 	}
 
 	public function getPrefix() : string {
