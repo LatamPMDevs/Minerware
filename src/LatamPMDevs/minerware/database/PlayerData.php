@@ -102,8 +102,6 @@ class PlayerData implements JsonSerializable {
 	 * 	microgamesWon?: int,
 	 * 	lostMicrogames?: int
 	 * } $data
-	 *
-	 * @throws InvalidArgumentException
 	 */
 	public static function jsonDeserialize(array $data) : PlayerData {
 		return new PlayerData(

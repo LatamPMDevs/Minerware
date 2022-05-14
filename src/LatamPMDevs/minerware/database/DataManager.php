@@ -93,7 +93,6 @@ final class DataManager {
 		switch ((string) $configData["type"]) {
 			case 'json':
 			case 'js':
-				$this->isJsonStorageType = true;
 				$this->jsonPlayersData = new Config(Utils::resolvePath($this->pluginPath, (string) $configData["json"]["file"]), Config::JSON);
 				break;
 
