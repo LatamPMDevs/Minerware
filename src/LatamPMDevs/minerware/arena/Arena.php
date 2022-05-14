@@ -581,7 +581,7 @@ final class Arena implements Listener {
 
 	public function onExhaust(PlayerExhaustEvent $event) : void {
 		$player = $event->getPlayer();
-		if ($this->inGame($player)) {
+		if ($player instanceof Player && $this->inGame($player)) {
 			$event->cancel();
 		}
 	}
