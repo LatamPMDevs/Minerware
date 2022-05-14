@@ -57,8 +57,6 @@ final class DataManager {
 
 	private DataConnector $database;
 
-	private bool $isJsonStorageType = false;
-
 	private Config $jsonPlayersData;
 
 	public Closure $onError;

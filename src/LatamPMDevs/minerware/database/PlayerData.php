@@ -22,7 +22,6 @@ declare(strict_types=1);
 
 namespace LatamPMDevs\minerware\database;
 
-use InvalidArgumentException;
 use JsonSerializable;
 use function time;
 
@@ -107,9 +106,6 @@ class PlayerData implements JsonSerializable {
 	 * @throws InvalidArgumentException
 	 */
 	public static function jsonDeserialize(array $data) : PlayerData {
-		if (!isset($data["name"])) {
-			throw new InvalidArgumentException("\"name\" key not found");
-		}
 		return new PlayerData(
 			(string) $data["name"],
 			(int) ($data["generationTime"] ?? time()),
