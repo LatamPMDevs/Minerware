@@ -84,8 +84,7 @@ final class ArenaManager {
 
 	public function join(Player $player, Arena $arena = null, Map $map = null) : void {
 		if ($arena === null) {
-			$arena = $this->getAvaible($map);
-			if ($arena === null) {
+			if (count(Map::$maps) === 0 || ($arena = $this->getAvaible($map)) === null) {
 				$player->sendMessage(Minerware::getInstance()->getTranslator()->translate($player, "game.noArenaAvaiable"));
 				return;
 			}
