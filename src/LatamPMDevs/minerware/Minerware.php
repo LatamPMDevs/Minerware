@@ -65,12 +65,6 @@ final class Minerware extends PluginBase {
 
 		DataManager::getInstance()->loadMaps();
 		$this->scoreboard = new Scoreboard($this);
-
-		DataManager::getInstance()->addGamesPlayed("elgato", 1, function () {
-			DataManager::getInstance()->getPlayerData("elgato", function ($playerdata) {
-				var_dump($playerdata);
-			});
-		});
 	}
 
 	protected function onDisable() : void {
