@@ -23,6 +23,10 @@ declare(strict_types=1);
 namespace LatamPMDevs\minerware\arena\microgame;
 
 use LatamPMDevs\minerware\arena\Arena;
+use LatamPMDevs\minerware\event\microgame\MicrogameEndEvent;
+use LatamPMDevs\minerware\event\microgame\MicrogameStartEvent;
+use LatamPMDevs\minerware\event\microgame\PlayerMicrogameLoseEvent;
+use LatamPMDevs\minerware\event\microgame\PlayerMicrogameWinEvent;
 use LatamPMDevs\minerware\Minerware;
 
 use pocketmine\player\Player;
@@ -47,8 +51,12 @@ abstract class Microgame {
 	/** @var Player[] */
 	protected array $losers = [];
 
-	public function __construct(protected arena $arena) {
+	public function __construct(protected Arena $arena) {
 		$this->plugin = $this->arena->getPlugin();
+	}
+
+	public function getArena() : Arena {
+		return $this->arena;
 	}
 
 	public function getPlugin() : Minerware {
@@ -76,6 +84,7 @@ abstract class Microgame {
 	}
 
 	public function addWinner(Player $player) : void {
+		(new PlayerMicrogameWinEvent($player, $this))->call();
 		$this->winners[$player->getId()] = $player;
 	}
 
@@ -91,6 +100,7 @@ abstract class Microgame {
 	}
 
 	public function addLoser(Player $player) : void {
+		(new PlayerMicrogameLoseEvent($player, $this))->call();
 		$this->losers[$player->getId()] = $player;
 	}
 
@@ -109,7 +119,17 @@ abstract class Microgame {
 	abstract public function getLevel() : Level;
 	abstract public function getGameDuration() : float; // in seconds
 	abstract public function getRecompensePoints() : int;
-	abstract public function start() : void;
+
+	public function start() : void {
+		$this->startTime = microtime(true);
+		$this->hasStarted = true;
+		(new MicrogameStartEvent($this))->call();
+	}
+
 	abstract public function tick() : void;
-	abstract public function end() : void;
+
+	public function end() : void {
+		$this->hasEnded = true;
+		(new MicrogameEndEvent($this))->call();
+	}
 }

@@ -48,7 +48,6 @@ use function array_key_first;
 use function array_rand;
 use function array_reverse;
 use function asort;
-use function microtime;
 
 class StandOnColor extends Microgame implements Listener {
 
@@ -87,8 +86,6 @@ class StandOnColor extends Microgame implements Listener {
 
 	public function start() : void {
 		$colors = self::getColors();
-		$this->startTime = microtime(true);
-		$this->hasStarted = true;
 		$this->plugin->getServer()->getPluginManager()->registerEvents($this, $this->plugin);
 		$this->color = $colors[array_rand($colors)];
 
@@ -126,6 +123,7 @@ class StandOnColor extends Microgame implements Listener {
 		}
 		$this->arena->buildWinnersCage();
 		$this->arena->buildLosersCage();
+		parent::start();
 	}
 
 	public function tick() : void {
@@ -149,7 +147,6 @@ class StandOnColor extends Microgame implements Listener {
 	}
 
 	public function end() : void {
-		$this->hasEnded = true;
 		HandlerListManager::global()->unregisterAll($this);
 
 		$players = $this->arena->getPlayers();
@@ -185,6 +182,7 @@ class StandOnColor extends Microgame implements Listener {
 		foreach ($this->changedBlocks as $block) {
 			$this->arena->getWorld()->setBlock($block->getPosition(), $block, false);
 		}
+		parent::end();
 	}
 
 	public function getColor() : DyeColor {

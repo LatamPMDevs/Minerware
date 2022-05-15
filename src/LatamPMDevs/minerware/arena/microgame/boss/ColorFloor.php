@@ -53,7 +53,6 @@ use function array_reverse;
 use function array_slice;
 use function asort;
 use function count;
-use function microtime;
 use function shuffle;
 
 class ColorFloor extends Microgame implements Listener {
@@ -93,8 +92,6 @@ class ColorFloor extends Microgame implements Listener {
 	}
 
 	public function start() : void {
-		$this->startTime = microtime(true);
-		$this->hasStarted = true;
 		$this->plugin->getServer()->getPluginManager()->registerEvents($this, $this->plugin);
 
 		$map = $this->arena->getMap();
@@ -140,6 +137,7 @@ class ColorFloor extends Microgame implements Listener {
 		if (!$this->arena->areInvisibleBlocksSet()) {
 			$this->arena->buildInvisibleBlocks();
 		}
+		parent::start();
 	}
 
 	public function tick() : void {
@@ -169,7 +167,6 @@ class ColorFloor extends Microgame implements Listener {
 	}
 
 	public function end() : void {
-		$this->hasEnded = true;
 		HandlerListManager::global()->unregisterAll($this);
 
 		$players = $this->arena->getPlayers();
@@ -207,6 +204,7 @@ class ColorFloor extends Microgame implements Listener {
 		foreach ($this->changedBlocks as $block) {
 			$this->arena->getWorld()->setBlock($block->getPosition(), $block, false);
 		}
+		parent::end();
 	}
 
 	public function setAssignedColor(Player $player, DyeColor $color) : void {

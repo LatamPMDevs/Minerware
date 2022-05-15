@@ -40,7 +40,6 @@ use pocketmine\player\GameMode;
 use pocketmine\player\Player;
 use pocketmine\world\format\Chunk;
 use function array_rand;
-use function microtime;
 use function mt_rand;
 use function str_replace;
 use function strtolower;
@@ -86,8 +85,6 @@ class MineOre extends Microgame implements Listener {
 
 	public function start() : void {
 		$ores = self::getOres();
-		$this->startTime = microtime(true);
-		$this->hasStarted = true;
 		$this->plugin->getServer()->getPluginManager()->registerEvents($this, $this->plugin);
 		$oreKey = array_rand($ores);
 		$this->ore = $ores[$oreKey];
@@ -134,6 +131,7 @@ class MineOre extends Microgame implements Listener {
 		}
 		$this->arena->buildWinnersCage();
 		$this->arena->buildLosersCage();
+		parent::start();
 	}
 
 	public function tick() : void {
@@ -153,7 +151,6 @@ class MineOre extends Microgame implements Listener {
 	}
 
 	public function end() : void {
-		$this->hasEnded = true;
 		HandlerListManager::global()->unregisterAll($this);
 
 		$miner = null;
@@ -193,6 +190,7 @@ class MineOre extends Microgame implements Listener {
 		foreach ($this->changedBlocks as $block) {
 			$this->arena->getWorld()->setBlock($block->getPosition(), $block, false);
 		}
+		parent::end();
 	}
 
 	public function getMinedBlocks(Player $player) : int {

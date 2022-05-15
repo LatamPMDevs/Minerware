@@ -26,6 +26,10 @@ use InvalidArgumentException;
 use LatamPMDevs\minerware\arena\microgame\Level;
 use LatamPMDevs\minerware\arena\microgame\Microgame;
 use LatamPMDevs\minerware\database\DataManager;
+use LatamPMDevs\minerware\event\arena\ArenaChangeStatusEvent;
+use LatamPMDevs\minerware\event\arena\ArenaCreationEvent;
+use LatamPMDevs\minerware\event\arena\ArenaEndEvent;
+use LatamPMDevs\minerware\event\arena\PlayerJoinArenaEvent;
 use LatamPMDevs\minerware\Minerware;
 use LatamPMDevs\minerware\tasks\ArenaTask;
 use LatamPMDevs\minerware\utils\PointHolder;
@@ -134,6 +138,7 @@ final class Arena implements Listener {
 			};
 		}), 3);
 
+		(new ArenaCreationEvent($this))->call();
 	}
 
 	public function getId() : string {
@@ -168,10 +173,20 @@ final class Arena implements Listener {
 	}
 
 	public function setStatus(Status $status) : void {
-		$this->status = $status;
+		if ($this->status->equals($status)) {
+			return;
+		}
+		$ev = new ArenaChangeStatusEvent($this->status, $status, $this);
+		$ev->call();
+		$this->status = $ev->getNewStatus();
 	}
 
 	public function join(Player $player) : void {
+		$ev = new PlayerJoinArenaEvent($player, $this);
+		$ev->call();
+		if ($ev->isCancelled()) {
+			return;
+		}
 		$this->players[$player->getId()] = $player;
 		foreach ($this->players as $pl) {
 			$pl->sendMessage($this->plugin->getTranslator()->translate(
@@ -429,6 +444,7 @@ final class Arena implements Listener {
 				$player->sendMessage($this->plugin->getTranslator()->translate($player, "game.arena.youwin"));
 			}
 		}
+		(new ArenaEndEvent($this))->call();
 	}
 
 	public function buildWinnersCage() : void {

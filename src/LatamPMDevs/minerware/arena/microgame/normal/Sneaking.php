@@ -38,7 +38,6 @@ use pocketmine\event\player\PlayerMoveEvent;
 use pocketmine\event\player\PlayerToggleSneakEvent;
 use pocketmine\player\GameMode;
 use pocketmine\player\Player;
-use function microtime;
 
 class Sneaking extends Microgame implements Listener {
 
@@ -64,8 +63,6 @@ class Sneaking extends Microgame implements Listener {
 	}
 
 	public function start() : void {
-		$this->startTime = microtime(true);
-		$this->hasStarted = true;
 		$this->plugin->getServer()->getPluginManager()->registerEvents($this, $this->plugin);
 
 		$map = $this->arena->getMap();
@@ -109,10 +106,10 @@ class Sneaking extends Microgame implements Listener {
 				$this->arena->sendToLosersCage($player);
 			}
 		}
+		parent::start();
 	}
 
 	public function end() : void {
-		$this->hasEnded = true;
 		HandlerListManager::global()->unregisterAll($this);
 
 		$players = $this->arena->getPlayers();
@@ -131,6 +128,7 @@ class Sneaking extends Microgame implements Listener {
 		foreach ($this->changedBlocks as $block) {
 			$this->arena->getWorld()->setBlock($block->getPosition(), $block, false);
 		}
+		parent::end();
 	}
 
 	public function getTotalSneakedDistance() : float {
