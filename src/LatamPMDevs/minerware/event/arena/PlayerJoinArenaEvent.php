@@ -23,13 +23,14 @@ declare(strict_types=1);
 namespace LatamPMDevs\minerware\event\arena;
 
 use LatamPMDevs\minerware\arena\Arena;
+use pocketmine\event\Cancellable;
 use pocketmine\event\CancellableTrait;
 use pocketmine\player\Player;
 
 /**
  * Called when a player joins an arena
  */
-class PlayerJoinArenaEvent extends ArenaEvent {
+class PlayerJoinArenaEvent extends ArenaEvent implements Cancellable {
 	use CancellableTrait;
 
 	public function __construct(protected Player $player, Arena $arena) {

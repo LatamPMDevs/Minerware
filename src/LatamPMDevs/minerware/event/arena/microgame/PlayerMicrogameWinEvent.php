@@ -23,6 +23,7 @@ declare(strict_types=1);
 namespace LatamPMDevs\minerware\event\arena\microgame;
 
 use LatamPMDevs\minerware\arena\microgame\Microgame;
+use pocketmine\player\Player;
 
 /**
  * Called when a player wins a microgame
