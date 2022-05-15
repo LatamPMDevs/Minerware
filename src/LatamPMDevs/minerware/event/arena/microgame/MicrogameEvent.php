@@ -23,7 +23,7 @@ declare(strict_types=1);
 namespace LatamPMDevs\minerware\event\arena\microgame;
 
 use LatamPMDevs\minerware\arena\microgame\Microgame;
-use LatamPMDevs\minerware\event\ArenaEvent;
+use LatamPMDevs\minerware\event\arena\ArenaEvent;
 
 /**
  * Microgame-only related events
