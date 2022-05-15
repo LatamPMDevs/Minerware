@@ -23,10 +23,10 @@ declare(strict_types=1);
 namespace LatamPMDevs\minerware\arena\microgame;
 
 use LatamPMDevs\minerware\arena\Arena;
-use LatamPMDevs\minerware\event\microgame\MicrogameEndEvent;
-use LatamPMDevs\minerware\event\microgame\MicrogameStartEvent;
-use LatamPMDevs\minerware\event\microgame\PlayerMicrogameLoseEvent;
-use LatamPMDevs\minerware\event\microgame\PlayerMicrogameWinEvent;
+use LatamPMDevs\minerware\event\arena\microgame\MicrogameEndEvent;
+use LatamPMDevs\minerware\event\arena\microgame\MicrogameStartEvent;
+use LatamPMDevs\minerware\event\arena\microgame\PlayerMicrogameLoseEvent;
+use LatamPMDevs\minerware\event\arena\microgame\PlayerMicrogameWinEvent;
 use LatamPMDevs\minerware\Minerware;
 
 use pocketmine\player\Player;
