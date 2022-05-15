@@ -41,7 +41,6 @@ use pocketmine\utils\AssumptionFailedError;
 use function array_key_first;
 use function array_reverse;
 use function asort;
-use function microtime;
 
 class LastKnightStanding extends Microgame implements Listener {
 
@@ -67,8 +66,6 @@ class LastKnightStanding extends Microgame implements Listener {
 	}
 
 	public function start() : void {
-		$this->startTime = microtime(true);
-		$this->hasStarted = true;
 		$this->plugin->getServer()->getPluginManager()->registerEvents($this, $this->plugin);
 
 		$helmet = VanillaItems::IRON_HELMET();
@@ -91,6 +88,7 @@ class LastKnightStanding extends Microgame implements Listener {
 		}
 		$this->arena->buildWinnersCage();
 		$this->arena->buildLosersCage();
+		parent::start();
 	}
 
 	public function tick() : void {
@@ -110,7 +108,6 @@ class LastKnightStanding extends Microgame implements Listener {
 	}
 
 	public function end() : void {
-		$this->hasEnded = true;
 		HandlerListManager::global()->unregisterAll($this);
 
 		$players = $this->arena->getPlayers();
@@ -134,6 +131,7 @@ class LastKnightStanding extends Microgame implements Listener {
 				$player->sendMessage($this->plugin->getTranslator()->translate($player, "microgame.lastknightstanding.lose"));
 			}
 		}
+		parent::end();
 	}
 
 	public function getKills(Player $player) : int {
