@@ -547,7 +547,6 @@ final class Arena implements Listener {
 		Utils::fill($pos3, $pos2, VanillaBlocks::INVISIBLE_BEDROCK());
 		Utils::fill($pos2, $pos4, VanillaBlocks::INVISIBLE_BEDROCK());
 		Utils::fill($pos4, $pos1, VanillaBlocks::INVISIBLE_BEDROCK());
-		$this->world->setBlock($pos1, VanillaBlocks::DIAMOND());
 		$this->areInvisibleBlocksSet = true;
 	}
 
