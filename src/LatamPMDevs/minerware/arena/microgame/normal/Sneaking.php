@@ -83,6 +83,7 @@ class Sneaking extends Microgame implements Listener {
 		}
 		$this->arena->buildWinnersCage();
 		$this->arena->buildLosersCage();
+		parent::start();
 	}
 
 	public function tick() : void {
@@ -106,7 +107,6 @@ class Sneaking extends Microgame implements Listener {
 				$this->arena->sendToLosersCage($player);
 			}
 		}
-		parent::start();
 	}
 
 	public function end() : void {
