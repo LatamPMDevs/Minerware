@@ -67,6 +67,10 @@ final class Arena implements Listener {
 
 	public const NORMAL_MICROGAMES = 15;
 
+	public const FIRST_PLACE = 1;
+	public const SECOND_PLACE = 2;
+	public const THIRD_PLACE = 3;
+
 	private Minerware $plugin;
 
 	private Status $status;
@@ -106,6 +110,12 @@ final class Arena implements Listener {
 	public array $losersCage = [];
 
 	public bool $areInvisibleBlocksSet = false;
+
+	/** @var array<int, array<int, Player>> */
+	public array $winners = [];
+
+	/** @var array<int, Player> */
+	public array $losers = [];
 
 	public function __construct(private string $id, private Map $map) {
 		$this->plugin = Minerware::getInstance();
@@ -419,32 +429,64 @@ final class Arena implements Listener {
 		$this->status = Status::ENDING();
 		$winners = [];
 		$scores = array_slice(Utils::chunkScores($this->pointHolder->getOrderedByHigherScore()), 0, 3);
-		$tops = [];
-		$i = 0;
+		$i = 1;
 		foreach ($scores as $points => $playersIds) {
 			foreach ($playersIds as $id) {
 				$pl = $this->players[$id];
-				$tops[$i][] = $pl;
-				$winners[$id] = $pl;
+				$this->addWinner($i, $pl);
 			}
 			$i++;
 		}
 		foreach ($this->players as $player) {
 			$player->sendMessage("§7" . str_repeat("-", 31));
-			foreach ($tops as $key => $players) {
+			foreach ($this->winners as $topPosition => $players) {
 				$player->sendMessage($this->plugin->getTranslator()->translate(
-					$player, "game.arena.top" . $key + 1, [
+					$player, "game.arena.top" . $topPosition, [
 						"{%players}" => implode("§a, §8", Utils::getPlayersNames($players)),
 						"{%points}" => $this->pointHolder->getPlayerPoints($players[array_key_first($players)])
 					]
 				));
 			}
 			$player->sendMessage("§7" . str_repeat("-", 31));
-			if (isset($winners[$player->getId()])) {
+			if ($this->isWinner($player)) {
 				$player->sendMessage($this->plugin->getTranslator()->translate($player, "game.arena.youwin"));
+			} else {
+				$this->addLoser($player);
 			}
 		}
 		(new ArenaEndEvent($this))->call();
+	}
+
+	public function getWinners() : array {
+		return $this->winners;
+	}
+
+	public function addWinner(int $topPosition, Player $player) : void {
+		if ($topPosition < self::FIRST_PLACE || $topPosition > self::THIRD_PLACE) {
+			throw new InvalidArgumentException("Invalid top position, must be " . self::FIRST_PLACE . "-" . self::THIRD_PLACE);
+		}
+		$this->winners[$topPosition][$player->getId()] = $player;
+	}
+
+	public function isWinner(Player $player) : bool {
+		foreach ($this->winners as $topPosition => $players) {
+			if (isset($players[$player->getId()])) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	public function getLosers() : array {
+		return $this->losers;
+	}
+
+	public function addLoser(Player $player) : void {
+		$this->losers[$player->getId()] = $player;
+	}
+
+	public function isLoser(Player $player) : bool {
+		return isset($this->losers[$player->getId()]);
 	}
 
 	public function buildWinnersCage() : void {

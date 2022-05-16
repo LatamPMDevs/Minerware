@@ -28,7 +28,7 @@ use pocketmine\player\Player;
 /**
  * Called when a player wins a microgame
  */
-class PlayerMicrogameWinEvent extends MicrogameEvent {
+class PlayerWinMicrogameEvent extends MicrogameEvent {
 
 	public function __construct(protected Player $player, Microgame $microgame) {
 		parent::__construct($microgame);

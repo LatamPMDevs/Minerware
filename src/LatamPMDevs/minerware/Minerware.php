@@ -63,8 +63,10 @@ final class Minerware extends PluginBase {
 			PacketHooker::register($this);
 		}
 
-		DataManager::getInstance()->loadMaps();
+		$dataManager = DataManager::getInstance();
+		$dataManager->loadMaps();
 		$this->scoreboard = new Scoreboard($this);
+		$this->getServer()->getPluginManager()->registerEvents(new EventListener($this, $dataManager), $this);
 	}
 
 	protected function onDisable() : void {

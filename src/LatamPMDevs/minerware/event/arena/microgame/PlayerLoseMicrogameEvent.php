@@ -28,7 +28,7 @@ use pocketmine\player\Player;
 /**
  * Called when a player loses a microgame
  */
-class PlayerMicrogameLoseEvent extends MicrogameEvent {
+class PlayerLoseMicrogameEvent extends MicrogameEvent {
 
 	public function __construct(protected Player $player, Microgame $microgame) {
 		parent::__construct($microgame);

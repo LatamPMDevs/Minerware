@@ -25,8 +25,8 @@ namespace LatamPMDevs\minerware\arena\microgame;
 use LatamPMDevs\minerware\arena\Arena;
 use LatamPMDevs\minerware\event\arena\microgame\MicrogameEndEvent;
 use LatamPMDevs\minerware\event\arena\microgame\MicrogameStartEvent;
-use LatamPMDevs\minerware\event\arena\microgame\PlayerMicrogameLoseEvent;
-use LatamPMDevs\minerware\event\arena\microgame\PlayerMicrogameWinEvent;
+use LatamPMDevs\minerware\event\arena\microgame\PlayerLoseMicrogameEvent;
+use LatamPMDevs\minerware\event\arena\microgame\PlayerWinMicrogameEvent;
 use LatamPMDevs\minerware\Minerware;
 
 use pocketmine\player\Player;
@@ -84,7 +84,7 @@ abstract class Microgame {
 	}
 
 	public function addWinner(Player $player) : void {
-		(new PlayerMicrogameWinEvent($player, $this))->call();
+		(new PlayerWinMicrogameEvent($player, $this))->call();
 		$this->winners[$player->getId()] = $player;
 	}
 
@@ -100,7 +100,7 @@ abstract class Microgame {
 	}
 
 	public function addLoser(Player $player) : void {
-		(new PlayerMicrogameLoseEvent($player, $this))->call();
+		(new PlayerLoseMicrogameEvent($player, $this))->call();
 		$this->losers[$player->getId()] = $player;
 	}
 
