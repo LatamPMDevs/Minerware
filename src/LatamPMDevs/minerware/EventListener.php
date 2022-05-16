@@ -27,7 +27,6 @@ use LatamPMDevs\minerware\event\arena\ArenaEndEvent;
 use LatamPMDevs\minerware\event\arena\microgame\MicrogameEndEvent;
 use LatamPMDevs\minerware\event\arena\microgame\PlayerLoseMicrogameEvent;
 use LatamPMDevs\minerware\event\arena\microgame\PlayerWinMicrogameEvent;
-use pocketmine\player\Player;
 use pocketmine\event\Listener;
 
 final class EventListener implements Listener {
