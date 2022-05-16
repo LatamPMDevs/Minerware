@@ -66,7 +66,7 @@ final class Minerware extends PluginBase {
 		$dataManager = DataManager::getInstance();
 		$dataManager->loadMaps();
 		$this->scoreboard = new Scoreboard($this);
-		$this->getServer()->getPluginManager()->registerEvents(new EventListener($this, $dataManager), $this);
+		$this->getServer()->getPluginManager()->registerEvents(new EventListener($dataManager), $this);
 	}
 
 	protected function onDisable() : void {

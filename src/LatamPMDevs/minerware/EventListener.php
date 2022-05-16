@@ -31,7 +31,7 @@ use pocketmine\event\Listener;
 
 final class EventListener implements Listener {
 
-	public function __construct(private Minerware $plugin, private DataManager $dataManager) {
+	public function __construct(private DataManager $dataManager) {
 	}
 
 	/**
