@@ -29,25 +29,6 @@ You can find some maps [here](https://github.com/LatamPMDevs/Minerware/tree/mast
 - Stand on Diamond
 - Color Floor
 
-## Development:
-```bash
-# Install plugin.
-cd your/server/path/plugins
-git clone https://github.com/IvanCraft623/Minerware.git
-
-# Install development dependencies (PHPStan & PHP-CS-Fixer not necesary but recommended).
-cd Minerware
-composer install
-
-# Make sure you have DevTools and DEVirion installed in your plugins folder.
-# Install Poggit dependencies.
-mkdir virions
-cd your/server/path/virions
-git clone https://github.com/CortexPE/Commando.git
-git clone https://github.com/IvanCraft623/languages.git
-# NOTE: Remember to include this folder (yourspace/virions) in your development workspace if possible.
-```
-
 ## Project information:
 | Plugin version | Pocketmine version | PHP version | Status |
 |---|---|---|---|
