@@ -19,14 +19,9 @@ default-language: en_US #See languages folder
 server-ip: "yourserverip.net" #For scoreboard
 
 database:
-  # The database type. "json", "sqlite" and "mysql" are supported.
+  # The database type. "sqlite" and "mysql" are supported.
   type: sqlite
 
-  # Edit these settings only if you choose "json".
-  json:
-    # The file name of the database in the plugin data folder.
-    # You can also put an absolute path here.
-    file: database/players_data.json
   # Edit these settings only if you choose "sqlite".
   sqlite:
     # The file name of the database in the plugin data folder.

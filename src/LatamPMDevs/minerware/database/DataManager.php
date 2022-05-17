@@ -57,8 +57,6 @@ final class DataManager {
 
 	private DataConnector $database;
 
-	private Config $jsonPlayersData;
-
 	public Closure $onError;
 
 	public function __construct() {
@@ -83,28 +81,17 @@ final class DataManager {
 	public function closeDatabase() : void {
 		if (isset($this->database)) {
 			$this->database->close();
-		} elseif (isset($this->jsonPlayersData)) {
-			$this->jsonPlayersData->save();
 		}
 	}
 
 	public function createContext() : void {
 		$configData = $this->config->get("database");
-		switch ((string) $configData["type"]) {
-			case 'json':
-			case 'js':
-				$this->jsonPlayersData = new Config(Utils::resolvePath($this->pluginPath, (string) $configData["json"]["file"]), Config::JSON);
-				break;
+		$this->database = libasynql::create($this->plugin, $configData, [
+			"sqlite" => "database/sqlite.sql",
+			"mysql"  => "database/mysql.sql",
+		]);
 
-			default:
-				$this->database = libasynql::create($this->plugin, $configData, [
-					"sqlite" => "database/sqlite.sql",
-					"mysql"  => "database/mysql.sql",
-				]);
-
-				$this->database->executeGeneric('table.players');
-				break;
-		}
+		$this->database->executeGeneric('table.players');
 	}
 
 	public function getPlayerData(string $name, callable $onSuccess, ?callable $onError = null, bool $nonNull = false) : void {
@@ -120,14 +107,6 @@ final class DataManager {
 				}
 				$onSuccess($playerdata);
 			}, $onError ?? $this->onError);
-		} elseif (isset($this->jsonPlayersData)) {
-			$playerdata = null;
-			if ($this->jsonPlayersData->exists($name)) {
-				$playerdata = PlayerData::jsonDeserialize($this->jsonPlayersData->get($name));
-			} elseif ($nonNull) {
-				$playerdata = new PlayerData($name, time(), 0, 0, 0, 0, 0, 0);
-			}
-			$onSuccess($playerdata);
 		}
 	}
 
@@ -153,13 +132,6 @@ final class DataManager {
 		];
 		if (isset($this->database)) {
 			$this->database->executeGeneric('data.players.add', $values, $onSuccess, $onError ?? $this->onError);
-		} elseif (isset($this->jsonPlayersData)) {
-			if (!$this->jsonPlayersData->exists($name)) {
-				$this->jsonPlayersData->set($name, $values);
-			}
-			if ($onSuccess !== null) {
-				$onSuccess();
-			}
 		}
 	}
 
@@ -169,17 +141,6 @@ final class DataManager {
 				"name" => $name,
 				"count" => $count
 			], $onSuccess, $onError ?? $this->onError);
-		} elseif (isset($this->jsonPlayersData)) {
-			$data = $this->jsonPlayersData->get($name, null);
-			if ($data !== null) {
-				$data["gamesPlayed"] = ($data["gamesPlayed"] ?? 0) + $count;
-				$this->jsonPlayersData->set($name, $data);
-			} else {
-				$this->addPlayer($name, $count);
-			}
-			if ($onSuccess !== null) {
-				$onSuccess();
-			}
 		}
 	}
 
@@ -189,17 +150,6 @@ final class DataManager {
 				"name" => $name,
 				"count" => $count
 			], $onSuccess, $onError ?? $this->onError);
-		} elseif (isset($this->jsonPlayersData)) {
-			$data = $this->jsonPlayersData->get($name, null);
-			if ($data !== null) {
-				$data["gamesWon"] = ($data["gamesWon"] ?? 0) + $count;
-				$this->jsonPlayersData->set($name, $data);
-			} else {
-				$this->addPlayer($name, 0, $count);
-			}
-			if ($onSuccess !== null) {
-				$onSuccess();
-			}
 		}
 	}
 
@@ -209,17 +159,6 @@ final class DataManager {
 				"name" => $name,
 				"count" => $count
 			], $onSuccess, $onError ?? $this->onError);
-		} elseif (isset($this->jsonPlayersData)) {
-			$data = $this->jsonPlayersData->get($name, null);
-			if ($data !== null) {
-				$data["lostGames"] = ($data["lostGames"] ?? 0) + $count;
-				$this->jsonPlayersData->set($name, $data);
-			} else {
-				$this->addPlayer($name, 0, 0, $count);
-			}
-			if ($onSuccess !== null) {
-				$onSuccess();
-			}
 		}
 	}
 
@@ -229,17 +168,6 @@ final class DataManager {
 				"name" => $name,
 				"count" => $count
 			], $onSuccess, $onError ?? $this->onError);
-		} elseif (isset($this->jsonPlayersData)) {
-			$data = $this->jsonPlayersData->get($name, null);
-			if ($data !== null) {
-				$data["microgamesPlayed"] = ($data["microgamesPlayed"] ?? 0) + $count;
-				$this->jsonPlayersData->set($name, $data);
-			} else {
-				$this->addPlayer($name, 0, 0, 0, $count);
-			}
-			if ($onSuccess !== null) {
-				$onSuccess();
-			}
 		}
 	}
 
@@ -249,17 +177,6 @@ final class DataManager {
 				"name" => $name,
 				"count" => $count
 			], $onSuccess, $onError ?? $this->onError);
-		} elseif (isset($this->jsonPlayersData)) {
-			$data = $this->jsonPlayersData->get($name, null);
-			if ($data !== null) {
-				$data["microgamesWon"] = ($data["microgamesWon"] ?? 0) + $count;
-				$this->jsonPlayersData->set($name, $data);
-			} else {
-				$this->addPlayer($name, 0, 0, 0, 0, $count);
-			}
-			if ($onSuccess !== null) {
-				$onSuccess();
-			}
 		}
 	}
 
@@ -269,17 +186,6 @@ final class DataManager {
 				"name" => $name,
 				"count" => $count
 			], $onSuccess, $onError ?? $this->onError);
-		} elseif (isset($this->jsonPlayersData)) {
-			$data = $this->jsonPlayersData->get($name, null);
-			if ($data !== null) {
-				$data["lostMicrogames"] = ($data["lostMicrogames"] ?? 0) + $count;
-				$this->jsonPlayersData->set($name, $data);
-			} else {
-				$this->addPlayer($name, 0, 0, 0, 0, 0, $count);
-			}
-			if ($onSuccess !== null) {
-				$onSuccess();
-			}
 		}
 	}
 
