@@ -86,7 +86,7 @@ final class Minerware extends PluginBase {
 	}
 
 	public function getPrefix() : string {
-		return $this->getDescription()->getPrefix();
+		return "§aMinerware§r ";
 	}
 
 	public function getScoreboard() : Scoreboard {
