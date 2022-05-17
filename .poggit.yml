@@ -9,6 +9,9 @@ projects:
       - src: CortexPE/Commando/Commando
         version: ^3.0.0
         branch: PM4
+      - src: ifera-mc/ConfigUpdater/ConfigUpdater
+        version: ^2.0.0
+        branch: master
       - src: IvanCraft623/languages/languages
         version: ^0.0.1
       - src: poggit/libasynql/libasynql

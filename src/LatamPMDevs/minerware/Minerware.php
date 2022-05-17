@@ -24,6 +24,7 @@ namespace LatamPMDevs\minerware;
 
 use CortexPE\Commando\PacketHooker;
 use IvanCraft623\languages\Translator;
+use JackMD\ConfigUpdater\ConfigUpdater;
 use LatamPMDevs\minerware\arena\ArenaManager;
 use LatamPMDevs\minerware\arena\microgame\boss\ColorFloor;
 use LatamPMDevs\minerware\arena\microgame\normal\IgniteTNT;
@@ -45,12 +46,19 @@ final class Minerware extends PluginBase {
 		reset as protected;
 	}
 
+	public const CONFIG_VERSION = 1;
+
 	private Scoreboard $scoreboard;
 
 	private Translator $translator;
 
 	protected function onLoad() : void {
 		self::setInstance($this);
+
+		if (ConfigUpdater::checkUpdate($this, $this->getConfig(), "config-version", self::CONFIG_VERSION)) {
+			$this->reloadConfig();
+		}
+
 		DataManager::getInstance();
 		ArenaManager::getInstance();
 		$this->translator = new Translator($this);
@@ -59,7 +67,7 @@ final class Minerware extends PluginBase {
 	}
 
 	protected function onEnable() : void {
-		if(!PacketHooker::isRegistered()) {
+		if (!PacketHooker::isRegistered()) {
 			PacketHooker::register($this);
 		}
 

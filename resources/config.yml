@@ -14,6 +14,10 @@
 
 # Copyright 2022 © LatamPMDevs
 
+# Do not edit this value!
+# Only for internal use.
+config-version: 1
+
 #Settings
 default-language: en_US #See languages folder
 server-ip: "yourserverip.net" #For scoreboard
