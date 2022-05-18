@@ -22,35 +22,36 @@ declare(strict_types=1);
 
 namespace LatamPMDevs\minerware\arena\microgame\normal;
 
+use LatamPMDevs\minerware\arena\Map;
 use LatamPMDevs\minerware\arena\microgame\Level;
 use LatamPMDevs\minerware\arena\microgame\Microgame;
 use LatamPMDevs\minerware\utils\Utils;
 
+use pocketmine\block\Block;
+use pocketmine\block\VanillaBlocks;
+use pocketmine\entity\projectile\Arrow;
 use pocketmine\event\block\BlockBreakEvent;
 use pocketmine\event\block\BlockPlaceEvent;
+use pocketmine\event\entity\EntityDamageByChildEntityEvent;
 use pocketmine\event\entity\EntityDamageByEntityEvent;
 use pocketmine\event\entity\EntityDamageEvent;
+use pocketmine\event\entity\EntityShootBowEvent;
 use pocketmine\event\HandlerListManager;
 use pocketmine\event\Listener;
-use pocketmine\item\enchantment\EnchantmentInstance;
-use pocketmine\item\enchantment\VanillaEnchantments;
 use pocketmine\item\VanillaItems;
 use pocketmine\player\GameMode;
 use pocketmine\player\Player;
-use pocketmine\utils\AssumptionFailedError;
-use function array_key_first;
-use function array_reverse;
-use function asort;
 
-class LastKnightStanding extends Microgame implements Listener {
+class OneInTheChamber extends Microgame implements Listener {
 
-	public const SHARPNESS_LEVEL = 4;
+	/** @var Block[] */
+	protected array $changedBlocks = [];
 
 	/** @var array<int, int> */
 	protected array $kills = [];
 
 	public function getName() : string {
-		return "Last Knight Standing";
+		return "One In The Chamber";
 	}
 
 	public function getLevel() : Level {
@@ -58,7 +59,7 @@ class LastKnightStanding extends Microgame implements Listener {
 	}
 
 	public function getGameDuration() : float {
-		return 22.9;
+		return 20.9;
 	}
 
 	public function getRecompensePoints() : int {
@@ -68,22 +69,22 @@ class LastKnightStanding extends Microgame implements Listener {
 	public function start() : void {
 		$this->plugin->getServer()->getPluginManager()->registerEvents($this, $this->plugin);
 
-		$helmet = VanillaItems::IRON_HELMET();
-		$chestplate = VanillaItems::IRON_CHESTPLATE();
-		$leggings = VanillaItems::LEATHER_PANTS();
-		$boots = VanillaItems::LEATHER_BOOTS();
-		$sharpness = VanillaEnchantments::SHARPNESS();
+		$map = $this->arena->getMap();
+		$minPos = $map->getPlatformMinPos();
+		$world = $this->arena->getWorld();
+		foreach (Map::MINI_PLATFORMS as $key => $value) {
+			foreach (Map::MINI_PLATFORMS[$key] as $blockPos) {
+				$this->changedBlocks[] = $world->getBlockAt((int) ($minPos->x + $blockPos[0]), (int) ($minPos->y + $blockPos[1]), (int) ($minPos->z + $blockPos[2]));
+				$world->setBlockAt((int) ($minPos->x + $blockPos[0]), (int) ($minPos->y + $blockPos[1]), (int) ($minPos->z + $blockPos[2]), VanillaBlocks::AIR(), true);
+			}
+		}
+
 		foreach ($this->arena->getPlayers() as $player) {
 			Utils::initPlayer($player);
-			$sword = VanillaItems::DIAMOND_SWORD();
-			$sword->setCustomName($this->plugin->getTranslator()->translate($player, "microgame.item.sword"));
-			$sword->addEnchantment(new EnchantmentInstance($sharpness, self::SHARPNESS_LEVEL));
 			$player->setGamemode(GameMode::ADVENTURE());
-			$player->getInventory()->setItem(0, $sword);
-			$player->getArmorInventory()->setItem($helmet->getArmorSlot(), $helmet);
-			$player->getArmorInventory()->setItem($chestplate->getArmorSlot(), $chestplate);
-			$player->getArmorInventory()->setItem($leggings->getArmorSlot(), $leggings);
-			$player->getArmorInventory()->setItem($boots->getArmorSlot(), $boots);
+			$player->getInventory()->setItem(0, VanillaItems::BOW());
+			$player->getInventory()->setItem(1, VanillaItems::WOODEN_SWORD());
+			$player->getInventory()->setItem(8, VanillaItems::ARROW());
 			$player->getInventory()->setHeldItemIndex(0);
 		}
 		$this->arena->buildWinnersCage();
@@ -126,10 +127,13 @@ class LastKnightStanding extends Microgame implements Listener {
 				));
 			}
 			if ($this->isWinner($player)) {
-				$player->sendMessage($this->plugin->getTranslator()->translate($player, "microgame.lastknightstanding.won"));
+				$player->sendMessage($this->plugin->getTranslator()->translate($player, "microgame.oneinthechamber.won"));
 			} elseif ($this->isLoser($player)) {
 				$player->sendMessage($this->plugin->getTranslator()->translate($player, "microgame.failedtosurvive"));
 			}
+		}
+		foreach ($this->changedBlocks as $block) {
+			$this->arena->getWorld()->setBlock($block->getPosition(), $block, false);
 		}
 		parent::end();
 	}
@@ -165,31 +169,53 @@ class LastKnightStanding extends Microgame implements Listener {
 
 	public function onFatalDamage(EntityDamageEvent $event) : void {
 		$player = $event->getEntity();
-		if ($event->getFinalDamage() < $player->getHealth()) return;
 		if (!$player instanceof Player) return;
 		if (!$this->arena->inGame($player)) return;
 		if (!$this->isWinner($player) && !$this->isLoser($player)) {
-			if ($event->getCause() === EntityDamageEvent::CAUSE_VOID) {
+			$fatal = $player->getHealth() <= $event->getFinalDamage();
+			if ($event->getCause() === EntityDamageEvent::CAUSE_VOID && $fatal) {
 				$player->sendMessage($this->plugin->getTranslator()->translate($player, "microgame.felloffplatform"));
 			} elseif ($event instanceof EntityDamageByEntityEvent) {
 				$damager = $event->getDamager();
 				if ($damager instanceof Player) {
-					$this->kills[$damager->getId()] = $this->getKills($damager) + 1;
-					$damager->sendMessage($this->plugin->getTranslator()->translate(
-						$damager, "microgame.lastknightstanding.kill", [
-							"{%player}" => $player->getName()
-						]
-					));
-					$player->sendMessage($this->plugin->getTranslator()->translate(
-						$player, "microgame.lastknightstanding.death", [
-							"{%player}" => $damager->getName()
-						]
-					));
+					if ($event instanceof EntityDamageByChildEntityEvent &&
+						$event->getChild() instanceof Arrow
+					) {
+						$fatal = true;
+					}
+					if ($fatal) {
+						$this->kills[$damager->getId()] = $this->getKills($damager) + 1;
+						$damager->sendMessage($this->plugin->getTranslator()->translate(
+							$damager, "microgame.oneinthechamber.kill", [
+								"{%player}" => $player->getName()
+							]
+						));
+						$arrow = VanillaItems::ARROW();
+						if (!$damager->getInventory()->contains($arrow)) {
+							$damager->getInventory()->setItem(8, $arrow);
+						} else {
+							$damager->getInventory()->addItem($arrow);
+						}
+					}
 				}
 			}
-			$this->addLoser($player);
-			$this->arena->sendToLosersCage($player);
-			$event->cancel();
+			if ($fatal) {
+				$this->addLoser($player);
+				$this->arena->sendToLosersCage($player);
+				$event->cancel();
+			}
+		}
+	}
+
+	public function onShootBow(EntityShootBowEvent $event) : void {
+		$player = $event->getEntity();
+		if (!$player instanceof Player) return;
+		if (!$this->arena->inGame($player)) return;
+		if (!$this->isWinner($player) && !$this->isLoser($player)) {
+			$projectile = $event->getProjectile();
+			if ($projectile instanceof Arrow) {
+				$projectile->setPickupMode(Arrow::PICKUP_NONE);
+			}
 		}
 	}
 }
