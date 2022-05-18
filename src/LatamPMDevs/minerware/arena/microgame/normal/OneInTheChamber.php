@@ -41,6 +41,7 @@ use pocketmine\event\Listener;
 use pocketmine\item\VanillaItems;
 use pocketmine\player\GameMode;
 use pocketmine\player\Player;
+use pocketmine\utils\AssumptionFailedError;
 use function array_key_first;
 use function array_reverse;
 use function asort;
