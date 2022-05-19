@@ -222,6 +222,7 @@ final class Utils {
 			$dyeColor->equals(DyeColor::GREEN()) => TextFormat::DARK_GREEN,
 			$dyeColor->equals(DyeColor::RED()) => TextFormat::DARK_RED,
 			$dyeColor->equals(DyeColor::BLACK()) => TextFormat::BLACK,
+			$dyeColor->equals(DyeColor::YELLOW()) => TextFormat::YELLOW,
 			default => TextFormat::WHITE,
 		};
 	}
