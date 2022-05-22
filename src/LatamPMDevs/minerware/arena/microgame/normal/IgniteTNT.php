@@ -189,7 +189,7 @@ class IgniteTNT extends Microgame implements Listener {
 		$player = $event->getPlayer();
 		if (!$this->arena->inGame($player)) return;
 		if ($event->getItem() instanceof FlintSteel) {
-			if ($event->getBlock() instanceof TNT) {
+			if (!$player->isSneaking() && $event->getBlock() instanceof TNT) {
 				$this->ignitedTNTs[$player->getId()] = $this->getIgnitedTNTs($player) + 1;
 				$this->totalIgnitedTNTs++;
 				if (!$this->isWinner($player) && !$this->isLoser($player)) {

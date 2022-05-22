@@ -91,6 +91,9 @@ class OneInTheChamber extends Microgame implements Listener {
 			$player->getInventory()->setItem(8, VanillaItems::ARROW());
 			$player->getInventory()->setHeldItemIndex(0);
 		}
+		if (!$this->arena->areInvisibleBlocksSet()) {
+			$this->arena->buildInvisibleBlocks();
+		}
 		$this->arena->buildWinnersCage();
 		$this->arena->buildLosersCage();
 		parent::start();
@@ -194,6 +197,11 @@ class OneInTheChamber extends Microgame implements Listener {
 								"{%player}" => $player->getName()
 							]
 						));
+						$player->sendMessage($this->plugin->getTranslator()->translate(
+							$player, "microgame.youwereslain", [
+								"{%player}" => $damager->getName()
+							]
+						));
 						$arrow = VanillaItems::ARROW();
 						if (!$damager->getInventory()->contains($arrow)) {
 							$damager->getInventory()->setItem(8, $arrow);
@@ -202,6 +210,8 @@ class OneInTheChamber extends Microgame implements Listener {
 						}
 					}
 				}
+			} elseif ($fatal) {
+				$player->sendMessage($this->plugin->getTranslator()->translate($player, "microgame.oneinthechamber.diedincombat"));
 			}
 			if ($fatal) {
 				$this->addLoser($player);

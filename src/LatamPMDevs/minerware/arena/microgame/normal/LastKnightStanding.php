@@ -181,7 +181,7 @@ class LastKnightStanding extends Microgame implements Listener {
 						]
 					));
 					$player->sendMessage($this->plugin->getTranslator()->translate(
-						$player, "microgame.lastknightstanding.death", [
+						$player, "microgame.youwereslain", [
 							"{%player}" => $damager->getName()
 						]
 					));
