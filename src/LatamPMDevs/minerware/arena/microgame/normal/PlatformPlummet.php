@@ -43,6 +43,7 @@ use pocketmine\player\Player;
 use function array_rand;
 use function count;
 use function is_array;
+use function min;
 use function morton2d_encode;
 
 class PlatformPlummet extends Microgame implements Listener {
