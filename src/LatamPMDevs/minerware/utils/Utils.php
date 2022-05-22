@@ -39,6 +39,7 @@ use ZipArchive;
 use function abs;
 use function basename;
 use function file_exists;
+use function floor;
 use function is_array;
 use function is_dir;
 use function is_file;
