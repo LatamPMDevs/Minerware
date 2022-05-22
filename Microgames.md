@@ -2,6 +2,14 @@
 
 ## Normal Games
 
+# Platform Plummet
+Don't fall off as the platforms around and underneath you crumble away.
+- [x] Done
+
+# One In The Chamber
+You're given a bow, 1 arrow and a sword. Shoot someone, they instantly die. Kill someone, you get a new arrow.
+- [x] Done
+
 # Sneaking
 Players have to keep sneaking until the time is up.
 - [x] Done

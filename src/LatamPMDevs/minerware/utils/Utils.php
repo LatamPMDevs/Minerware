@@ -25,6 +25,7 @@ namespace LatamPMDevs\minerware\utils;
 use InvalidArgumentException;
 use pocketmine\block\Block;
 use pocketmine\block\utils\DyeColor;
+use pocketmine\math\Vector2;
 use pocketmine\math\Vector3;
 use pocketmine\network\mcpe\protocol\PlaySoundPacket;
 use pocketmine\player\Player;
@@ -43,6 +44,7 @@ use function is_dir;
 use function is_file;
 use function max;
 use function min;
+use function morton2d_encode;
 use function rmdir;
 use function scandir;
 use function str_repeat;
@@ -205,6 +207,33 @@ final class Utils {
 	}
 
 	/**
+	 * @return array<int, Vector2[]>
+	 */
+	public static function chunkVector2(Vector2 $pos1, Vector2 $pos2, int $chunkSize) : array {
+		if ($chunkSize < 2) {
+			throw new InvalidArgumentException("Chunk size should be at least 2");
+		}
+
+		$minX = min($pos1->x, $pos2->x);
+		$minY = min($pos1->y, $pos2->y);
+
+		$maxX = max($pos1->x, $pos2->x);
+		$maxY = max($pos1->y, $pos2->y);
+
+		$chunks = [];
+		for ($x = $minX; $x <= $maxX; ++$x) {
+			$xDiff = $x - $minX;
+			$chunkX = (int) floor($xDiff / $chunkSize);
+			for ($y = $minY; $y <= $maxY; ++$y) {
+				$yDiff = $y - $minY;
+				$chunkY = (int) floor($yDiff / $chunkSize);
+				$chunks[morton2d_encode($chunkX, $chunkY)][] = new Vector2($xDiff, $yDiff);
+			}
+		}
+		return $chunks;
+	}
+
+	/**
 	 * Some colors of DyeColor do not exist in TextFormat
 	 * in these cases return TextFormat::WHITE
 	 */
@@ -223,7 +252,7 @@ final class Utils {
 			$dyeColor->equals(DyeColor::RED()) => TextFormat::DARK_RED,
 			$dyeColor->equals(DyeColor::BLACK()) => TextFormat::BLACK,
 			$dyeColor->equals(DyeColor::YELLOW()) => TextFormat::YELLOW,
-			default => TextFormat::WHITE,
+			default => TextFormat::WHITE
 		};
 	}
 

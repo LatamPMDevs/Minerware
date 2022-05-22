@@ -20,15 +20,39 @@
 
 declare(strict_types=1);
 
-namespace LatamPMDevs\minerware\entity\projectile;
+namespace LatamPMDevs\minerware\entity\object;
 
-use pocketmine\entity\projectile\SplashPotion;
-use pocketmine\event\entity\ProjectileHitEvent;
+use pocketmine\entity\object\FallingBlock as PMFallingBlock;
 
-class ColorMissile extends SplashPotion {
+/**
+ * This class exists just for optimization
+ * used on PlatformPlummet microgame.
+ */
+class FallingBlock extends PMFallingBlock {
 
-	protected function onHit(ProjectileHitEvent $event) : void {
-		// Logic calculated by ColorFloor class
+	protected int $maxTicksOfLife = 9999;
+
+	public function getMaxTicksOfLife() : int {
+		return $this->maxTicksOfLife;
+	}
+
+	public function setMaxTicksOfLife(int $maxTicksOfLife) : void {
+		$this->maxTicksOfLife = $maxTicksOfLife;
+	}
+
+	protected function entityBaseTick(int $tickDiff = 1) : bool {
+		if ($this->closed) {
+			return false;
+		}
+
+		$hasUpdate = parent::entityBaseTick($tickDiff);
+
+		if ($this->ticksLived >= $this->maxTicksOfLife) {
+			$this->flagForDespawn();
+			$hasUpdate = true;
+		}
+
+		return $hasUpdate;
 	}
 
 	public function canSaveWithChunk() : bool {
