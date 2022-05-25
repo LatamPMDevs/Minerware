@@ -219,6 +219,7 @@ final class Arena implements Listener {
 		unset($this->winnersCage[$player->getId()]);
 		unset($this->losersCage[$player->getId()]);
 		$this->pointHolder->removePlayer($player);
+		$this->plugin->getScoreboard()->remove($player);
 		foreach ($this->players as $pl) {
 			$pl->sendMessage($this->plugin->getTranslator()->translate(
 				$pl, "game.player.quit", [
