@@ -57,10 +57,12 @@ final class ArenaTask extends Task {
 
 			case ($status->equals(Status::STARTING())):
 				if (count($players) < $arena->getMinPlayers()) {
+					foreach ($players as $player) {
+						$player->sendMessage($this->plugin->getTranslator()->translate($player, "game.arena.countCancelled"));
+					}
 					$arena->startingtime = $arena->defaultStartingtime;
 					$arena->setStatus(Status::WAITING());
 				} else {
-
 					if ($arena->startingtime > 15 && count($players) >= Arena::MAX_PLAYERS) {
 						foreach ($players as $player) {
 							$player->sendMessage($this->plugin->getTranslator()->translate(

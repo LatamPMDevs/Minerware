@@ -221,7 +221,7 @@ class StackBlocks extends Microgame implements Listener {
 				$player->sendMessage($this->plugin->getTranslator()->translate($player, "microgame.stackblocks.pleasestop"));
 			} elseif ($size === self::STACK_SIZE + 6) {
 				$player->sendMessage($this->plugin->getTranslator()->translate($player, "microgame.stackblocks.alert"));
-			} elseif (($size === self::STACK_SIZE * 2) - 1) {
+			} elseif ($size === ((self::STACK_SIZE * 2) - 1)) {
 				$player->sendMessage($this->plugin->getTranslator()->translate($player, "microgame.stackblocks.brokesystem"));
 			}
 		}
