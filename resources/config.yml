@@ -30,7 +30,7 @@ database:
   sqlite:
     # The file name of the database in the plugin data folder.
     # You can also put an absolute path here.
-    file: database/players_data.db
+    file: database/Minerware.db
   # Edit these settings only if you choose "mysql".
   mysql:
     host: 127.0.0.1
