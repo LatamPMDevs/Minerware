@@ -26,16 +26,6 @@ use CortexPE\Commando\PacketHooker;
 use IvanCraft623\languages\Translator;
 use JackMD\ConfigUpdater\ConfigUpdater;
 use LatamPMDevs\minerware\arena\ArenaManager;
-use LatamPMDevs\minerware\arena\microgame\boss\ColorFloor;
-use LatamPMDevs\minerware\arena\microgame\normal\IgniteTNT;
-use LatamPMDevs\minerware\arena\microgame\normal\LastKnightStanding;
-use LatamPMDevs\minerware\arena\microgame\normal\MineOre;
-use LatamPMDevs\minerware\arena\microgame\normal\OneInTheChamber;
-use LatamPMDevs\minerware\arena\microgame\normal\PlatformPlummet;
-use LatamPMDevs\minerware\arena\microgame\normal\Sneaking;
-use LatamPMDevs\minerware\arena\microgame\normal\StackBlocks;
-use LatamPMDevs\minerware\arena\microgame\normal\StandOnColor;
-use LatamPMDevs\minerware\arena\microgame\normal\StandOnDiamond;
 use LatamPMDevs\minerware\command\MinerwareCommand;
 use LatamPMDevs\minerware\database\DataManager;
 use LatamPMDevs\minerware\utils\Scoreboard;
@@ -97,13 +87,5 @@ final class Minerware extends PluginBase {
 
 	public function getTranslator() : Translator {
 		return $this->translator;
-	}
-
-	public function getNormalMicrogames() : array {
-		return [IgniteTNT::class, LastKnightStanding::class, MineOre::class, OneInTheChamber::class, PlatformPlummet::class, Sneaking::class, StackBlocks::class, StandOnColor::class, StandOnDiamond::class];
-	}
-
-	public function getBossMicrogames() : array {
-		return [ColorFloor::class];
 	}
 }

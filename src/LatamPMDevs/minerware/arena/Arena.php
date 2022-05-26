@@ -25,6 +25,7 @@ namespace LatamPMDevs\minerware\arena;
 use InvalidArgumentException;
 use LatamPMDevs\minerware\arena\microgame\Level;
 use LatamPMDevs\minerware\arena\microgame\Microgame;
+use LatamPMDevs\minerware\arena\microgame\MicrogameManager;
 use LatamPMDevs\minerware\database\DataManager;
 use LatamPMDevs\minerware\event\arena\ArenaChangeStatusEvent;
 use LatamPMDevs\minerware\event\arena\ArenaCreationEvent;
@@ -130,12 +131,13 @@ final class Arena implements Listener {
 		$this->world->stopTime();
 
 		# TODO: More Microgames!
-		$normalMicrogames = $this->plugin->getNormalMicrogames();
+		$microgameManager = MicrogameManager::getInstance();
+		$normalMicrogames = $microgameManager->getMicrogames();
 		shuffle($normalMicrogames);
 		foreach($normalMicrogames as $microgame) {
 			$this->microgamesQueue[] = new $microgame($this);
 		}
-		$bossMicrogames = $this->plugin->getBossMicrogames();
+		$bossMicrogames = $microgameManager->getBossgames();
 		$bossgame = $bossMicrogames[array_rand($bossMicrogames)];
 		$this->microgamesQueue[] = new $bossgame($this);
 
