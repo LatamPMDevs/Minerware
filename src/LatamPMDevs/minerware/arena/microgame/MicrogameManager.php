@@ -22,7 +22,6 @@ declare(strict_types=1);
 
 namespace LatamPMDevs\minerware\arena\microgame;
 
-use RuntimeException;
 use LatamPMDevs\minerware\arena\microgame\boss\ColorFloor;
 use LatamPMDevs\minerware\arena\microgame\normal\IgniteTNT;
 use LatamPMDevs\minerware\arena\microgame\normal\LastKnightStanding;
@@ -33,9 +32,10 @@ use LatamPMDevs\minerware\arena\microgame\normal\Sneaking;
 use LatamPMDevs\minerware\arena\microgame\normal\StackBlocks;
 use LatamPMDevs\minerware\arena\microgame\normal\StandOnColor;
 use LatamPMDevs\minerware\arena\microgame\normal\StandOnDiamond;
-
 use pocketmine\utils\SingletonTrait;
+
 use pocketmine\utils\Utils;
+use RuntimeException;
 
 final class MicrogameManager {
 	use SingletonTrait;
