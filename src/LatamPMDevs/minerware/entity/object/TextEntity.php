@@ -26,10 +26,10 @@ use pocketmine\entity\Human;
 use pocketmine\entity\Location;
 use pocketmine\entity\Skin;
 use pocketmine\event\entity\EntityDamageEvent;
+use pocketmine\nbt\tag\CompoundTag;
 use pocketmine\network\mcpe\protocol\types\entity\EntityMetadataProperties;
 use pocketmine\network\mcpe\protocol\types\entity\StringMetadataProperty;
 use pocketmine\player\Player;
-use pocketmine\nbt\tag\CompoundTag;
 use function str_repeat;
 
 /**
@@ -61,7 +61,7 @@ class TextEntity extends Human {
 		return $this->nameTagPerPlayer[$player->getId()]  ?? $this->nameTag;
 	}
 
-	public function attack(EntityDamageEvent $event): void {
+	public function attack(EntityDamageEvent $event) : void {
 		$event->cancel();
 		parent::attack($event);
 	}
@@ -78,7 +78,7 @@ class TextEntity extends Human {
 		}
 	}
 
-	protected function move(float $dx, float $dy, float $dz): void {}
+	protected function move(float $dx, float $dy, float $dz) : void {}
 
 	public function canSaveWithChunk() : bool {
 		return false;

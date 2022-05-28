@@ -118,10 +118,8 @@ class NerdPole extends Microgame implements Listener {
 			}
 		}
 
-
 		$defaultChesttext = $this->plugin->getTranslator()->translate(null, "microgame.nerdpole.chesttext");
 		$textEntities = [];
-
 
 		#Place Chests
 		$chest = VanillaBlocks::CHEST();
