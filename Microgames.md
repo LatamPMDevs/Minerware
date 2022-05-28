@@ -2,6 +2,10 @@
 
 ## Normal Games
 
+# Nerd Poling
+In the corners there are chests, click on it to get blocks and snowballs. Build up to the platform in the air and stand on it to win. Don’t get hit off tho.
+- [x] Done
+
 # Platform Plummet
 Don't fall off as the platforms around and underneath you crumble away.
 - [x] Done

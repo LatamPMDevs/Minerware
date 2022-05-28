@@ -26,6 +26,7 @@ use LatamPMDevs\minerware\arena\microgame\boss\ColorFloor;
 use LatamPMDevs\minerware\arena\microgame\normal\IgniteTNT;
 use LatamPMDevs\minerware\arena\microgame\normal\LastKnightStanding;
 use LatamPMDevs\minerware\arena\microgame\normal\MineOre;
+use LatamPMDevs\minerware\arena\microgame\normal\NerdPole;
 use LatamPMDevs\minerware\arena\microgame\normal\OneInTheChamber;
 use LatamPMDevs\minerware\arena\microgame\normal\PlatformPlummet;
 use LatamPMDevs\minerware\arena\microgame\normal\Sneaking;
@@ -56,6 +57,7 @@ final class MicrogameManager {
 		$this->register(IgniteTNT::class, "ignitetnt");
 		$this->register(LastKnightStanding::class, "lastknightstanding");
 		$this->register(MineOre::class, "mineore");
+		$this->register(NerdPole::class, "nerdpole");
 		$this->register(OneInTheChamber::class, "oneinthechamber");
 		$this->register(PlatformPlummet::class, "platformplummet");
 		$this->register(Sneaking::class, "sneaking");

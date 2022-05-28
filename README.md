@@ -23,6 +23,7 @@ You can find some maps [here](https://github.com/LatamPMDevs/Minerware/tree/mast
 - Ignite the TNT
 - Last Knigh Standing
 - Mine Ore
+- Nerd Pole
 - One In The Chamber
 - Platform Plummet
 - Sneaking

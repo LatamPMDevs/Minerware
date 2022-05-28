@@ -48,11 +48,11 @@ use function morton2d_encode;
 
 class PlatformPlummet extends Microgame implements Listener {
 
-	public function platformHash(int $x, int $z) : int {
+	public static function platformHash(int $x, int $z) : int {
 		return morton2d_encode($x, $z);
 	}
 
-	public function getCorrespondingBlock(int $phase) : Block {
+	public static function getCorrespondingBlock(int $phase) : Block {
 		return match ($phase) {
 			self::QUARTZ_PHASE => VanillaBlocks::QUARTZ(),
 			self::POLISHED_DIORITE_PHASE => VanillaBlocks::POLISHED_DIORITE(),
@@ -64,7 +64,7 @@ class PlatformPlummet extends Microgame implements Listener {
 		};
 	}
 
-	public function getNextPhase(int $phase) : int {
+	public static function getNextPhase(int $phase) : int {
 		return match ($phase) {
 			self::QUARTZ_PHASE => self::POLISHED_DIORITE_PHASE,
 			self::POLISHED_DIORITE_PHASE => self::DIORITE_PHASE,
