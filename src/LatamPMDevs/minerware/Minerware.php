@@ -23,6 +23,7 @@ declare(strict_types=1);
 namespace LatamPMDevs\minerware;
 
 use CortexPE\Commando\PacketHooker;
+use IvanCraft623\fakeblocks\FakeBlockManager;
 use IvanCraft623\languages\Translator;
 use JackMD\ConfigUpdater\ConfigUpdater;
 use LatamPMDevs\minerware\arena\ArenaManager;
@@ -61,6 +62,9 @@ final class Minerware extends PluginBase {
 	protected function onEnable() : void {
 		if (!PacketHooker::isRegistered()) {
 			PacketHooker::register($this);
+		}
+		if (!FakeBlockManager::isRegistered()) {
+			FakeBlockManager::register($this);
 		}
 
 		$dataManager = DataManager::getInstance();

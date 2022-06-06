@@ -2,6 +2,10 @@
 
 ## Normal Games
 
+# Fill the Tank
+A random puddle will form on the platform, and you need to fill the tank - collect the water from the puddle, and click on the furnace to fill it up!
+- [x] Done
+
 # Nerd Poling
 In the corners there are chests, click on it to get blocks and snowballs. Build up to the platform in the air and stand on it to win. Don’t get hit off tho.
 - [x] Done

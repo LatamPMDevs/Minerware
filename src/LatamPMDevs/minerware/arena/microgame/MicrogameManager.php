@@ -23,6 +23,7 @@ declare(strict_types=1);
 namespace LatamPMDevs\minerware\arena\microgame;
 
 use LatamPMDevs\minerware\arena\microgame\boss\ColorFloor;
+use LatamPMDevs\minerware\arena\microgame\normal\FillTheTank;
 use LatamPMDevs\minerware\arena\microgame\normal\IgniteTNT;
 use LatamPMDevs\minerware\arena\microgame\normal\LastKnightStanding;
 use LatamPMDevs\minerware\arena\microgame\normal\MineOre;
@@ -54,6 +55,7 @@ final class MicrogameManager {
 	public function __construct() {
 		$this->registerBoss(ColorFloor::class, "colorfloor");
 
+		$this->register(FillTheTank::class, "fillthetank");
 		$this->register(IgniteTNT::class, "ignitetnt");
 		$this->register(LastKnightStanding::class, "lastknightstanding");
 		$this->register(MineOre::class, "mineore");

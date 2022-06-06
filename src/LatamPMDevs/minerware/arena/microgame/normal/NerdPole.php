@@ -217,7 +217,7 @@ class NerdPole extends Microgame implements Listener {
 			if ($this->isWinner($player)) {
 				$player->sendMessage($this->plugin->getTranslator()->translate($player, "microgame.nerdpole.won"));
 			} elseif ($this->isLoser($player)) {
-				$player->sendMessage($this->plugin->getTranslator()->translate($player, "microgame.sneaking.lose"));
+				$player->sendMessage($this->plugin->getTranslator()->translate($player, "microgame.nerdpole.lose"));
 			}
 		}
 		foreach ($this->changedBlocks as $block) {

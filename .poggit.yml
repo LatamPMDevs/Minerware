@@ -12,6 +12,8 @@ projects:
       - src: ifera-mc/ConfigUpdater/ConfigUpdater
         version: ^2.0.0
         branch: master
+      - src: IvanCraft623/fakeblocks/fakeblocks
+        version: ^0.0.2
       - src: IvanCraft623/languages/languages
         version: ^0.0.1
       - src: poggit/libasynql/libasynql
