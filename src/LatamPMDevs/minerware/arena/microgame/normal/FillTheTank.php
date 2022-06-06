@@ -22,18 +22,17 @@ declare(strict_types=1);
 
 namespace LatamPMDevs\minerware\arena\microgame\normal;
 
+use IvanCraft623\fakeblocks\FakeBlock;
+use IvanCraft623\fakeblocks\FakeBlockManager;
 use LatamPMDevs\minerware\arena\Map;
 use LatamPMDevs\minerware\arena\microgame\Level;
+
 use LatamPMDevs\minerware\arena\microgame\Microgame;
 use LatamPMDevs\minerware\utils\Utils;
 
-
-use IvanCraft623\fakeblocks\FakeBlock;
-use IvanCraft623\fakeblocks\FakeBlockManager;
-
 use pocketmine\block\Block;
-use pocketmine\block\Water;
 use pocketmine\block\VanillaBlocks;
+use pocketmine\block\Water;
 use pocketmine\event\block\BlockBreakEvent;
 use pocketmine\event\block\BlockPlaceEvent;
 use pocketmine\event\entity\EntityDamageEvent;
@@ -154,7 +153,7 @@ class FillTheTank extends Microgame implements Listener {
 		}
 
 		#FakeBlocks
-		for ($i=0; $i < self::TANK_DEPT; $i++) { 
+		for ($i=0; $i < self::TANK_DEPT; $i++) {
 			$this->tankFakeblocks[$i] = $this->fakeblockManeger->create(
 				VanillaBlocks::WATER(),
 				new Position(
