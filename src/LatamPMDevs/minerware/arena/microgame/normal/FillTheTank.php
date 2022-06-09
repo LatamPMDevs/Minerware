@@ -45,6 +45,7 @@ use pocketmine\math\Vector3;
 use pocketmine\player\GameMode;
 use pocketmine\player\Player;
 use pocketmine\world\Position;
+use function count;
 use function morton3d_encode;
 use function mt_rand;
 
@@ -142,9 +143,9 @@ class FillTheTank extends Microgame implements Listener {
 		#Tank
 		do {
 			$this->tankPosition = new Position(
-				mt_rand($minPos->x + 1, $maxPos->x - 1),
-				(int) ($maxPos->y + 1),
-				mt_rand($minPos->z + 1, $maxPos->z - 1),
+				mt_rand($minPos->x, $maxPos->x),
+				(int) $maxPos->y,
+				mt_rand($minPos->z, $maxPos->z),
 				$world
 			);
 		} while (isset($this->waterPlatform[morton3d_encode($this->tankPosition->x, $this->tankPosition->y - 1, $this->tankPosition->z)]));
@@ -211,8 +212,9 @@ class FillTheTank extends Microgame implements Listener {
 
 	public function tick() : void {
 		$timeLeft = $this->getTimeLeft();
-		if ($timeLeft <= 0) {
-			foreach ($this->arena->getPlayers() as $player) {
+		$players = $this->arena->getPlayers();
+		if ($timeLeft <= 0 || count($this->winners) >= count($players)) {
+			foreach ($players as $player) {
 				if (!$this->isWinner($player) && !$this->isLoser($player)) {
 					$this->addLoser($player);
 				}
@@ -220,7 +222,7 @@ class FillTheTank extends Microgame implements Listener {
 			$this->arena->endCurrentMicrogame();
 			return;
 		}
-		foreach ($this->arena->getPlayers() as $player) {
+		foreach ($players as $player) {
 			$player->getXpManager()->setXpAndProgress((int) $timeLeft, $timeLeft / $this->getGameDuration());
 		}
 	}
