@@ -27,6 +27,7 @@ use LatamPMDevs\minerware\arena\microgame\Level;
 use LatamPMDevs\minerware\arena\microgame\Microgame;
 use LatamPMDevs\minerware\utils\Utils;
 
+use pocketmine\block\Block;
 use pocketmine\block\TNT;
 use pocketmine\block\VanillaBlocks;
 use pocketmine\entity\projectile\Arrow;
@@ -44,6 +45,9 @@ use pocketmine\player\Player;
 use pocketmine\world\Position;
 
 class BowSpleef extends Microgame implements Listener {
+
+	/** @var Block[] */
+	protected array $changedBlocks = [];
 
 	public function getName() : string {
 		return "Bow Spleef";
