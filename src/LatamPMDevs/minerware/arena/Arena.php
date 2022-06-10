@@ -381,7 +381,7 @@ final class Arena implements Listener {
 				} elseif ($winnersCount <= 3) {
 					$player->sendMessage($this->plugin->getTranslator()->translate(
 						$player, "microgame.winners", [
-							"{%players}" => implode(", ", Utils::getPlayersNames($winners))
+							"{%players}" => implode("§a, §8", Utils::getPlayersNames($winners))
 						]
 					));
 				} else {
