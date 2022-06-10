@@ -187,6 +187,7 @@ final class Utils {
 	}
 
 	public static function initPlayer(Player $player) : void {
+		$player->extinguish();
 		$player->setFlying(false);
 		$player->setAllowFlight(false);
 		$player->setMaxHealth(20);

@@ -31,6 +31,7 @@ You can find some maps [here](https://github.com/LatamPMDevs/Minerware/tree/mast
 - Stack Blocks
 - Stand on Color
 - Stand on Diamond
+- Bow Spleef
 - Color Floor
 
 ## Project information:
