@@ -144,7 +144,7 @@ class FillTheTank extends Microgame implements Listener {
 		do {
 			$this->tankPosition = new Position(
 				mt_rand($minPos->x, $maxPos->x),
-				(int) $maxPos->y,
+				(int) ($maxPos->y + 1),
 				mt_rand($minPos->z, $maxPos->z),
 				$world
 			);
