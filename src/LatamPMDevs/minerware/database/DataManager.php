@@ -62,13 +62,13 @@ final class DataManager {
 		$this->plugin = Minerware::getInstance();
 		$this->pluginPath = $this->plugin->getDataFolder();
 		$this->config = $this->plugin->getConfig();
-		$this->createContext();
 
 		@mkdir($this->pluginPath . "database" . DIRECTORY_SEPARATOR);
 		@mkdir($this->pluginPath . "database" . DIRECTORY_SEPARATOR . "players" . DIRECTORY_SEPARATOR);
 		@mkdir($this->pluginPath . "database" . DIRECTORY_SEPARATOR . "maps" . DIRECTORY_SEPARATOR);
 		@mkdir($this->pluginPath . "database" . DIRECTORY_SEPARATOR . "backups" . DIRECTORY_SEPARATOR);
 
+		$this->createContext();
 		$this->plugin->saveResource("languages/en_US.ini", true);
 		$this->plugin->saveResource("languages/es_MX.ini", true);
 
