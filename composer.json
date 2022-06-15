@@ -6,7 +6,7 @@
         "php": "^8.0",
         "pocketmine/pocketmine-mp": "^4.0.0",
         "friendsofphp/php-cs-fixer": "3.8.0",
-        "phpstan/phpstan": "1.7.13"
+        "phpstan/phpstan": "1.7.14"
     },
     "config": {
         "platform": {
