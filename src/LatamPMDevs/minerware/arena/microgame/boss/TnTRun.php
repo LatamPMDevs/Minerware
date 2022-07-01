@@ -40,13 +40,12 @@ use pocketmine\event\block\BlockPlaceEvent;
 use pocketmine\event\entity\EntityDamageEvent;
 use pocketmine\event\HandlerListManager;
 use pocketmine\event\Listener;
-use pocketmine\item\enchantment\VanillaEnchantments;
-use pocketmine\item\VanillaItems;
 use pocketmine\math\AxisAlignedBB;
 use pocketmine\player\GameMode;
 use pocketmine\player\Player;
 use pocketmine\scheduler\ClosureTask;
 use pocketmine\world\Position;
+use function count;
 use function morton3d_encode;
 
 class TnTRun extends Microgame implements Listener {
@@ -113,7 +112,7 @@ class TnTRun extends Microgame implements Listener {
 			$world->setBlock($bPos, VanillaBlocks::SAND());
 
 			$y = $blockPos->y + self::SPLACING_BETWEEN_LAYERS + 2;
-			for ($layer = 1; $layer < self::LAYERS; $layer++) { 
+			for ($layer = 1; $layer < self::LAYERS; $layer++) {
 				$b1 = $world->getBlockAt($blockPos->x, $y, $blockPos->z);
 				$morton3d = morton3d_encode($blockPos->x, $y, $blockPos->z);
 				if (!isset($this->changedBlocks[$morton3d])) $this->changedBlocks[$morton3d] = $b1;
@@ -216,7 +215,7 @@ class TnTRun extends Microgame implements Listener {
 	}
 
 	public function delayedBlockDestruction(Block $block, int $ticks) : void {
-		$task = new ClosureTask(function() use ($block) : void {
+		$task = new ClosureTask(function () use ($block) : void {
 			$pos = $block->getPosition();
 			$pos->getWorld()->setBlockAt($pos->x, $pos->y, $pos->z, VanillaBlocks::AIR(), false);
 			$fallingBlock = new FallingBlock(
