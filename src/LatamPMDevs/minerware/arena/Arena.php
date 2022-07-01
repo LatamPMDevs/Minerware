@@ -100,15 +100,9 @@ final class Arena implements Listener {
 
 	public int $endingtime = self::ENDING_TIME;
 
-	public bool $isWinnersCageSet = false;
+	private Cage $winnersCage;
 
-	/** @var array<int, Player> */
-	public array $winnersCage = [];
-
-	public bool $isLosersCageSet = false;
-
-	/** @var array<int, Player> */
-	public array $losersCage = [];
+	private Cage $losersCage;
 
 	public bool $areInvisibleBlocksSet = false;
 
@@ -129,6 +123,14 @@ final class Arena implements Listener {
 		$this->plugin->getServer()->getPluginManager()->registerEvents($this, $this->plugin);
 		$this->world->setTime(World::TIME_NOON);
 		$this->world->stopTime();
+		$this->winnersCage = new Cage(
+			Position::fromObject($this->map->getWinnersCage(), $this->world),
+			VanillaBlocks::STAINED_GLASS()->setColor(DyeColor::LIME())
+		);
+		$this->losersCage = new Cage(
+			Position::fromObject($this->map->getLosersCage(), $this->world),
+			VanillaBlocks::STAINED_GLASS()->setColor(DyeColor::RED())
+		);
 
 		# TODO: More Microgames!
 		$microgameManager = MicrogameManager::getInstance();
@@ -218,8 +220,8 @@ final class Arena implements Listener {
 
 	public function quit(Player $player) : void {
 		unset($this->players[$player->getId()]);
-		unset($this->winnersCage[$player->getId()]);
-		unset($this->losersCage[$player->getId()]);
+		$this->winnersCage->removePlayer($player);
+		$this->losersCage->removePlayer($player);
 		$this->pointHolder->removePlayer($player);
 		$this->plugin->getScoreboard()->remove($player);
 		foreach ($this->players as $pl) {
@@ -399,10 +401,10 @@ final class Arena implements Listener {
 			foreach ($this->players as $player) {
 				Utils::initPlayer($player);
 				$player->setGamemode(GameMode::ADVENTURE());
-				if ($microgame->isWinner($player)) {
+				if ($isWinner = $microgame->isWinner($player)) {
 					$this->pointHolder->addPlayerPoint($player, $recompense);
 					$player->sendTitle("§1§2", $this->plugin->getTranslator()->translate($player, "microgame.success"), 1, 20, 1);
-				} elseif ($microgame->isLoser($player)) {
+				} elseif ($isLoser = $microgame->isLoser($player)) {
 					$player->sendTitle("§1§2", $this->plugin->getTranslator()->translate($player, "microgame.failed"), 1, 20, 1);
 				}
 				if ($showWorthMessage) {
@@ -413,6 +415,9 @@ final class Arena implements Listener {
 					));
 				}
 				$player->sendMessage("\n");
+				if ($isWinner || $isLoser) {
+					$this->tpSafePosition($player);
+				}
 			}
 			foreach ($this->world->getEntities() as $entity) {
 				if (!$entity instanceof Player) {
@@ -424,8 +429,7 @@ final class Arena implements Listener {
 		if ($this->areInvisibleBlocksSet) {
 			$this->unsetInvisibleBlocks();
 		}
-		$this->unsetWinnersCage();
-		$this->unsetLosersCage();
+		$this->resetCages();
 	}
 
 	public function end() : void {
@@ -492,66 +496,25 @@ final class Arena implements Listener {
 		return isset($this->losers[$player->getId()]);
 	}
 
-	public function buildWinnersCage() : void {
-		Utils::buildCage(Position::fromObject($this->map->getWinnersCage(), $this->world), VanillaBlocks::STAINED_GLASS()->setColor(DyeColor::LIME()));
-		$this->isWinnersCageSet = true;
+	public function getWinnersCage() : Cage {
+		return $this->winnersCage;
 	}
 
-	public function unsetWinnersCage() : void {
-		Utils::buildCage(Position::fromObject($this->map->getWinnersCage(), $this->world), VanillaBlocks::AIR());
-		foreach ($this->winnersCage as $player) {
-			$this->tpSafePosition($player);
-		}
-		$this->isWinnersCageSet = false;
-		$this->winnersCage = [];
+	public function getLosersCage() : Cage {
+		return $this->losersCage;
 	}
 
-	public function inWinnersCage(Player $player) : bool {
-		return isset($this->winnersCage[$player->getId()]);
+	public function resetCages() : void {
+		$this->winnersCage->unset();
+		$this->losersCage->unset();
+		$this->winnersCage->setPosition(Position::fromObject($this->map->getWinnersCage(), $this->world));
+		$this->losersCage->setPosition(Position::fromObject($this->map->getLosersCage(), $this->world));
 	}
 
-	public function buildLosersCage() : void {
-		Utils::buildCage(Position::fromObject($this->map->getLosersCage(), $this->world), VanillaBlocks::STAINED_GLASS()->setColor(DyeColor::RED()));
-		$this->isLosersCageSet = true;
-	}
-
-	public function unsetLosersCage() : void {
-		Utils::buildCage(Position::fromObject($this->map->getLosersCage(), $this->world), VanillaBlocks::AIR());
-		foreach ($this->losersCage as $player) {
-			$this->tpSafePosition($player);
-		}
-		$this->isLosersCageSet = false;
-		$this->losersCage = [];
-	}
-
-	public function inLosersCage(Player $player) : bool {
-		return isset($this->losersCage[$player->getId()]);
-	}
-
-	public function sendToWinnersCage(Player $player) : void {
-		if (!$this->isWinnersCageSet) {
-			$this->buildWinnersCage();
-		}
-		Utils::initPlayer($player);
-		$player->setGamemode(GameMode::ADVENTURE());
-		$player->teleport($this->map->getWinnersCage()->add(0, 2, 0));
-		$this->winnersCage[$player->getId()] = $player;
-	}
-
-	public function sendToLosersCage(Player $player) : void {
-		if (!$this->isLosersCageSet) {
-			$this->buildLosersCage();
-		}
-		Utils::initPlayer($player);
-		$player->setGamemode(GameMode::ADVENTURE());
-		$player->teleport($this->map->getLosersCage()->add(0, 2, 0));
-		$this->losersCage[$player->getId()] = $player;
-	}
-
-	public function tpSafePosition(Player $player) : void {
+	public function getSafePosition(Player $player) : Position {
 		$location = $player->getLocation();
-		if ($this->inWinnersCage($player) ||
-			$this->inLosersCage($player) ||
+		if ($this->winnersCage->isInCage($player) ||
+			$this->losersCage->isInCage($player) ||
 			$location->y < $this->map->getPlatformMinPos()->y
 		) {
 			$pos = $this->getRandomSpawn();
@@ -569,7 +532,11 @@ final class Arena implements Listener {
 		}
 		$safe = $this->world->getSafeSpawn($pos);
 		$safe->y = $safe->y + 2;
-		$player->teleport($safe);
+		return $safe;
+	}
+
+	public function tpSafePosition(Player $player) : void {
+		$player->teleport($this->getSafePosition($player));
 	}
 
 	public function getRandomSpawn() : Position {

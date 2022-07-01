@@ -86,8 +86,7 @@ class LastKnightStanding extends Microgame implements Listener {
 			$player->getArmorInventory()->setItem($boots->getArmorSlot(), $boots);
 			$player->getInventory()->setHeldItemIndex(0);
 		}
-		$this->arena->buildWinnersCage();
-		$this->arena->buildLosersCage();
+		$this->arena->getLosersCage()->set();
 		parent::start();
 	}
 
@@ -188,7 +187,7 @@ class LastKnightStanding extends Microgame implements Listener {
 				}
 			}
 			$this->addLoser($player);
-			$this->arena->sendToLosersCage($player);
+			$this->arena->getLosersCage()->addPlayer($player);
 			$event->cancel();
 		}
 	}

@@ -107,8 +107,7 @@ class StandOnDiamond extends Microgame implements Listener {
 			$player->getInventory()->setItem(0, $stick);
 			$player->getInventory()->setHeldItemIndex(0);
 		}
-		$this->arena->buildWinnersCage();
-		$this->arena->buildLosersCage();
+		$this->arena->getLosersCage()->set();
 		parent::start();
 	}
 
@@ -152,7 +151,7 @@ class StandOnDiamond extends Microgame implements Listener {
 			if ($this->isWinner($player)) {
 				$player->sendMessage($this->plugin->getTranslator()->translate($player, "microgame.standondiamond.won"));
 			} elseif ($this->isLoser($player)) {
-				$player->sendMessage($this->plugin->getTranslator()->translate($player, "microgame.standondiamond.lose"));
+				$player->sendMessage($this->plugin->getTranslator()->translate($player, "microgame.threwoffstage"));
 			}
 		}
 		foreach ($this->changedBlocks as $block) {
@@ -232,7 +231,7 @@ class StandOnDiamond extends Microgame implements Listener {
 		$event->cancel();
 		if ($event->getCause() === EntityDamageEvent::CAUSE_VOID && !$this->isWinner($player)) {
 			$this->addLoser($player);
-			$this->arena->sendToLosersCage($player);
+			$this->arena->getLosersCage()->addPlayer($player);
 			$player->sendMessage($this->plugin->getTranslator()->translate($player, "microgame.felloffplatform"));
 		}
 	}

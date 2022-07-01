@@ -174,8 +174,7 @@ class PlatformPlummet extends Microgame implements Listener {
 			$player->setGamemode(GameMode::ADVENTURE());
 			$player->getInventory()->setHeldItemIndex(0);
 		}
-		$this->arena->buildWinnersCage();
-		$this->arena->buildLosersCage();
+		$this->arena->getLosersCage()->set();
 		parent::start();
 	}
 
@@ -291,7 +290,7 @@ class PlatformPlummet extends Microgame implements Listener {
 		$event->cancel();
 		if ($event->getCause() === EntityDamageEvent::CAUSE_VOID && !$this->isWinner($player)) {
 			$this->addLoser($player);
-			$this->arena->sendToLosersCage($player);
+			$this->arena->getLosersCage()->addPlayer($player);
 			$player->sendMessage($this->plugin->getTranslator()->translate($player, "microgame.platformplummet.crumble"));
 		}
 	}

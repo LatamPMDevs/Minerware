@@ -81,8 +81,7 @@ class Sneaking extends Microgame implements Listener {
 			$player->getInventory()->setHeldItemIndex(0);
 			$player->sendTitle("§1§2", $this->plugin->getTranslator()->translate($player, "microgame.sneaking.start"), 10, 20, 10);
 		}
-		$this->arena->buildWinnersCage();
-		$this->arena->buildLosersCage();
+		$this->arena->getLosersCage()->set();
 		parent::start();
 	}
 
@@ -104,7 +103,7 @@ class Sneaking extends Microgame implements Listener {
 				($timeLeft <= ($this->getGameDuration() - 1)
 			)) {
 				$this->addLoser($player);
-				$this->arena->sendToLosersCage($player);
+				$this->arena->getLosersCage()->addPlayer($player);
 			}
 		}
 	}
@@ -156,7 +155,7 @@ class Sneaking extends Microgame implements Listener {
 		$event->cancel();
 		if ($event->getCause() === EntityDamageEvent::CAUSE_VOID && !$this->isWinner($player)) {
 			$this->addLoser($player);
-			$this->arena->sendToLosersCage($player);
+			$this->arena->getLosersCage()->addPlayer($player);
 			$player->sendMessage($this->plugin->getTranslator()->translate($player, "microgame.felloffplatform"));
 		}
 	}
@@ -171,7 +170,7 @@ class Sneaking extends Microgame implements Listener {
 		if ($this->isLoser($player) || $this->isWinner($player)) return;
 		if (!$event->isSneaking()) {
 			$this->addLoser($player);
-			$this->arena->sendToLosersCage($player);
+			$this->arena->getLosersCage()->addPlayer($player);
 		}
 	}
 

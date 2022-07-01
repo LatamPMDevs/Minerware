@@ -131,3 +131,7 @@ The platform is transformed into TNT and each player is given a Flame 1 Bow. Sho
 # Color Floor
 Players are given a diamond hoe that can be used to colour the floor. Right click to paint floor tiles your colour. You can only paint floor tiles connected to your colour already. If you’ve already been circled off by someone else, no need to worry, for you have paint bombs. These paint bombs explode your colour on 5 tiles of wherever you throw it. You can then keep painting the floor from there. Top 3 players with the most coloured tiles win!
 - [x] Done
+
+# TNT Run
+You get teleported onto a TNT platform, don't fall as the TNT vanishes underneath you.
+- [x] Done

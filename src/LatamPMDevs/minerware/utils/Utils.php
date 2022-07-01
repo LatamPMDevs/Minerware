@@ -38,6 +38,7 @@ use RecursiveIteratorIterator;
 use ZipArchive;
 use function abs;
 use function basename;
+use function ceil;
 use function file_exists;
 use function floor;
 use function is_array;
@@ -167,6 +168,31 @@ final class Utils {
 				for ($y = $minY; $y <= $maxY; ++$y) {
 					$changedBlocks[] = $world->getBlockAt((int) $x, (int) $y, (int) $z);
 					$world->setBlockAt((int) $x, (int) $y, (int) $z, $block, $update);
+				}
+			}
+		}
+		return $changedBlocks;
+	}
+
+	/**
+	 * @return Block[]
+	 */
+	public static function fillCircle(Position $center, float $radius, Block $block, bool $update = false) : array {
+		if ($radius < 1) {
+			throw new InvalidArgumentException("Invalid radius size ($radius)");
+		}
+
+		$changedBlocks = [];
+		$world = $center->getWorld();
+		$y = (int) $center->y;
+		$rSqrt = $radius ** 2;
+		$rInt = (int) ceil($radius);
+		for ($x = -$rInt; $x <= $rInt; $x++) {
+			for ($z = -$rInt; $z <= $rInt; $z++) {
+				if (($x ** 2) + ($z ** 2) <= $rSqrt) {
+					$b = $world->getBlockAt((int) ($x + $center->x), $y, (int) ($z + $center->z));
+					$changedBlocks[] = $b;
+					$world->setBlock($b->getPosition(), $block, $update);
 				}
 			}
 		}

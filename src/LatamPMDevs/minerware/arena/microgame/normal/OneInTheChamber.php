@@ -94,8 +94,7 @@ class OneInTheChamber extends Microgame implements Listener {
 		if (!$this->arena->areInvisibleBlocksSet()) {
 			$this->arena->buildInvisibleBlocks();
 		}
-		$this->arena->buildWinnersCage();
-		$this->arena->buildLosersCage();
+		$this->arena->getLosersCage()->set();
 		parent::start();
 	}
 
@@ -215,7 +214,7 @@ class OneInTheChamber extends Microgame implements Listener {
 			}
 			if ($fatal) {
 				$this->addLoser($player);
-				$this->arena->sendToLosersCage($player);
+				$this->arena->getLosersCage()->addPlayer($player);
 				$event->cancel();
 			}
 		}

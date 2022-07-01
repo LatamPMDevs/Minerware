@@ -26,7 +26,6 @@ use pocketmine\entity\object\FallingBlock as PMFallingBlock;
 
 /**
  * This class exists just for optimization
- * used on PlatformPlummet microgame.
  */
 class FallingBlock extends PMFallingBlock {
 
@@ -45,14 +44,12 @@ class FallingBlock extends PMFallingBlock {
 			return false;
 		}
 
-		$hasUpdate = parent::entityBaseTick($tickDiff);
-
 		if ($this->ticksLived >= $this->maxTicksOfLife) {
 			$this->flagForDespawn();
-			$hasUpdate = true;
+			return true;
 		}
 
-		return $hasUpdate;
+		return parent::entityBaseTick($tickDiff);
 	}
 
 	public function canSaveWithChunk() : bool {

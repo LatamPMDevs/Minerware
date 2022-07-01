@@ -33,6 +33,7 @@ You can find some maps [here](https://github.com/LatamPMDevs/Minerware/tree/mast
 - Stand on Diamond
 - Bow Spleef
 - Color Floor
+- TNT Run
 
 ## Project information:
 | Plugin version | Pocketmine version | PHP version | Status |

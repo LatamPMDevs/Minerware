@@ -177,8 +177,8 @@ class FillTheTank extends Microgame implements Listener {
 			}
 			$player->sendMessage($this->plugin->getTranslator()->translate($player, "microgame.fillthetank.start"));
 		}
-		$this->arena->buildWinnersCage();
-		$this->arena->buildLosersCage();
+		$this->arena->getWinnersCage()->set();
+		$this->arena->getLosersCage()->set();
 		parent::start();
 	}
 
@@ -288,7 +288,7 @@ class FillTheTank extends Microgame implements Listener {
 		$event->cancel();
 		if ($event->getCause() === EntityDamageEvent::CAUSE_VOID && !$this->isWinner($player)) {
 			$this->addLoser($player);
-			$this->arena->sendToLosersCage($player);
+			$this->arena->getLosersCage()->addPlayer($player);
 			$player->sendMessage($this->plugin->getTranslator()->translate($player, "microgame.felloffplatform"));
 		}
 	}
@@ -316,7 +316,7 @@ class FillTheTank extends Microgame implements Listener {
 				));
 				if ($filled >= self::TANK_DEPT) {
 					$this->addWinner($player);
-					$this->arena->sendToWinnersCage($player);
+					$this->arena->getWinnersCage()->addPlayer($player);
 				}
 			}
 			$event->cancel();

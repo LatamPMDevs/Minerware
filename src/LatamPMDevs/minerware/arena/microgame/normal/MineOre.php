@@ -129,8 +129,8 @@ class MineOre extends Microgame implements Listener {
 			$player->getInventory()->setHeldItemIndex(0);
 			$this->arena->tpSafePosition($player);
 		}
-		$this->arena->buildWinnersCage();
-		$this->arena->buildLosersCage();
+		$this->arena->getWinnersCage()->set();
+		$this->arena->getLosersCage()->set();
 		parent::start();
 	}
 
@@ -218,7 +218,7 @@ class MineOre extends Microgame implements Listener {
 		}
 		if ($block->isSameType($this->ore)) {
 			$this->addWinner($player);
-			$this->arena->sendToWinnersCage($player);
+			$this->arena->getWinnersCage()->addPlayer($player);
 			$player->sendMessage($this->plugin->getTranslator()->translate($player, "microgame.mineore.oremined"));
 		}
 		$event->setDrops([]);
@@ -238,7 +238,7 @@ class MineOre extends Microgame implements Listener {
 		$event->cancel();
 		if ($event->getCause() === EntityDamageEvent::CAUSE_VOID && !$this->isWinner($player)) {
 			$this->addLoser($player);
-			$this->arena->sendToLosersCage($player);
+			$this->arena->getLosersCage()->addPlayer($player);
 			$player->sendMessage($this->plugin->getTranslator()->translate($player, "microgame.felloffplatform"));
 		}
 	}

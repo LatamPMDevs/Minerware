@@ -188,8 +188,8 @@ class NerdPole extends Microgame implements Listener {
 				$textEntity->setNameTagToPlayer($player, $chesttext);
 			}
 		}
-		$this->arena->buildWinnersCage();
-		$this->arena->buildLosersCage();
+		$this->arena->getWinnersCage()->set();
+		$this->arena->getLosersCage()->set();
 		parent::start();
 	}
 
@@ -270,7 +270,7 @@ class NerdPole extends Microgame implements Listener {
 			$event->getChild() instanceof Snowball)) {
 			if ($event->getCause() === EntityDamageEvent::CAUSE_VOID && !$this->isWinner($player)) {
 				$this->addLoser($player);
-				$this->arena->sendToLosersCage($player);
+				$this->arena->getLosersCage()->addPlayer($player);
 				$player->sendMessage($this->plugin->getTranslator()->translate($player, "microgame.felloffplatform"));
 			}
 			$event->cancel();
@@ -288,7 +288,7 @@ class NerdPole extends Microgame implements Listener {
 
 		if ($this->platformBoundingBox->isVectorInside($player->getLocation()->subtract(0, 0.001, 0))) {
 			$this->addWinner($player);
-			$this->arena->sendToWinnersCage($player);
+			$this->arena->getWinnersCage()->addPlayer($player);
 		}
 	}
 

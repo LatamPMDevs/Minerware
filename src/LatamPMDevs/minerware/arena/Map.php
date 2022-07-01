@@ -35,6 +35,9 @@ final class Map {
 
 	public static array $maps = [];
 
+	public const PLATFORM_X_SIZE = 24;
+	public const PLATFORM_Z_SIZE = 24;
+
 	public const MINI_PLATFORMS = [// Referenced with min position
 		[[3, 1, 3], [4, 1, 3], [3, 1, 4], [4, 1, 4]],
 		[[11, 1, 3], [12, 1, 3], [11, 1, 4], [12, 1, 4]],
@@ -53,6 +56,8 @@ final class Map {
 	private Vector3 $platformMinPos;
 
 	private Vector3 $platformMaxPos;
+
+	private Vector3 $center;
 
 	/** @var Vector3[] */
 	private array $spawns = [];
@@ -81,6 +86,7 @@ final class Map {
 		);
 		$this->platformMinPos = $minMax[0];
 		$this->platformMaxPos = $minMax[1];
+		$this->center = $this->platformMinPos->add(self::PLATFORM_X_SIZE / 2, 0, self::PLATFORM_Z_SIZE / 2);
 
 		foreach ($data->getArray("spawns") as $spawnData) {
 			$this->spawns[] = new Vector3($spawnData["X"], $spawnData["Y"], $spawnData["Z"]);
@@ -102,6 +108,10 @@ final class Map {
 
 	public function getPlatformMaxPos() : Vector3 {
 		return $this->platformMaxPos;
+	}
+
+	public function getCenter() : Vector3 {
+		return $this->center;
 	}
 
 	/**

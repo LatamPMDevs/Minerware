@@ -24,6 +24,7 @@ namespace LatamPMDevs\minerware\arena\microgame;
 
 use LatamPMDevs\minerware\arena\microgame\boss\BowSpleef;
 use LatamPMDevs\minerware\arena\microgame\boss\ColorFloor;
+use LatamPMDevs\minerware\arena\microgame\boss\TnTRun;
 use LatamPMDevs\minerware\arena\microgame\normal\FillTheTank;
 use LatamPMDevs\minerware\arena\microgame\normal\IgniteTNT;
 use LatamPMDevs\minerware\arena\microgame\normal\LastKnightStanding;
@@ -56,6 +57,7 @@ final class MicrogameManager {
 	public function __construct() {
 		$this->registerBoss(BowSpleef::class, "bowspleef");
 		$this->registerBoss(ColorFloor::class, "colorfloor");
+		$this->registerBoss(TnTRun::class, "tntrun");
 
 		$this->register(FillTheTank::class, "fillthetank");
 		$this->register(IgniteTNT::class, "ignitetnt");
