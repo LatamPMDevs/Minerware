@@ -401,10 +401,10 @@ final class Arena implements Listener {
 			foreach ($this->players as $player) {
 				Utils::initPlayer($player);
 				$player->setGamemode(GameMode::ADVENTURE());
-				if ($isWinner = $microgame->isWinner($player)) {
+				if ($microgame->isWinner($player)) {
 					$this->pointHolder->addPlayerPoint($player, $recompense);
 					$player->sendTitle("§1§2", $this->plugin->getTranslator()->translate($player, "microgame.success"), 1, 20, 1);
-				} elseif ($isLoser = $microgame->isLoser($player)) {
+				} elseif ($microgame->isLoser($player)) {
 					$player->sendTitle("§1§2", $this->plugin->getTranslator()->translate($player, "microgame.failed"), 1, 20, 1);
 				}
 				if ($showWorthMessage) {
@@ -415,7 +415,7 @@ final class Arena implements Listener {
 					));
 				}
 				$player->sendMessage("\n");
-				if ($isWinner || $isLoser) {
+				if ($this->winnersCage->isInCage($player) || $this->losersCage->isInCage($player)) {
 					$this->tpSafePosition($player);
 				}
 			}

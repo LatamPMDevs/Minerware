@@ -191,16 +191,16 @@ class FillTheTank extends Microgame implements Listener {
 		$blocks = [
 			[VanillaBlocks::FURNACE(), 0, 0, 0],
 			[VanillaBlocks::COBBLESTONE_WALL(), 0, 1, 0],
-			[VanillaBlocks::COBBLESTONE_WALL(), 0, 2, 0],
-			[VanillaBlocks::GLASS(), 1, 3, 0],
-			[VanillaBlocks::GLASS(), 0, 3, 1],
-			[VanillaBlocks::GLASS(), -1, 3, 0],
-			[VanillaBlocks::GLASS(), 0, 3, -1],
-			[VanillaBlocks::GLASS(), 1, 4, 0],
-			[VanillaBlocks::GLASS(), 0, 4, 1],
-			[VanillaBlocks::GLASS(), -1, 4, 0],
-			[VanillaBlocks::GLASS(), 0, 4, -1]
+			[VanillaBlocks::COBBLESTONE_WALL(), 0, 2, 0]
 		];
+		$y = 3;
+		for ($i=0; $i < self::TANK_DEPT; $i++) {
+			$blocks[] = [VanillaBlocks::GLASS(), 1, $y, 0];
+			$blocks[] = [VanillaBlocks::GLASS(), 0, $y, 1];
+			$blocks[] = [VanillaBlocks::GLASS(), -1, $y, 0];
+			$blocks[] = [VanillaBlocks::GLASS(), 0, $y, -1];
+			$y++;
+		}
 		$world = $this->arena->getWorld();
 		foreach ($blocks as $blockData) {
 			$pos = $this->tankPosition->add($blockData[1], $blockData[2], $blockData[3]);
