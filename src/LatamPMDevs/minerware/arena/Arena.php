@@ -23,7 +23,6 @@ declare(strict_types=1);
 namespace LatamPMDevs\minerware\arena;
 
 use InvalidArgumentException;
-use RuntimeException;
 use LatamPMDevs\minerware\arena\microgame\Level;
 use LatamPMDevs\minerware\arena\microgame\Microgame;
 use LatamPMDevs\minerware\arena\microgame\MicrogameManager;
@@ -37,8 +36,8 @@ use LatamPMDevs\minerware\Minerware;
 use LatamPMDevs\minerware\tasks\ArenaTask;
 use LatamPMDevs\minerware\utils\PointHolder;
 use LatamPMDevs\minerware\utils\Utils;
-
 use pocketmine\block\utils\DyeColor;
+
 use pocketmine\block\VanillaBlocks;
 use pocketmine\event\entity\EntityDamageEvent;
 use pocketmine\event\entity\EntityTeleportEvent;
@@ -53,6 +52,7 @@ use pocketmine\scheduler\ClosureTask;
 use pocketmine\utils\AssumptionFailedError;
 use pocketmine\world\Position;
 use pocketmine\world\World;
+use RuntimeException;
 use function array_key_first;
 use function array_rand;
 use function array_slice;

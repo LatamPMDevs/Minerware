@@ -22,16 +22,13 @@ declare(strict_types=1);
 
 namespace LatamPMDevs\minerware\command\subcommands;
 
+use CortexPE\Commando\args\RawStringArgument;
 use CortexPE\Commando\BaseCommand;
 use CortexPE\Commando\BaseSubCommand;
-use CortexPE\Commando\args\RawStringArgument;
-use CortexPE\Commando\constraint\InGameRequiredConstraint;
-use LatamPMDevs\minerware\arena\MapRegisterer;
-use LatamPMDevs\minerware\command\constraints\ArgumentNotProvided;
 use LatamPMDevs\minerware\database\DataManager;
 use LatamPMDevs\minerware\database\PlayerData;
-use LatamPMDevs\minerware\Minerware;
 use LatamPMDevs\minerware\form\FormManager;
+use LatamPMDevs\minerware\Minerware;
 use LatamPMDevs\minerware\utils\Utils;
 use pocketmine\command\CommandSender;
 use pocketmine\player\Player;
@@ -53,7 +50,7 @@ final class StatisticsCommand extends BaseSubCommand {
 			$sender->sendMessage($translator->translate($sender, "command.statistics.noUserProvided"));
 			return;
 		}
-		DataManager::getInstance()->getPlayerData($args["user"] ?? $sender->getName(), function(PlayerData $playerdata) use ($sender, $translator, $isPlayer) {
+		DataManager::getInstance()->getPlayerData($args["user"] ?? $sender->getName(), function (PlayerData $playerdata) use ($sender, $translator, $isPlayer) {
 			if ($isPlayer) {
 				FormManager::getInstance()->sendStatistics($sender, $playerdata);
 			} else {
