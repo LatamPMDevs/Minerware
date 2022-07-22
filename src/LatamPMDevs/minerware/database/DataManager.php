@@ -111,59 +111,41 @@ final class DataManager {
 
 	public function addPlayer(
 		string $name,
-		int $gamesPlayed = 0,
-		int $gamesWon = 0,
-		int $lostGames = 0,
-		int $microgamesPlayed = 0,
+		int $wins = 0,
+		int $bossgamesWon = 0,
 		int $microgamesWon = 0,
-		int $lostMicrogames = 0,
+		int $gamesPlayed = 0,
+		int $microgamesPlayed = 0,
+		int $timePlayed = 0,
 		?callable $onSuccess = null,
 		?callable $onError = null
 	) : void {
 		$values = [
 			"name" => $name,
-			"gamesPlayed" => $gamesPlayed,
-			"gamesWon" => $gamesWon,
-			"lostGames" => $lostGames,
-			"microgamesPlayed" => $microgamesPlayed,
+			"wins" => $wins,
+			"bossgamesWon" => $bossgamesWon,
 			"microgamesWon" => $microgamesWon,
-			"lostMicrogames" => $lostMicrogames
+			"gamesPlayed" => $gamesPlayed,
+			"microgamesPlayed" => $microgamesPlayed,
+			"timePlayed" => $timePlayed
 		];
 		if (isset($this->database)) {
 			$this->database->executeGeneric('data.players.add', $values, $onSuccess, $onError ?? $this->onError);
 		}
 	}
 
-	public function addGamesPlayed(string $name, int $count, ?callable $onSuccess = null, ?callable $onError = null) : void {
+	public function addWins(string $name, int $count, ?callable $onSuccess = null, ?callable $onError = null) : void {
 		if (isset($this->database)) {
-			$this->database->executeGeneric('data.players.addGamesPlayed', [
+			$this->database->executeGeneric('data.players.addWins', [
 				"name" => $name,
 				"count" => $count
 			], $onSuccess, $onError ?? $this->onError);
 		}
 	}
 
-	public function addGamesWon(string $name, int $count, ?callable $onSuccess = null, ?callable $onError = null) : void {
+	public function addBossgamesWon(string $name, int $count, ?callable $onSuccess = null, ?callable $onError = null) : void {
 		if (isset($this->database)) {
-			$this->database->executeGeneric('data.players.addGamesWon', [
-				"name" => $name,
-				"count" => $count
-			], $onSuccess, $onError ?? $this->onError);
-		}
-	}
-
-	public function addLostGames(string $name, int $count, ?callable $onSuccess = null, ?callable $onError = null) : void {
-		if (isset($this->database)) {
-			$this->database->executeGeneric('data.players.addLostGames', [
-				"name" => $name,
-				"count" => $count
-			], $onSuccess, $onError ?? $this->onError);
-		}
-	}
-
-	public function addMicrogamesPlayed(string $name, int $count, ?callable $onSuccess = null, ?callable $onError = null) : void {
-		if (isset($this->database)) {
-			$this->database->executeGeneric('data.players.addMicrogamesPlayed', [
+			$this->database->executeGeneric('data.players.addBossgamesWon', [
 				"name" => $name,
 				"count" => $count
 			], $onSuccess, $onError ?? $this->onError);
@@ -179,11 +161,29 @@ final class DataManager {
 		}
 	}
 
-	public function addLostMicrogames(string $name, int $count, ?callable $onSuccess = null, ?callable $onError = null) : void {
+	public function addGamesPlayed(string $name, int $count, ?callable $onSuccess = null, ?callable $onError = null) : void {
 		if (isset($this->database)) {
-			$this->database->executeGeneric('data.players.addLostMicrogames', [
+			$this->database->executeGeneric('data.players.addGamesPlayed', [
 				"name" => $name,
 				"count" => $count
+			], $onSuccess, $onError ?? $this->onError);
+		}
+	}
+
+	public function addMicrogamesPlayed(string $name, int $count, ?callable $onSuccess = null, ?callable $onError = null) : void {
+		if (isset($this->database)) {
+			$this->database->executeGeneric('data.players.addMicrogamesPlayed', [
+				"name" => $name,
+				"count" => $count
+			], $onSuccess, $onError ?? $this->onError);
+		}
+	}
+
+	public function addTimePlayed(string $name, int $seconds, ?callable $onSuccess = null, ?callable $onError = null) : void {
+		if (isset($this->database)) {
+			$this->database->executeGeneric('data.players.addTimePlayed', [
+				"name" => $name,
+				"seconds" => $seconds
 			], $onSuccess, $onError ?? $this->onError);
 		}
 	}

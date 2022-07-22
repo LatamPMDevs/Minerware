@@ -26,3 +26,6 @@ permissions:
   minerware.command.language:
     description: "Change the default language of the plugin"
     default: op
+  minerware.command.statistics:
+    description: "View a player's statistics"
+    default: true

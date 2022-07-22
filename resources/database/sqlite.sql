@@ -5,12 +5,12 @@
 		CREATE TABLE IF NOT EXISTS MinerwarePlayers
 		(
 			name             VARCHAR(32) PRIMARY KEY NOT NULL,
-			gamesPlayed      NUMERIC     DEFAULT 0,
-			gamesWon         NUMERIC     DEFAULT 0,
-			lostGames        NUMERIC     DEFAULT 0,
-			microgamesPlayed NUMERIC     DEFAULT 0,
+			wins             NUMERIC     DEFAULT 0,
+			bossgamesWon     NUMERIC     DEFAULT 0,
 			microgamesWon    NUMERIC     DEFAULT 0,
-			lostMicrogames   NUMERIC     DEFAULT 0
+			gamesPlayed      NUMERIC     DEFAULT 0,
+			microgamesPlayed NUMERIC     DEFAULT 0,
+			timePlayed       NUMERIC     DEFAULT 0
 		);
 	-- #}
 -- #}
@@ -19,15 +19,15 @@
 	-- #{ players
 		-- #{ add
 			-- # :name string
-			-- # :gamesPlayed int 0
-			-- # :gamesWon int 0
-			-- # :lostGames int 0
-			-- # :microgamesPlayed int 0
+			-- # :wins int 0
+			-- # :bossgamesWon int 0
 			-- # :microgamesWon int 0
-			-- # :lostMicrogames int 0
+			-- # :gamesPlayed int 0
+			-- # :microgamesPlayed int 0
+			-- # :timePlayed int 0
 			INSERT OR IGNORE INTO
-			MinerwarePlayers(name, gamesPlayed, gamesWon, lostGames, microgamesPlayed, microgamesWon, lostMicrogames)
-			VALUES (:name, :gamesPlayed, :gamesWon, :lostGames, :microgamesPlayed, :microgamesWon, :lostMicrogames);
+			MinerwarePlayers(name, wins, bossgamesWon, microgamesWon, gamesPlayed, microgamesPlayed, timePlayed)
+			VALUES (:name, :wins, :bossgamesWon, :microgamesWon, :gamesPlayed, :microgamesPlayed, :timePlayed);
 		-- #}
 		-- #{ get
 			-- # :name string
@@ -35,46 +35,32 @@
 		-- #}
 		-- #{ set
 			-- # :name string
-			-- # :gamesPlayed int 0
-			-- # :gamesWon int 0
-			-- # :lostGames int 0
-			-- # :microgamesPlayed int 0
+			-- # :wins int 0
+			-- # :bossgamesWon int 0
 			-- # :microgamesWon int 0
-			-- # :lostMicrogames int 0
+			-- # :gamesPlayed int 0
+			-- # :microgamesPlayed int 0
+			-- # :timePlayed int 0
 			INSERT OR REPLACE INTO
-			MinerwarePlayers(name, gamesPlayed, gamesWon, lostGames, microgamesPlayed, microgamesWon, lostMicrogames)
-			VALUES (:name, :gamesPlayed, :gamesWon, :lostGames, :microgamesPlayed, :microgamesWon, :lostMicrogames);
+			MinerwarePlayers(name, wins, bossgamesWon, microgamesWon, gamesPlayed, microgamesPlayed, timePlayed)
+			VALUES (:name, :wins, :bossgamesWon, :microgamesWon, :gamesPlayed, :microgamesPlayed, :timePlayed);
 		-- #}
 		-- #{ getAll
 			SELECT * FROM MinerwarePlayers;
 		-- #}
-		-- #{ addGamesPlayed
+		-- #{ addWins
 			-- # :name string
 			-- # :count int
-			INSERT INTO MinerwarePlayers(name, gamesPlayed)
-			VALUES(:name, :count)
-			ON CONFLICT(name) DO UPDATE SET gamesPlayed = gamesPlayed + :count;
+			INSERT INTO MinerwarePlayers(name, wins)
+			VALUES(:name, :wins)
+			ON CONFLICT(name) DO UPDATE SET wins = wins + :count;
 		-- #}
-		-- #{ addGamesWon
+		-- #{ addBossgamesWon
 			-- # :name string
 			-- # :count int
-			INSERT INTO MinerwarePlayers(name, gamesWon)
+			INSERT INTO MinerwarePlayers(name, bossgamesWon)
 			VALUES(:name, :count)
-			ON CONFLICT(name) DO UPDATE SET gamesWon = gamesWon + :count;
-		-- #}
-		-- #{ addLostGames
-			-- # :name string
-			-- # :count int
-			INSERT INTO MinerwarePlayers(name, lostGames)
-			VALUES(:name, :count)
-			ON CONFLICT(name) DO UPDATE SET lostGames = lostGames + :count;
-		-- #}
-		-- #{ addMicrogamesPlayed
-			-- # :name string
-			-- # :count int
-			INSERT INTO MinerwarePlayers(name, microgamesPlayed)
-			VALUES(:name, :count)
-			ON CONFLICT(name) DO UPDATE SET microgamesPlayed = microgamesPlayed + :count;
+			ON CONFLICT(name) DO UPDATE SET bossgamesWon = bossgamesWon + :count;
 		-- #}
 		-- #{ addMicrogamesWon
 			-- # :name string
@@ -83,12 +69,26 @@
 			VALUES(:name, :count)
 			ON CONFLICT(name) DO UPDATE SET microgamesWon = microgamesWon + :count;
 		-- #}
-		-- #{ addLostMicrogames
+		-- #{ addGamesPlayed
 			-- # :name string
 			-- # :count int
-			INSERT INTO MinerwarePlayers(name, lostMicrogames)
+			INSERT INTO MinerwarePlayers(name, gamesPlayed)
 			VALUES(:name, :count)
-			ON CONFLICT(name) DO UPDATE SET lostMicrogames = lostMicrogames + :count;
+			ON CONFLICT(name) DO UPDATE SET gamesPlayed = gamesPlayed + :count;
+		-- #}
+		-- #{ addMicrogamesPlayed
+			-- # :name string
+			-- # :count int
+			INSERT INTO MinerwarePlayers(name, microgamesPlayed)
+			VALUES(:name, :count)
+			ON CONFLICT(name) DO UPDATE SET microgamesPlayed = microgamesPlayed + :count;
+		-- #}
+		-- #{ addTimePlayed
+			-- # :name string
+			-- # :seconds int
+			INSERT INTO MinerwarePlayers(name, timePlayed)
+			VALUES(:name, :seconds)
+			ON CONFLICT(name) DO UPDATE SET timePlayed = timePlayed + :seconds;
 		-- #}
 		-- #{ delete
 			-- # :name string

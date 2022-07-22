@@ -30,12 +30,12 @@ class PlayerData implements JsonSerializable {
 	public function __construct(
 		protected string $name,
 		protected int $generationTime, //Time at which the data was obtained
-		protected int $gamesPlayed,
-		protected int $gamesWon,
-		protected int $lostGames,
-		protected int $microgamesPlayed,
+		protected int $wins,
+		protected int $bossgamesWon,
 		protected int $microgamesWon,
-		protected int $lostMicrogames
+		protected int $gamesPlayed,
+		protected int $microgamesPlayed,
+		protected int $timePlayed
 	) {
 	}
 
@@ -47,28 +47,28 @@ class PlayerData implements JsonSerializable {
 		return $this->generationTime;
 	}
 
-	public function getGamesPlayed() : int {
-		return $this->gamesPlayed;
+	public function getWins() : int {
+		return $this->wins;
 	}
 
-	public function getGamesWon() : int {
-		return $this->gamesWon;
-	}
-
-	public function getLostGames() : int {
-		return $this->lostGames;
-	}
-
-	public function getMicrogamesPlayed() : int {
-		return $this->microgamesPlayed;
+	public function getBossgamesWon() : int {
+		return $this->bossgamesWon;
 	}
 
 	public function getMicrogamesWon() : int {
 		return $this->microgamesWon;
 	}
 
-	public function getLostMicrogames() : int {
-		return $this->lostMicrogames;
+	public function getGamesPlayed() : int {
+		return $this->gamesPlayed;
+	}
+
+	public function getMicrogamesPlayed() : int {
+		return $this->microgamesPlayed;
+	}
+
+	public function getTimePlayed() : int {
+		return $this->timePlayed;
 	}
 
 	/**
@@ -80,12 +80,12 @@ class PlayerData implements JsonSerializable {
 		return [
 			"name" => $this->name,
 			"generationTime" => $this->generationTime,
-			"gamesPlayed" => $this->gamesPlayed,
-			"gamesWon" => $this->gamesWon,
-			"lostGames" => $this->lostGames,
-			"microgamesPlayed" => $this->microgamesPlayed,
+			"wins" => $this->wins,
+			"bossgamesWon" => $this->bossgamesWon,
 			"microgamesWon" => $this->microgamesWon,
-			"lostMicrogames" => $this->lostMicrogames
+			"gamesPlayed" => $this->gamesPlayed,
+			"microgamesPlayed" => $this->microgamesPlayed,
+			"timePlayed" => $this->timePlayed
 		];
 	}
 
@@ -95,24 +95,24 @@ class PlayerData implements JsonSerializable {
 	 * @phpstan-param array{
 	 * 	name: string,
 	 * 	generationTime?: int,
-	 * 	gamesPlayed?: int,
-	 * 	gamesWon?: int,
-	 * 	lostGames?: int,
-	 * 	microgamesPlayed?: int,
+	 * 	wins?: int,
+	 * 	bossgamesWon?: int,
 	 * 	microgamesWon?: int,
-	 * 	lostMicrogames?: int
+	 * 	gamesPlayed?: int,
+	 * 	microgamesPlayed?: int,
+	 * 	timePlayed?: int
 	 * } $data
 	 */
 	public static function jsonDeserialize(array $data) : PlayerData {
 		return new PlayerData(
 			(string) $data["name"],
 			(int) ($data["generationTime"] ?? time()),
-			(int) ($data["gamesPlayed"] ?? 0),
-			(int) ($data["gamesWon"] ?? 0),
-			(int) ($data["lostGames"] ?? 0),
-			(int) ($data["microgamesPlayed"] ?? 0),
+			(int) ($data["wins"] ?? 0),
+			(int) ($data["bossgamesWon"] ?? 0),
 			(int) ($data["microgamesWon"] ?? 0),
-			(int) ($data["lostMicrogames"] ?? 0)
+			(int) ($data["gamesPlayed"] ?? 0),
+			(int) ($data["microgamesPlayed"] ?? 0),
+			(int) ($data["timePlayed"] ?? 0)
 		);
 	}
 }

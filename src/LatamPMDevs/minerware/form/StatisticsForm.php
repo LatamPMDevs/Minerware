@@ -20,36 +20,30 @@
 
 declare(strict_types=1);
 
-namespace LatamPMDevs\minerware\command;
+namespace LatamPMDevs\minerware\form;
 
-use CortexPE\Commando\BaseCommand;
-use LatamPMDevs\minerware\command\subcommands\ArenasCommand;
-use LatamPMDevs\minerware\command\subcommands\CreditsCommand;
-use LatamPMDevs\minerware\command\subcommands\HelpCommand;
-use LatamPMDevs\minerware\command\subcommands\JoinCommand;
-use LatamPMDevs\minerware\command\subcommands\LanguageCommand;
-use LatamPMDevs\minerware\command\subcommands\StatisticsCommand;
+use jojoe77777\FormAPI\SimpleForm;
+use LatamPMDevs\minerware\database\PlayerData;
 use LatamPMDevs\minerware\Minerware;
-use pocketmine\command\CommandSender;
+use LatamPMDevs\minerware\utils\Utils;
+use pocketmine\player\Player;
 
-final class MinerwareCommand extends BaseCommand {
+final class StatisticsForm {
 
-	public function __construct(private Minerware $plugin) {
-		parent::__construct($plugin, "minerware", "Minerware main command.");
-		$this->setPermission("minerware.command");
-		$this->setPermissionMessage($plugin->getTranslator()->translate(null, "command.noPermission"));
-	}
-
-	protected function prepare() : void {
-		$this->registerSubCommand(new ArenasCommand($this->plugin));
-		$this->registerSubCommand(new CreditsCommand($this->plugin));
-		$this->registerSubcommand(new HelpCommand());
-		$this->registerSubcommand(new JoinCommand());
-		$this->registerSubcommand(new LanguageCommand($this->plugin));
-		$this->registerSubcommand(new StatisticsCommand($this->plugin));
-	}
-
-	public function onRun(CommandSender $sender, string $aliasUsed, array $args) : void {
-		$sender->sendMessage($this->plugin->getTranslator()->translate($sender, "command.notFound"));
+	public function send(Player $player, PlayerData $playerdata) : void {
+		$plugin = Minerware::getInstance();
+		$translator = $plugin->getTranslator();
+		$form = new SimpleForm(null);
+		$form->setTitle($plugin->getTranslator()->translate($player, "text.statistics.user", ["{%user}" => $playerdata->getName()]));
+		$form->setContent(
+			"§a" . $translator->translate($player, "text.statistics.wins") . ": §6" . $playerdata->getWins() . "\n" .
+			"§a" . $translator->translate($player, "text.statistics.bossGamesWon") . ": §6" . $playerdata->getBossgamesWon() . "\n" .
+			"§a" . $translator->translate($player, "text.statistics.microgamesWon") . ": §6" . $playerdata->getMicrogamesWon() . "\n" .
+			"§a" . $translator->translate($player, "text.statistics.gamesPlayed") . ": §6" . $playerdata->getGamesPlayed() . "\n" .
+			"§a" . $translator->translate($player, "text.statistics.microgamesPlayed") . ": §6" . $playerdata->getMicrogamesPlayed() . "\n" .
+			"§a" . $translator->translate($player, "text.statistics.timePlayed") . ": §6" . Utils::getTimeTranslated($playerdata->getTimePlayed(), $translator, $player)
+		);
+		$form->addButton($translator->translate($player, "text.close"));
+		$form->sendToPlayer($player);
 	}
 }

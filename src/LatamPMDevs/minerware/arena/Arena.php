@@ -23,6 +23,7 @@ declare(strict_types=1);
 namespace LatamPMDevs\minerware\arena;
 
 use InvalidArgumentException;
+use RuntimeException;
 use LatamPMDevs\minerware\arena\microgame\Level;
 use LatamPMDevs\minerware\arena\microgame\Microgame;
 use LatamPMDevs\minerware\arena\microgame\MicrogameManager;
@@ -31,6 +32,7 @@ use LatamPMDevs\minerware\event\arena\ArenaChangeStatusEvent;
 use LatamPMDevs\minerware\event\arena\ArenaCreationEvent;
 use LatamPMDevs\minerware\event\arena\ArenaEndEvent;
 use LatamPMDevs\minerware\event\arena\PlayerJoinArenaEvent;
+use LatamPMDevs\minerware\event\arena\PlayerQuitArenaEvent;
 use LatamPMDevs\minerware\Minerware;
 use LatamPMDevs\minerware\tasks\ArenaTask;
 use LatamPMDevs\minerware\utils\PointHolder;
@@ -58,6 +60,7 @@ use function count;
 use function implode;
 use function shuffle;
 use function str_repeat;
+use function time;
 
 final class Arena implements Listener {
 
@@ -111,6 +114,8 @@ final class Arena implements Listener {
 
 	/** @var array<int, Player> */
 	public array $losers = [];
+
+	public ?int $startTime = null;
 
 	public function __construct(private string $id, private Map $map) {
 		$this->plugin = Minerware::getInstance();
@@ -232,6 +237,7 @@ final class Arena implements Listener {
 				]
 			));
 		}
+		(new PlayerQuitArenaEvent($player, $this))->call();
 	}
 
 	public function sendMessage(string $message) : void {
@@ -274,6 +280,10 @@ final class Arena implements Listener {
 	public function getNextMicrogameNonNull() : Microgame {
 		return $this->microgamesQueue[$this->nextMicrogameIndex] ?? throw new AssumptionFailedError("Next Microgame is null");
 
+	}
+
+	public function getStartTime() : ?int {
+		return $this->startTime;
 	}
 
 	public function startNextMicrogame() : ?Microgame {
@@ -432,8 +442,23 @@ final class Arena implements Listener {
 		$this->resetCages();
 	}
 
+	public function start() : void {
+		if (!$this->status->equals(Status::STARTING())) {
+			throw new RuntimeException("Arena can only start during the staring status");
+		}
+		$this->setStatus(Status::INBETWEEN());
+		$this->getPointHolder()->clear();
+		foreach ($this->players as $player) {
+			$this->pointHolder->addPlayer($player);
+		}
+		if ($this->areInvisibleBlocksSet()) {
+			$this->unsetInvisibleBlocks();
+		}
+		$this->startTime = time();
+	}
+
 	public function end() : void {
-		$this->status = Status::ENDING();
+		$this->setStatus(Status::ENDING());
 		$winners = [];
 		$scores = array_slice(Utils::chunkScores($this->pointHolder->getOrderedByHigherScore()), 0, 3);
 		$i = 1;

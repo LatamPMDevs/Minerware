@@ -23,8 +23,10 @@ declare(strict_types=1);
 namespace LatamPMDevs\minerware\utils;
 
 use InvalidArgumentException;
+use IvanCraft623\languages\Translator;
 use pocketmine\block\Block;
 use pocketmine\block\utils\DyeColor;
+use pocketmine\command\CommandSender;
 use pocketmine\math\Vector2;
 use pocketmine\math\Vector3;
 use pocketmine\network\mcpe\protocol\PlaySoundPacket;
@@ -41,6 +43,7 @@ use function basename;
 use function ceil;
 use function file_exists;
 use function floor;
+use function implode;
 use function is_array;
 use function is_dir;
 use function is_file;
@@ -294,5 +297,44 @@ final class Utils {
 			}
 		}
 		return $folder . $path;
+	}
+
+	public static function getTime(int $seconds) : array {
+		if ($seconds < 0) {
+			throw new InvalidArgumentException("Seconds is lower than 0");
+		}
+		$year = floor($seconds / 31540000);
+		$monthSec = $seconds % 31540000;
+		$month = floor($monthSec / 2628000);
+		$daySec = $monthSec % 2628000;
+		$day = floor($daySec / 86400);
+		$hourSec = $daySec % 86400;
+		$hour = floor($hourSec / 3600);
+		$minuteSec = $hourSec % 3600;
+		$minute = floor($minuteSec / 60);
+		$remainingSec = $minuteSec % 60;
+		$second = ceil($remainingSec);
+		return [
+			"years" => (int) $year,
+			"months" => (int) $month,
+			"days" => (int) $day,
+			"hours" => (int) $hour,
+			"minutes" => (int) $minute,
+			"seconds" => (int) $second
+		];
+	}
+
+	public static function getTimeTranslated(int $seconds, ?Translator $translator = null, ?CommandSender $sender = null) : string {
+		$time = [];
+		foreach (self::getTime($seconds) as $key => $value) {
+			if ($value !== 0 || $key === "seconds") {
+				if ($translator !== null) {
+					$time[] = $value . " " . $translator->translate($sender, "text.time." . $key);
+				} else {
+					$time[] = $value . " " . $key;
+				}
+			}
+		}
+		return implode(", ", $time);
 	}
 }

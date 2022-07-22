@@ -77,14 +77,7 @@ final class ArenaTask extends Task {
 						$player->getXpManager()->setXpAndProgress($arena->startingtime, 0);
 					}
 					if ($arena->startingtime <= 0) {
-						$arena->setStatus(Status::INBETWEEN());
-						$arena->getPointHolder()->clear();
-						foreach ($players as $player) {
-							$arena->getPointHolder()->addPlayer($player);
-						}
-						if ($arena->areInvisibleBlocksSet()) {
-							$arena->unsetInvisibleBlocks();
-						}
+						$arena->start();
 					}
 				}
 				$arena->startingtime--;

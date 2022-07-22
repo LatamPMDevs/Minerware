@@ -20,36 +20,21 @@
 
 declare(strict_types=1);
 
-namespace LatamPMDevs\minerware\command;
+namespace LatamPMDevs\minerware\event\arena;
 
-use CortexPE\Commando\BaseCommand;
-use LatamPMDevs\minerware\command\subcommands\ArenasCommand;
-use LatamPMDevs\minerware\command\subcommands\CreditsCommand;
-use LatamPMDevs\minerware\command\subcommands\HelpCommand;
-use LatamPMDevs\minerware\command\subcommands\JoinCommand;
-use LatamPMDevs\minerware\command\subcommands\LanguageCommand;
-use LatamPMDevs\minerware\command\subcommands\StatisticsCommand;
-use LatamPMDevs\minerware\Minerware;
-use pocketmine\command\CommandSender;
+use LatamPMDevs\minerware\arena\Arena;
+use pocketmine\player\Player;
 
-final class MinerwareCommand extends BaseCommand {
+/**
+ * Called when a player leave an arena
+ */
+class PlayerQuitArenaEvent extends ArenaEvent {
 
-	public function __construct(private Minerware $plugin) {
-		parent::__construct($plugin, "minerware", "Minerware main command.");
-		$this->setPermission("minerware.command");
-		$this->setPermissionMessage($plugin->getTranslator()->translate(null, "command.noPermission"));
+	public function __construct(protected Player $player, Arena $arena) {
+		parent::__construct($arena);
 	}
 
-	protected function prepare() : void {
-		$this->registerSubCommand(new ArenasCommand($this->plugin));
-		$this->registerSubCommand(new CreditsCommand($this->plugin));
-		$this->registerSubcommand(new HelpCommand());
-		$this->registerSubcommand(new JoinCommand());
-		$this->registerSubcommand(new LanguageCommand($this->plugin));
-		$this->registerSubcommand(new StatisticsCommand($this->plugin));
-	}
-
-	public function onRun(CommandSender $sender, string $aliasUsed, array $args) : void {
-		$sender->sendMessage($this->plugin->getTranslator()->translate($sender, "command.notFound"));
+	public function getPlayer() : Player {
+		return $this->player;
 	}
 }
