@@ -29,7 +29,6 @@ use JackMD\ConfigUpdater\ConfigUpdater;
 use LatamPMDevs\minerware\arena\ArenaManager;
 use LatamPMDevs\minerware\command\MinerwareCommand;
 use LatamPMDevs\minerware\database\DataManager;
-use LatamPMDevs\minerware\utils\Scoreboard;
 use pocketmine\plugin\PluginBase;
 use pocketmine\utils\SingletonTrait;
 
@@ -40,8 +39,6 @@ final class Minerware extends PluginBase {
 	}
 
 	public const CONFIG_VERSION = 1;
-
-	private Scoreboard $scoreboard;
 
 	private Translator $translator;
 
@@ -69,7 +66,6 @@ final class Minerware extends PluginBase {
 
 		$dataManager = DataManager::getInstance();
 		$dataManager->loadMaps();
-		$this->scoreboard = new Scoreboard($this);
 		$this->getServer()->getPluginManager()->registerEvents(new EventListener($dataManager), $this);
 	}
 
@@ -83,10 +79,6 @@ final class Minerware extends PluginBase {
 
 	public function getPrefix() : string {
 		return "§aMinerware§r ";
-	}
-
-	public function getScoreboard() : Scoreboard {
-		return $this->scoreboard;
 	}
 
 	public function getTranslator() : Translator {

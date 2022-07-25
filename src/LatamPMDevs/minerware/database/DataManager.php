@@ -64,7 +64,6 @@ final class DataManager {
 		$this->config = $this->plugin->getConfig();
 
 		@mkdir($this->pluginPath . "database" . DIRECTORY_SEPARATOR);
-		@mkdir($this->pluginPath . "database" . DIRECTORY_SEPARATOR . "players" . DIRECTORY_SEPARATOR);
 		@mkdir($this->pluginPath . "database" . DIRECTORY_SEPARATOR . "maps" . DIRECTORY_SEPARATOR);
 		@mkdir($this->pluginPath . "database" . DIRECTORY_SEPARATOR . "backups" . DIRECTORY_SEPARATOR);
 
