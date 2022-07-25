@@ -23,6 +23,7 @@ declare(strict_types=1);
 namespace LatamPMDevs\minerware\arena;
 
 use InvalidArgumentException;
+use jackmd\scorefactory\ScoreFactory;
 use LatamPMDevs\minerware\arena\microgame\Level;
 use LatamPMDevs\minerware\arena\microgame\Microgame;
 use LatamPMDevs\minerware\arena\microgame\MicrogameManager;
@@ -198,6 +199,11 @@ final class Arena implements Listener {
 		$ev = new ArenaChangeStatusEvent($this->status, $status, $this);
 		$ev->call();
 		$this->status = $ev->getNewStatus();
+		foreach ($this->players as $player) {
+			if (ScoreFactory::hasObjective($player)) {
+				ScoreFactory::removeScoreLines($player, true);
+			}
+		}
 	}
 
 	public function join(Player $player) : void {
@@ -228,7 +234,9 @@ final class Arena implements Listener {
 		$this->winnersCage->removePlayer($player);
 		$this->losersCage->removePlayer($player);
 		$this->pointHolder->removePlayer($player);
-		$this->plugin->getScoreboard()->remove($player);
+		if ($player->isConnected()) {
+			ScoreFactory::removeObjective($player, true);
+		}
 		foreach ($this->players as $pl) {
 			$pl->sendMessage($this->plugin->getTranslator()->translate(
 				$pl, "game.player.quit", [
@@ -305,7 +313,6 @@ final class Arena implements Listener {
 	}
 
 	public function updateScoreboard() : void {
-		$scoreboard = $this->plugin->getScoreboard();
 		$translator = $this->plugin->getTranslator();
 		$isBoss = false;
 		$currentMicrogame = $this->getCurrentMicrogame();
@@ -360,16 +367,20 @@ final class Arena implements Listener {
 					break;
 			}
 			if ($remove) {
-				$scoreboard->remove($player);
+				ScoreFactory::removeObjective($player, true);
 			} else {
+				if (!ScoreFactory::hasObjective($player)) {
+					ScoreFactory::setObjective($player, '§l§eMinerWare');
+					ScoreFactory::sendObjective($player);
+				}
 				$from = 0;
-				$scoreboard->new($player, $player->getName(), '§l§eMinerWare');
 				foreach ($lines as $line) {
 					if ($from < 15) {
 						$from++;
-						$scoreboard->setLine($player, $from, $line);
+						ScoreFactory::setScoreLine($player, $from, $line);
 					}
 				}
+				ScoreFactory::sendLines($player);
 			}
 		}
 	}

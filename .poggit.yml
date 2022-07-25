@@ -9,6 +9,8 @@ projects:
       - src: CortexPE/Commando/Commando
         version: ^3.0.0
         branch: PM4
+      - src: Ifera/ScoreFactory/ScoreFactory
+        version: ^3.1.0
       - src: ifera-mc/ConfigUpdater/ConfigUpdater
         version: ^2.0.0
         branch: master
