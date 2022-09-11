@@ -35,6 +35,26 @@ You can find some maps [here](https://github.com/LatamPMDevs/Minerware/tree/mast
 - Color Floor
 - TNT Run
 
+## Usage
+How to use and setup this mini-game!
+
+### Arena set up
+Requirements:
+- Operator or permission: "minerware.command.arenas"
+- Map ready for use
+- The map should stop a platform of `24x24` blocks
+
+Steps
+- Run: `/minerware arenas create <world>` command
+- Type `help` in the chat, to display the actions list
+- Type each action in the chat to set up it
+- At the end, type `done` in the chat.
+
+### Arena joining
+Currently it is only possible to join the game using the command:
+`/minerware join`
+
+
 ## Project information:
 | Plugin version | Pocketmine version | PHP version | Status |
 |---|---|---|---|
