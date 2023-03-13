@@ -5,7 +5,7 @@
     "require-dev": {
         "php": "^8.0",
         "pocketmine/pocketmine-mp": "^4.0.0",
-        "friendsofphp/php-cs-fixer": "3.10.0",
+        "friendsofphp/php-cs-fixer": "3.15.0",
         "phpstan/phpstan": "1.9.14"
     },
     "config": {
