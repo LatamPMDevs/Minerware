@@ -30,7 +30,8 @@ use pocketmine\event\block\BlockBreakEvent;
 use pocketmine\event\HandlerListManager;
 use pocketmine\event\Listener;
 use pocketmine\event\player\PlayerChatEvent;
-use pocketmine\item\ItemFactory;
+//use pocketmine\item\ItemFactory;
+use pocketmine\item\VanillaItems;
 use pocketmine\math\Vector3;
 use pocketmine\player\Player;
 use pocketmine\world\World;
@@ -107,12 +108,14 @@ final class MapRegisterer implements Listener {
 		if (strtolower($player->getName()) == strtolower($this->player->getName())) {
 			switch (strtolower($args[0])) {
 				case "setplatform":
-					$player->getInventory()->addItem(ItemFactory::getInstance()->get(369, 0, 1)->setCustomName("§r§aSet platform\n§7Break a corner."));
+                    $player->getInventory()->addItem(VanillaItems::BLAZE_ROD()->setCustomName("§r§aSet platform\n§7Break a corner."));
+//					$player->getInventory()->addItem(ItemFactory::getInstance()->get(369, 0, 1)->setCustomName("§r§aSet platform\n§7Break a corner."));
 					$player->sendMessage($this->plugin->getTranslator()->translate($player, "configurator.mode.setplatform"));
 				break;
 
 				case "setcages":
-					$player->getInventory()->addItem(ItemFactory::getInstance()->get(369, 0, 1)->setCustomName("§r§aSet cages\n§7Break a block."));
+                    $player->getInventory()->addItem(VanillaItems::BLAZE_ROD()->setCustomName("§r§aSet platform\n§7Break a corner."));
+//					$player->getInventory()->addItem(ItemFactory::getInstance()->get(369, 0, 1)->setCustomName("§r§aSet cages\n§7Break a block."));
 					$player->sendMessage($this->plugin->getTranslator()->translate($player, "configurator.mode.setcage.winners"));
 
 				break;
@@ -161,9 +164,9 @@ final class MapRegisterer implements Listener {
 		$block = $event->getBlock();
 		if (strtolower($player->getName()) == strtolower($this->player->getName())) {
 			$item = $player->getInventory()->getItemInHand();
-			$itemId = $item->getId();
+			$itemId = $item->getTypeId();
 			$itemName = $item->getCustomName();
-			if ($itemId == 369 && $itemName === "§r§aSet platform\n§7Break a corner.") {
+			if ($itemId == VanillaItems::BLAZE_ROD()->getTypeId() && $itemName === "§r§aSet platform\n§7Break a corner.") {
 				if (!isset($this->tempData[strtolower($player->getName())]["platform"]["pos1"])) {
 					$this->tempData[strtolower($player->getName())]["platform"]["pos1"] = $block->getPosition()->asVector3();
 				} else {

@@ -216,7 +216,7 @@ class MineOre extends Microgame implements Listener {
 		if ((int) $block->getPosition()->y === $y) {
 			$this->changedBlocks[] = $block;
 		}
-		if ($block->isSameType($this->ore)) {
+		if ($block->hasSameTypeId($this->ore)) {
 			$this->addWinner($player);
 			$this->arena->getWinnersCage()->addPlayer($player);
 			$player->sendMessage($this->plugin->getTranslator()->translate($player, "microgame.mineore.oremined"));

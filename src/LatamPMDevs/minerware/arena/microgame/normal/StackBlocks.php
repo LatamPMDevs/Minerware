@@ -186,11 +186,11 @@ class StackBlocks extends Microgame implements Listener {
 	public function onBlockPlace(BlockPlaceEvent $event) : void {
 		$player = $event->getPlayer();
 		if (!$this->arena->inGame($player)) return;
-		$this->changedBlocks[] = $event->getBlockReplaced();
+		$this->changedBlocks[] = $event->getBlockAgainst();
 		$assignedBlock = $this->getAssignedBlock($player);
-		if ($assignedBlock !== null && $event->getBlock()->isSameState($assignedBlock)) {
+		if ($assignedBlock !== null && $event->getBlockAgainst()->isSameState($assignedBlock)) {
 			$size = 1;
-			$lastBlockPos = $event->getBlock()->getPosition();
+			$lastBlockPos = $event->getBlockAgainst()->getPosition();
 			$world = $this->arena->getWorld();
 			while ($world->getBlock($lastBlockPos->subtract(0, 1, 0))->isSameState($assignedBlock)) {
 				$size++;

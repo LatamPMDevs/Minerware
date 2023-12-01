@@ -34,7 +34,8 @@ use pocketmine\entity\object\PrimedTNT;
 use pocketmine\event\block\BlockBreakEvent;
 use pocketmine\event\block\BlockPlaceEvent;
 use pocketmine\event\entity\EntityDamageEvent;
-use pocketmine\event\entity\ExplosionPrimeEvent;
+use pocketmine\event\entity\EntityPreExplodeEvent;
+//use pocketmine\event\entity\ExplosionPrimeEvent;
 use pocketmine\event\HandlerListManager;
 use pocketmine\event\Listener;
 use pocketmine\event\player\PlayerInteractEvent;
@@ -200,7 +201,7 @@ class IgniteTNT extends Microgame implements Listener {
 		}
 	}
 
-	public function onExplosion(ExplosionPrimeEvent $event) : void {
+	public function onExplosion(EntityPreExplodeEvent $event) : void {
 		$entity = $event->getEntity();
 		if ($entity->getWorld() !== $this->arena->getWorld()) return;
 		if ($entity instanceof PrimedTNT) {

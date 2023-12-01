@@ -74,7 +74,8 @@ class TextEntity extends Human {
 			if (isset($data[EntityMetadataProperties::NAMETAG])) {
 				$data[EntityMetadataProperties::NAMETAG] = new StringMetadataProperty($this->getNameTagToPlayer($p));
 			}
-			$p->getNetworkSession()->syncActorData($this, $data);
+            //aref
+//			$p->getNetworkSession()->syncActorData($this, $data);
 		}
 	}
 

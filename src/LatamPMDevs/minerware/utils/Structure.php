@@ -23,7 +23,12 @@ declare(strict_types=1);
 namespace LatamPMDevs\minerware\utils;
 
 use LatamPMDevs\minerware\database\DataHolder;
-use pocketmine\block\BlockFactory;
+//use pocketmine\block\BlockFactory;
+use pocketmine\block\RuntimeBlockStateRegistry;
+use pocketmine\block\VanillaBlocks;
+use pocketmine\data\bedrock\block\upgrade\LegacyBlockIdToStringIdMap;
+use pocketmine\data\bedrock\item\upgrade\LegacyItemIdToStringIdMap;
+use pocketmine\item\StringToItemParser;
 use pocketmine\world\Position;
 use function floor;
 use function intval;
@@ -61,8 +66,10 @@ final class Structure {
 			$pos = $this->pos->add(intval($block["X"]), intval($block["Y"]), intval($block["Z"]));
 			if ($world->isInWorld((int) floor($pos->x), (int) floor($pos->y), (int) floor($pos->z))) {
 				$changedBlock = $world->getBlock($pos);
-				$this->changedBlocks[] = ["X" => $block["X"], "Y" => $block["Y"], "Z" => $block["Z"], "ID" => $changedBlock->getId(), "Meta" => $changedBlock->getMeta()];
-				$world->setBlock($pos, BlockFactory::getInstance()->get($block["ID"], $block["Meta"]));
+				$this->changedBlocks[] = ["X" => $block["X"], "Y" => $block["Y"], "Z" => $block["Z"], "ID" => $changedBlock->getTypeId(), "Meta" => $changedBlock->getStateId()];
+                //aref
+                $world->setBlock($pos,  VanillaBlocks::AIR());
+//				$world->setBlock($pos, BlockFactory::getInstance()->get($block["ID"], $block["Meta"]));
 			}
 		}
 	}
