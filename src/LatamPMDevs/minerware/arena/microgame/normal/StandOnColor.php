@@ -48,6 +48,7 @@ use function array_key_first;
 use function array_rand;
 use function array_reverse;
 use function asort;
+use function strtolower;
 
 class StandOnColor extends Microgame implements Listener {
 

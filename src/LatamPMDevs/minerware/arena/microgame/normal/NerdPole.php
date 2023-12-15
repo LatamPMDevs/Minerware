@@ -50,6 +50,7 @@ use pocketmine\player\GameMode;
 use pocketmine\player\Player;
 use pocketmine\world\format\Chunk;
 use pocketmine\world\Position;
+use function array_merge;
 use function array_rand;
 
 class NerdPole extends Microgame implements Listener {
