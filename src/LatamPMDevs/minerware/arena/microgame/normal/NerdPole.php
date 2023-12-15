@@ -254,12 +254,16 @@ class NerdPole extends Microgame implements Listener {
 	public function onBlockPlace(BlockPlaceEvent $event) : void {
 		$player = $event->getPlayer();
 		if (!$this->arena->inGame($player)) return;
-		$blockReplaced = $event->getBlockReplaced();
-		if ($this->platformBoundingBox->isVectorInside($blockReplaced->getPosition()->add(0.5, -0.1, 0.5))) {
-			$event->cancel();
-		} else {
-			$this->changedBlocks[] = $blockReplaced;
+
+		$replacedBlocks = [];
+		foreach ($event->getTransaction()->getBlocks() as [$x, $y, $z, $block]) {
+			if ($this->platformBoundingBox->isVectorInside($block->getPosition()->add(0.5, -0.1, 0.5))) {
+				$event->cancel();
+				return;
+			}
+			$replacedBlocks[] = $this->arena->getWorld()->getBlockAt($x, $y, $z);
 		}
+		$this->changedBlocks = array_merge($this->changedBlocks, $replacedBlocks);
 	}
 
 	public function onDamage(EntityDamageEvent $event) : void {

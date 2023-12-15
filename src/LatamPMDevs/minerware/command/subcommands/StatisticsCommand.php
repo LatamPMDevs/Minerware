@@ -46,12 +46,12 @@ final class StatisticsCommand extends BaseSubCommand {
 
 	public function onRun(CommandSender $sender, string $aliasUsed, array $args) : void {
 		$translator = $this->plugin->getTranslator();
-		if (!($isPlayer = $sender instanceof Player) && !isset($args["user"])) {
+		if (!$sender instanceof Player && !isset($args["user"])) {
 			$sender->sendMessage($translator->translate($sender, "command.statistics.noUserProvided"));
 			return;
 		}
-		DataManager::getInstance()->getPlayerData($args["user"] ?? $sender->getName(), function (PlayerData $playerdata) use ($sender, $translator, $isPlayer) {
-			if ($isPlayer) {
+		DataManager::getInstance()->getPlayerData($args["user"] ?? $sender->getName(), function (PlayerData $playerdata) use ($sender, $translator) {
+			if ($sender instanceof Player) {
 				FormManager::getInstance()->sendStatistics($sender, $playerdata);
 			} else {
 				$sender->sendMessage(

@@ -104,13 +104,11 @@ final class Utils {
 		$scandir = scandir($path);
 		if (is_array($scandir)) {
 			foreach ($scandir as $item) {
-				if ($item != "." || $item != "..") {
-					if (is_dir($path . DIRECTORY_SEPARATOR . $item)) {
-						self::removeDir($path . DIRECTORY_SEPARATOR . $item);
-					}
-					if (is_file($path . DIRECTORY_SEPARATOR . $item)) {
-						self::removeFile($path . DIRECTORY_SEPARATOR . $item);
-					}
+				if (is_dir($path . DIRECTORY_SEPARATOR . $item)) {
+					self::removeDir($path . DIRECTORY_SEPARATOR . $item);
+				}
+				if (is_file($path . DIRECTORY_SEPARATOR . $item)) {
+					self::removeFile($path . DIRECTORY_SEPARATOR . $item);
 				}
 			}
 		}

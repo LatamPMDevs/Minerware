@@ -66,6 +66,7 @@ class TextEntity extends Human {
 		parent::attack($event);
 	}
 
+	/* TODO: find another hack to do this! >:D
 	public function sendData(?array $targets, ?array $data = null) : void {
 		$targets = $targets ?? $this->hasSpawned;
 		$data = $data ?? $this->getAllNetworkData();
@@ -76,7 +77,7 @@ class TextEntity extends Human {
 			}
 			$p->getNetworkSession()->syncActorData($this, $data);
 		}
-	}
+	}*/
 
 	protected function move(float $dx, float $dy, float $dz) : void {}
 

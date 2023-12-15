@@ -167,13 +167,13 @@ class StandOnColor extends Microgame implements Listener {
 			if ($this->isWinner($player)) {
 				$player->sendMessage($this->plugin->getTranslator()->translate(
 					$player, "microgame.standoncolor.won", [
-						"{%color}" => $textformatColor . $this->plugin->getTranslator()->translate($player, "text.color." . $this->color->name())
+						"{%color}" => $textformatColor . $this->plugin->getTranslator()->translate($player, "text.color." . strtolower($this->color->name()))
 					]
 				));
 			} elseif ($this->isLoser($player)) {
 				$player->sendMessage($this->plugin->getTranslator()->translate(
 					$player, "microgame.standoncolor.lose", [
-						"{%color}" => $textformatColor . $this->plugin->getTranslator()->translate($player, "text.color." . $this->color->name())
+						"{%color}" => $textformatColor . $this->plugin->getTranslator()->translate($player, "text.color." . strtolower($this->color->name()))
 					]
 				));
 			}

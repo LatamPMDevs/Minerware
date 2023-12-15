@@ -1,7 +1,7 @@
 name: Minerware
 version: 1.0.0-beta3
 main: LatamPMDevs\minerware\Minerware
-api: "4.4.0"
+api: "5.0.0"
 authors:
   - IvanCraft623
   - JustJ0rd4n

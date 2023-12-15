@@ -1,17 +1,63 @@
 {
-    "name": "minerware/minerware",
-    "description": "Private minerware plugin inspired in CubeCraft's.",
-    "version": "1.0.0",
+    "name": "latampmdevs/minerware",
+    "description": "Multiple classic microgames in a single chunk",
+    "type": "project",
+    "license": "LGPL-3.0",
+    "require": {
+        "latampmdevs/commando": "dev-pm5",
+        "latampmdevs/config-updater": "dev-master",
+        "latampmdevs/update-notifier": "dev-master",
+        "latampmdevs/formapi": "dev-master",
+        "ivancraft623/languages": "dev-main",
+        "ivancraft623/fakeblocks": "dev-main",
+        "sof3/libasynql": "dev-pm5",
+        "buchwasa/scorefactory": "dev-master"
+    },
     "require-dev": {
         "php": "^8.0",
-        "pocketmine/pocketmine-mp": "^4.0.0",
-        "friendsofphp/php-cs-fixer": "3.10.0",
-        "phpstan/phpstan": "1.10.14"
+        "pocketmine/pocketmine-mp": "^5.3.0",
+        "phpstan/phpstan": "1.10.25"
     },
+    "repositories": [
+        {
+            "type": "vcs",
+            "url": "https://github.com/LatamPMDevs/Commando.git"
+        },
+        {
+            "type": "vcs",
+            "url": "https://github.com/LatamPMDevs/ConfigUpdater.git"
+        },
+        {
+            "type": "vcs",
+            "url": "https://github.com/LatamPMDevs/UpdateNotifier.git"
+        },
+        {
+            "type": "vcs",
+            "url": "https://github.com/LatamPMDevs/FormAPI.git"
+        },
+        {
+            "type": "vcs",
+            "url": "https://github.com/IvanCraft623/languages.git"
+        },
+        {
+            "type": "vcs",
+            "url": "https://github.com/IvanCraft623/fakeblocks.git"
+        },
+        {
+            "type": "vcs",
+            "url": "https://github.com/Ifera/ScoreFactory.git"
+        }
+    ],
+    "minimum-stability": "dev",
     "config": {
         "platform": {
-            "php": "8.0"
+            "php": "8.1"
         },
         "sort-packages": true
+    },
+    "autoload": {
+        "psr-0": {
+            "IvanCraft623\\RankSystem\\": "src"
+        }
     }
 }

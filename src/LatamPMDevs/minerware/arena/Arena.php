@@ -357,7 +357,7 @@ final class Arena implements Listener {
 					$lines[] = "§1";
 					$lines[] = "§5" . $translator->translate($player, "text.microgame") . ":";
 					$lines[] = "§e" . ($this->status->equals(Status::INBETWEEN()) ? "§fIn-between" : $this->getCurrentMicrogameNonNull()->getName());
-					$lines[] = "§5(§f" . ($isBoss ? "Bossgame" : $this->nextMicrogameIndex . "§5/§f" . count($this->microgamesQueue) - 1) . "§5)";
+					$lines[] = "§5(§f" . ($isBoss ? "Bossgame" : $this->nextMicrogameIndex . "§5/§f" . (count($this->microgamesQueue) - 1)) . "§5)";
 					$lines[] = "§2";
 					$lines[] = "§6" . DataManager::getInstance()->getServerIp();
 					break;

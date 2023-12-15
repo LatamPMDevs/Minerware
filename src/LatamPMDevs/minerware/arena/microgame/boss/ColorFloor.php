@@ -42,7 +42,7 @@ use pocketmine\event\HandlerListManager;
 use pocketmine\event\Listener;
 use pocketmine\event\player\PlayerInteractEvent;
 use pocketmine\item\Hoe;
-use pocketmine\item\ItemFactory;
+use pocketmine\item\PotionType;
 use pocketmine\item\VanillaItems;
 use pocketmine\player\GameMode;
 use pocketmine\player\Player;
@@ -122,7 +122,7 @@ class ColorFloor extends Microgame implements Listener {
 				$this->setAssignedColor($player, $dyeColors[$i]);
 				$hoe = VanillaItems::DIAMOND_HOE();
 				$hoe->setCustomName($this->plugin->getTranslator()->translate($player, "microgame.item.colorizer"));
-				$missile = VanillaItems::LEAPING_SPLASH_POTION();
+				$missile = VanillaItems::SPLASH_POTION()->setType(PotionType::LEAPING());
 				$missile->setCustomName($this->plugin->getTranslator()->translate($player, "microgame.item.colormissile"));
 				$missile->setCount(self::COLOR_MISSILE_COUNT);
 				$assignedColor = VanillaBlocks::STAINED_CLAY()->setColor($dyeColors[$i])->asItem();
@@ -194,7 +194,7 @@ class ColorFloor extends Microgame implements Listener {
 			));
 			foreach ($slice as $key => $pl) {
 				$player->sendMessage($this->plugin->getTranslator()->translate(
-					$player, "microgame.colorfloor.top" . $key + 1, [
+					$player, "microgame.colorfloor.top" . ($key + 1), [
 						"{%player}" => $pl->getName(),
 						"{%count}" => $this->getColoredBlocks($pl)
 					]
@@ -332,7 +332,7 @@ class ColorFloor extends Microgame implements Listener {
 		if (!$player instanceof Player) return;
 		if (!$this->arena->inGame($player)) return;
 		$item = $player->getInventory()->getItemInHand();
-		if (!$item->equals(VanillaItems::LEAPING_SPLASH_POTION(), true, false)) return;
+		if (!$item->equals(VanillaItems::SPLASH_POTION()->setType(PotionType::LEAPING()), true, false)) return;
 		if (!$projectile instanceof SplashPotion) return;
 		if ($this->getAssignedColor($player) !== null) {
 			$event->cancel();
@@ -345,7 +345,7 @@ class ColorFloor extends Microgame implements Listener {
 			# Remove item
 			$item->setCount($item->getCount() - 1);
 			if ($item->getCount() <= 0) {
-				$item = ItemFactory::air();
+				$item = VanillaItems::AIR();
 			}
 			$player->getInventory()->setItemInHand($item);
 		}
