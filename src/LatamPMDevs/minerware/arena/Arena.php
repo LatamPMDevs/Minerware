@@ -234,6 +234,7 @@ final class Arena implements Listener {
 		$this->winnersCage->removePlayer($player);
 		$this->losersCage->removePlayer($player);
 		$this->pointHolder->removePlayer($player);
+		$player->getInventory()->clearAll();
 		if ($player->isConnected()) {
 			ScoreFactory::removeObjective($player, true);
 		}
