@@ -22,9 +22,9 @@ declare(strict_types=1);
 
 namespace LatamPMDevs\minerware\command\constraints;
 
-use CortexPE\Commando\BaseSubCommand;
-use CortexPE\Commando\constraint\BaseConstraint;
-use CortexPE\Commando\IRunnable;
+use LatamPMDevs\minerware\libs\_91d75ac41cbbf70a\CortexPE\Commando\BaseSubCommand;
+use LatamPMDevs\minerware\libs\_91d75ac41cbbf70a\CortexPE\Commando\constraint\BaseConstraint;
+use LatamPMDevs\minerware\libs\_91d75ac41cbbf70a\CortexPE\Commando\IRunnable;
 use LatamPMDevs\minerware\Minerware;
 use pocketmine\command\CommandSender;
 use pocketmine\player\Player;

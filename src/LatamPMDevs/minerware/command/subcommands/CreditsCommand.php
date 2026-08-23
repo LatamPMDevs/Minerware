@@ -22,8 +22,8 @@ declare(strict_types=1);
 
 namespace LatamPMDevs\minerware\command\subcommands;
 
-use CortexPE\Commando\BaseCommand;
-use CortexPE\Commando\BaseSubCommand;
+use LatamPMDevs\minerware\libs\_91d75ac41cbbf70a\CortexPE\Commando\BaseCommand;
+use LatamPMDevs\minerware\libs\_91d75ac41cbbf70a\CortexPE\Commando\BaseSubCommand;
 use LatamPMDevs\minerware\Minerware;
 use pocketmine\command\CommandSender;
 use pocketmine\player\Player;
