@@ -22,14 +22,15 @@ declare(strict_types=1);
 
 namespace LatamPMDevs\minerware\entity\object;
 
+use pocketmine\entity\NeverSavedWithChunkEntity;
 use pocketmine\entity\object\FallingBlock as PMFallingBlock;
 
 /**
  * This class exists just for optimization
  */
-class FallingBlock extends PMFallingBlock {
+class FallingBlock extends PMFallingBlock implements NeverSavedWithChunkEntity {
 
-	protected int $maxTicksOfLife = 9999;
+	protected int $maxTicksOfLife = 3 * 20;
 
 	public function getMaxTicksOfLife() : int {
 		return $this->maxTicksOfLife;

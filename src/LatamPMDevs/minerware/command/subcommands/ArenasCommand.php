@@ -22,16 +22,18 @@ declare(strict_types=1);
 
 namespace LatamPMDevs\minerware\command\subcommands;
 
-use LatamPMDevs\minerware\libs\_91d75ac41cbbf70a\CortexPE\Commando\BaseCommand;
-use LatamPMDevs\minerware\libs\_91d75ac41cbbf70a\CortexPE\Commando\BaseSubCommand;
-use LatamPMDevs\minerware\libs\_91d75ac41cbbf70a\CortexPE\Commando\constraint\InGameRequiredConstraint;
+use LatamPMDevs\minerware\libs\_ab0b9acea9c16069\CortexPE\Commando\BaseCommand;
+use LatamPMDevs\minerware\libs\_ab0b9acea9c16069\CortexPE\Commando\BaseSubCommand;
+use LatamPMDevs\minerware\libs\_ab0b9acea9c16069\CortexPE\Commando\constraint\InGameRequiredConstraint;
+use LatamPMDevs\minerware\arena\ArenaManager;
 use LatamPMDevs\minerware\arena\MapRegisterer;
+use LatamPMDevs\minerware\arena\Status;
 use LatamPMDevs\minerware\command\args\ArenaActionArgument;
 use LatamPMDevs\minerware\command\args\WorldArgument;
-use LatamPMDevs\minerware\command\constraints\ArgumentNotProvided;
 use LatamPMDevs\minerware\Minerware;
 use pocketmine\command\CommandSender;
 use pocketmine\player\Player;
+use function count;
 
 final class ArenasCommand extends BaseSubCommand {
 
@@ -42,7 +44,6 @@ final class ArenasCommand extends BaseSubCommand {
 
 	protected function prepare() : void {
 		$this->addConstraint(new InGameRequiredConstraint($this));
-		$this->addConstraint(new ArgumentNotProvided($this, "world"));
 		$this->registerArgument(0, new ArenaActionArgument("action"));
 		$this->registerArgument(1, new WorldArgument());
 	}
@@ -58,17 +59,42 @@ final class ArenasCommand extends BaseSubCommand {
 		}
 		switch ($args["action"]) {
 			case ArenaActionArgument::CREATE_ARENA:
-				if (!$this->plugin->getServer()->getWorldManager()->loadWorld($args["world"], true) ||
-				($world = $this->plugin->getServer()->getWorldManager()->getWorldByName($args["world"])) === null) {
+				if (!isset($args["world"]) ||
+					!$this->plugin->getServer()->getWorldManager()->loadWorld($args["world"], true) ||
+					($world = $this->plugin->getServer()->getWorldManager()->getWorldByName($args["world"])) === null
+				) {
 					$sender->sendMessage($this->plugin->getTranslator()->translate(
 						$sender, "command.arguments.worldNotFound", [
-							"{%world}" => $args["world"]
+							"{%world}" => $args["world"] ?? "unknown"
 						]
 					));
 					return;
 				}
 
 				MapRegisterer::createRegisterer($sender, $world);
+			break;
+
+			case ArenaActionArgument::START_ARENA:
+				$arena = null;
+				foreach (ArenaManager::getInstance()->getArenas() as $a) {
+					if ($a->inGame($sender)) {
+						$arena = $a;
+						break;
+					}
+				}
+
+				if ($arena === null) {
+					$sender->sendMessage($this->plugin->getTranslator()->translate($sender, "command.notInArena"));
+					return;
+				}
+
+				if (!$arena->getStatus()->equals(Status::STARTING()) ||
+					count($arena->getPlayers()) < $arena->getMinPlayers()
+				) {
+					$sender->sendMessage($this->plugin->getTranslator()->translate($sender, "game.arena.needMorePlayers"));
+				}
+
+				$arena->startingtime = 5;
 			break;
 		}
 	}

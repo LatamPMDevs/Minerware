@@ -24,6 +24,7 @@ namespace LatamPMDevs\minerware\entity\object;
 
 use pocketmine\entity\Human;
 use pocketmine\entity\Location;
+use pocketmine\entity\NeverSavedWithChunkEntity;
 use pocketmine\entity\Skin;
 use pocketmine\event\entity\EntityDamageEvent;
 use pocketmine\nbt\tag\CompoundTag;
@@ -37,7 +38,7 @@ use function str_repeat;
  * Answer: To be able to send a different text per player
  * an exampe are translations.
  */
-class TextEntity extends Human {
+class TextEntity extends Human implements NeverSavedWithChunkEntity {
 
 	/** @var array<int, string> */
 	protected array $nameTagPerPlayer = [];

@@ -22,17 +22,19 @@ declare(strict_types=1);
 
 namespace LatamPMDevs\minerware\command\args;
 
-use LatamPMDevs\minerware\libs\_91d75ac41cbbf70a\CortexPE\Commando\args\StringEnumArgument;
+use LatamPMDevs\minerware\libs\_ab0b9acea9c16069\CortexPE\Commando\args\StringEnumArgument;
 use pocketmine\command\CommandSender;
 
 final class ArenaActionArgument extends StringEnumArgument {
 
 	public const CREATE_ARENA = "create";
 	public const DELETE_ARENA = "delete";
+	public const START_ARENA = "start";
 
 	protected const VALUES = [
 		"create" => self::CREATE_ARENA,
-		"delete" => self::DELETE_ARENA
+		"delete" => self::DELETE_ARENA,
+		"start" => self::START_ARENA
 	];
 
 	public function __construct(string $name) {
