@@ -1,6 +1,6 @@
 <?php
 
-/**
+/*
  *  ███╗   ███╗██╗███╗   ██╗███████╗██████╗ ██╗    ██╗ █████╗ ██████╗ ███████╗
  *  ████╗ ████║██║████╗  ██║██╔════╝██╔══██╗██║    ██║██╔══██╗██╔══██╗██╔════╝
  *  ██╔████╔██║██║██╔██╗ ██║█████╗  ██████╔╝██║ █╗ ██║███████║██████╔╝█████╗
@@ -15,7 +15,7 @@
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * Copyright 2022 © LatamPMDevs
+ * @author LatamPMDevs
  */
 
 declare(strict_types=1);
@@ -23,7 +23,7 @@ declare(strict_types=1);
 namespace LatamPMDevs\minerware\utils;
 
 use InvalidArgumentException;
-use LatamPMDevs\minerware\libs\_ab0b9acea9c16069\IvanCraft623\languages\Translator;
+use LatamPMDevs\minerware\libs\_fcb56dd69e95f228\IvanCraft623\languages\Translator;
 use pocketmine\block\Block;
 use pocketmine\block\utils\DyeColor;
 use pocketmine\command\CommandSender;
@@ -31,6 +31,7 @@ use pocketmine\math\Vector2;
 use pocketmine\math\Vector3;
 use pocketmine\network\mcpe\protocol\PlaySoundPacket;
 use pocketmine\player\Player;
+use pocketmine\utils\AssumptionFailedError;
 use pocketmine\utils\TextFormat;
 use pocketmine\utils\Utils as PMUtils;
 use pocketmine\world\format\Chunk;
@@ -39,6 +40,8 @@ use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
 use ZipArchive;
 use function abs;
+use function array_reverse;
+use function asort;
 use function basename;
 use function ceil;
 use function file_exists;
@@ -235,6 +238,17 @@ final class Utils {
 	}
 
 	/**
+	 * @param array<int, int> $scores
+	 * @return array<int, int>
+	 */
+	public static function sortScoresDescending(array $scores) : array {
+		if (asort($scores) === false) {
+			throw new AssumptionFailedError("Failed to sort scores");
+		}
+		return array_reverse($scores, true);
+	}
+
+	/**
 	 * @param array<int, int> $array
 	 * @return array<int, array<int, int>>
 	 */
@@ -278,20 +292,20 @@ final class Utils {
 	 * in these cases return TextFormat::WHITE
 	 */
 	public static function DyeColor2TextFormat(DyeColor $dyeColor) : string {
-		return match (true) {
-			$dyeColor->equals(DyeColor::ORANGE()) => TextFormat::GOLD,
-			$dyeColor->equals(DyeColor::MAGENTA()) => TextFormat::DARK_PURPLE,
-			$dyeColor->equals(DyeColor::LIGHT_BLUE()) => TextFormat::AQUA,
-			$dyeColor->equals(DyeColor::LIME()) => TextFormat::GREEN,
-			$dyeColor->equals(DyeColor::PINK()) => TextFormat::LIGHT_PURPLE,
-			$dyeColor->equals(DyeColor::GRAY()) => TextFormat::DARK_GRAY,
-			$dyeColor->equals(DyeColor::LIGHT_GRAY()) => TextFormat::GRAY,
-			$dyeColor->equals(DyeColor::CYAN()) => TextFormat::DARK_AQUA,
-			$dyeColor->equals(DyeColor::BLUE()) => TextFormat::BLUE,
-			$dyeColor->equals(DyeColor::GREEN()) => TextFormat::DARK_GREEN,
-			$dyeColor->equals(DyeColor::RED()) => TextFormat::DARK_RED,
-			$dyeColor->equals(DyeColor::BLACK()) => TextFormat::BLACK,
-			$dyeColor->equals(DyeColor::YELLOW()) => TextFormat::YELLOW,
+		return match ($dyeColor) {
+			DyeColor::ORANGE => TextFormat::GOLD,
+			DyeColor::MAGENTA => TextFormat::DARK_PURPLE,
+			DyeColor::LIGHT_BLUE => TextFormat::AQUA,
+			DyeColor::LIME => TextFormat::GREEN,
+			DyeColor::PINK => TextFormat::LIGHT_PURPLE,
+			DyeColor::GRAY => TextFormat::DARK_GRAY,
+			DyeColor::LIGHT_GRAY => TextFormat::GRAY,
+			DyeColor::CYAN => TextFormat::DARK_AQUA,
+			DyeColor::BLUE => TextFormat::BLUE,
+			DyeColor::GREEN => TextFormat::DARK_GREEN,
+			DyeColor::RED => TextFormat::DARK_RED,
+			DyeColor::BLACK => TextFormat::BLACK,
+			DyeColor::YELLOW => TextFormat::YELLOW,
 			default => TextFormat::WHITE
 		};
 	}

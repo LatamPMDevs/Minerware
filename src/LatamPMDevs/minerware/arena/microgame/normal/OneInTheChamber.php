@@ -1,6 +1,6 @@
 <?php
 
-/**
+/*
  *  ███╗   ███╗██╗███╗   ██╗███████╗██████╗ ██╗    ██╗ █████╗ ██████╗ ███████╗
  *  ████╗ ████║██║████╗  ██║██╔════╝██╔══██╗██║    ██║██╔══██╗██╔══██╗██╔════╝
  *  ██╔████╔██║██║██╔██╗ ██║█████╗  ██████╔╝██║ █╗ ██║███████║██████╔╝█████╗
@@ -15,19 +15,17 @@
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * Copyright 2022 © LatamPMDevs
+ * @author LatamPMDevs
  */
 
 declare(strict_types=1);
 
 namespace LatamPMDevs\minerware\arena\microgame\normal;
 
-use LatamPMDevs\minerware\arena\Map;
 use LatamPMDevs\minerware\arena\microgame\Level;
 use LatamPMDevs\minerware\arena\microgame\Microgame;
 use LatamPMDevs\minerware\utils\Utils;
 
-use pocketmine\block\Block;
 use pocketmine\block\VanillaBlocks;
 use pocketmine\entity\projectile\Arrow;
 use pocketmine\event\block\BlockBreakEvent;
@@ -36,20 +34,13 @@ use pocketmine\event\entity\EntityDamageByChildEntityEvent;
 use pocketmine\event\entity\EntityDamageByEntityEvent;
 use pocketmine\event\entity\EntityDamageEvent;
 use pocketmine\event\entity\EntityShootBowEvent;
-use pocketmine\event\HandlerListManager;
 use pocketmine\event\Listener;
 use pocketmine\item\VanillaItems;
 use pocketmine\player\GameMode;
 use pocketmine\player\Player;
-use pocketmine\utils\AssumptionFailedError;
 use function array_key_first;
-use function array_reverse;
-use function asort;
 
 class OneInTheChamber extends Microgame implements Listener {
-
-	/** @var Block[] */
-	protected array $changedBlocks = [];
 
 	/** @var array<int, int> */
 	protected array $kills = [];
@@ -59,7 +50,7 @@ class OneInTheChamber extends Microgame implements Listener {
 	}
 
 	public function getLevel() : Level {
-		return Level::NORMAL();
+		return Level::NORMAL;
 	}
 
 	public function getGameDuration() : float {
@@ -71,21 +62,14 @@ class OneInTheChamber extends Microgame implements Listener {
 	}
 
 	public function start() : void {
-		$this->plugin->getServer()->getPluginManager()->registerEvents($this, $this->plugin);
-
 		$map = $this->arena->getMap();
 		$minPos = $map->getPlatformMinPos();
 		$world = $this->arena->getWorld();
-		foreach (Map::MINI_PLATFORMS as $key => $value) {
-			foreach (Map::MINI_PLATFORMS[$key] as $blockPos) {
-				$this->changedBlocks[] = $world->getBlockAt((int) ($minPos->x + $blockPos[0]), (int) ($minPos->y + $blockPos[1]), (int) ($minPos->z + $blockPos[2]));
-				$world->setBlockAt((int) ($minPos->x + $blockPos[0]), (int) ($minPos->y + $blockPos[1]), (int) ($minPos->z + $blockPos[2]), VanillaBlocks::AIR(), true);
-			}
-		}
+		$this->setMiniPlatforms(VanillaBlocks::AIR(), true);
 
 		foreach ($this->arena->getPlayers() as $player) {
 			Utils::initPlayer($player);
-			$player->setGamemode(GameMode::ADVENTURE());
+			$player->setGamemode(GameMode::ADVENTURE);
 			$player->getInventory()->setItem(0, VanillaItems::BOW());
 			$player->getInventory()->setItem(1, VanillaItems::WOODEN_SWORD());
 			$player->getInventory()->setItem(8, VanillaItems::ARROW());
@@ -109,14 +93,10 @@ class OneInTheChamber extends Microgame implements Listener {
 			$this->arena->endCurrentMicrogame();
 			return;
 		}
-		foreach ($this->arena->getPlayers() as $player) {
-			$player->getXpManager()->setXpAndProgress((int) $timeLeft, $timeLeft / $this->getGameDuration());
-		}
+		$this->updateTimeBar($timeLeft);
 	}
 
 	public function end() : void {
-		HandlerListManager::global()->unregisterAll($this);
-
 		$players = $this->arena->getPlayers();
 		$killer = null;
 		$kills = $this->getKillsOrderedByHigherScore();
@@ -138,9 +118,6 @@ class OneInTheChamber extends Microgame implements Listener {
 				$player->sendMessage($this->plugin->getTranslator()->translate($player, "microgame.failedtosurvive"));
 			}
 		}
-		foreach ($this->changedBlocks as $block) {
-			$this->arena->getWorld()->setBlock($block->getPosition(), $block, false);
-		}
 		parent::end();
 	}
 
@@ -152,11 +129,7 @@ class OneInTheChamber extends Microgame implements Listener {
 	 * @return array<int, int>
 	 */
 	public function getKillsOrderedByHigherScore() : array {
-		$array = $this->kills;
-		if (asort($array) === false) {
-			throw new AssumptionFailedError("Failed to sort score");
-		}
-		return array_reverse($array, true);
+		return Utils::sortScoresDescending($this->kills);
 	}
 
 	# Listener

@@ -1,6 +1,6 @@
 <?php
 
-/**
+/*
  *  ███╗   ███╗██╗███╗   ██╗███████╗██████╗ ██╗    ██╗ █████╗ ██████╗ ███████╗
  *  ████╗ ████║██║████╗  ██║██╔════╝██╔══██╗██║    ██║██╔══██╗██╔══██╗██╔════╝
  *  ██╔████╔██║██║██╔██╗ ██║█████╗  ██████╔╝██║ █╗ ██║███████║██████╔╝█████╗
@@ -15,7 +15,7 @@
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * Copyright 2022 © LatamPMDevs
+ * @author LatamPMDevs
  */
 
 declare(strict_types=1);
@@ -24,15 +24,16 @@ namespace LatamPMDevs\minerware\database;
 
 use Closure;
 use InvalidArgumentException;
-use LatamPMDevs\minerware\libs\_ab0b9acea9c16069\IvanCraft623\languages\Language;
-use LatamPMDevs\minerware\arena\Map;
+use LatamPMDevs\minerware\libs\_fcb56dd69e95f228\IvanCraft623\languages\Language;
+use LatamPMDevs\minerware\map\Map;
+use LatamPMDevs\minerware\map\MapManager;
 use LatamPMDevs\minerware\Minerware;
 use pocketmine\utils\AssumptionFailedError;
 use pocketmine\utils\Config;
 use pocketmine\utils\SingletonTrait;
-use LatamPMDevs\minerware\libs\_ab0b9acea9c16069\poggit\libasynql\DataConnector;
-use LatamPMDevs\minerware\libs\_ab0b9acea9c16069\poggit\libasynql\libasynql;
-use LatamPMDevs\minerware\libs\_ab0b9acea9c16069\poggit\libasynql\SqlError;
+use LatamPMDevs\minerware\libs\_fcb56dd69e95f228\poggit\libasynql\DataConnector;
+use LatamPMDevs\minerware\libs\_fcb56dd69e95f228\poggit\libasynql\libasynql;
+use LatamPMDevs\minerware\libs\_fcb56dd69e95f228\poggit\libasynql\SqlError;
 use function array_map;
 use function basename;
 use function file_exists;
@@ -174,7 +175,7 @@ final class DataManager {
 			while (false !== ($entry = readdir($handle))) {
 				if ($entry !== '.' && $entry !== '..') {
 					$map = str_replace('.json', '', $entry);
-					new Map($this->getMapData($map));
+					MapManager::getInstance()->add(new Map($this->getMapData($map)));
 				}
 			}
 
@@ -214,7 +215,7 @@ final class DataManager {
 		$filePath = "maps" . DIRECTORY_SEPARATOR . $dataHolder->getString("name") . ".json";
 		$path = $this->pluginPath . "database" . DIRECTORY_SEPARATOR . $filePath;
 		(new Config($path, Config::JSON, $dataHolder->getAll()))->save();
-		Map::$maps[] = new Map($dataHolder);
+		MapManager::getInstance()->add(new Map($dataHolder));
 	}
 
 	public function getServerIp() : string {

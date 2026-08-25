@@ -1,6 +1,6 @@
 <?php
 
-/**
+/*
  *  ███╗   ███╗██╗███╗   ██╗███████╗██████╗ ██╗    ██╗ █████╗ ██████╗ ███████╗
  *  ████╗ ████║██║████╗  ██║██╔════╝██╔══██╗██║    ██║██╔══██╗██╔══██╗██╔════╝
  *  ██╔████╔██║██║██╔██╗ ██║█████╗  ██████╔╝██║ █╗ ██║███████║██████╔╝█████╗
@@ -15,7 +15,7 @@
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * Copyright 2022 © LatamPMDevs
+ * @author LatamPMDevs
  */
 
 declare(strict_types=1);
@@ -27,9 +27,14 @@ use LatamPMDevs\minerware\event\arena\microgame\MicrogameEndEvent;
 use LatamPMDevs\minerware\event\arena\microgame\MicrogameStartEvent;
 use LatamPMDevs\minerware\event\arena\microgame\PlayerLoseMicrogameEvent;
 use LatamPMDevs\minerware\event\arena\microgame\PlayerWinMicrogameEvent;
+use LatamPMDevs\minerware\map\Map;
 use LatamPMDevs\minerware\Minerware;
 
+use pocketmine\block\Block;
+use pocketmine\event\HandlerListManager;
+use pocketmine\event\Listener;
 use pocketmine\player\Player;
+use function array_keys;
 use function microtime;
 
 abstract class Microgame {
@@ -50,6 +55,9 @@ abstract class Microgame {
 
 	/** @var Player[] */
 	protected array $losers = [];
+
+	/** @var Block[] */
+	protected array $changedBlocks = [];
 
 	public function __construct(protected Arena $arena) {
 		$this->plugin = $this->arena->getPlugin();
@@ -121,6 +129,9 @@ abstract class Microgame {
 	abstract public function getRecompensePoints() : int;
 
 	public function start() : void {
+		if ($this instanceof Listener) {
+			$this->plugin->getServer()->getPluginManager()->registerEvents($this, $this->plugin);
+		}
 		$this->startTime = microtime(true);
 		$this->hasStarted = true;
 		(new MicrogameStartEvent($this))->call();
@@ -128,7 +139,43 @@ abstract class Microgame {
 
 	abstract public function tick() : void;
 
+	/**
+	 * Fills the player XP bar based on the time left.
+	 */
+	protected function updateTimeBar(float $timeLeft) : void {
+		foreach ($this->arena->getPlayers() as $player) {
+			$player->getXpManager()->setXpAndProgress((int) $timeLeft, $timeLeft / $this->getGameDuration());
+		}
+	}
+
+	/**
+	 * Places a block on every platform of Map::MINI_PLATFORMS (or the given subset of keys),
+	 * recording the replaced blocks in $this->changedBlocks.
+	 *
+	 * @param int[] $keys
+	 */
+	protected function setMiniPlatforms(Block $block, bool $update, array $keys = []) : void {
+		$map = $this->arena->getMap();
+		$world = $this->arena->getWorld();
+		$minPos = $map->getPlatformMinPos();
+		$keys = $keys === [] ? array_keys(Map::MINI_PLATFORMS) : $keys;
+		foreach ($keys as $key) {
+			foreach (Map::MINI_PLATFORMS[$key] as $blockPos) {
+				$this->changedBlocks[] = $world->getBlockAt((int) ($minPos->x + $blockPos[0]), (int) ($minPos->y + $blockPos[1]), (int) ($minPos->z + $blockPos[2]));
+				$world->setBlockAt((int) ($minPos->x + $blockPos[0]), (int) ($minPos->y + $blockPos[1]), (int) ($minPos->z + $blockPos[2]), $block, $update);
+			}
+		}
+	}
+
 	public function end() : void {
+		if ($this instanceof Listener) {
+			HandlerListManager::global()->unregisterAll($this);
+		}
+
+		foreach ($this->changedBlocks as $block) {
+			$this->arena->getWorld()->setBlock($block->getPosition(), $block, false);
+		}
+
 		$this->hasEnded = true;
 		(new MicrogameEndEvent($this))->call();
 	}

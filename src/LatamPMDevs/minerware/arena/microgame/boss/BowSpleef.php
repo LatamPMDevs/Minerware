@@ -1,6 +1,6 @@
 <?php
 
-/**
+/*
  *  ███╗   ███╗██╗███╗   ██╗███████╗██████╗ ██╗    ██╗ █████╗ ██████╗ ███████╗
  *  ████╗ ████║██║████╗  ██║██╔════╝██╔══██╗██║    ██║██╔══██╗██╔══██╗██╔════╝
  *  ██╔████╔██║██║██╔██╗ ██║█████╗  ██████╔╝██║ █╗ ██║███████║██████╔╝█████╗
@@ -15,19 +15,17 @@
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * Copyright 2022 © LatamPMDevs
+ * @author LatamPMDevs
  */
 
 declare(strict_types=1);
 
 namespace LatamPMDevs\minerware\arena\microgame\boss;
 
-use LatamPMDevs\minerware\arena\Map;
 use LatamPMDevs\minerware\arena\microgame\Level;
 use LatamPMDevs\minerware\arena\microgame\Microgame;
 use LatamPMDevs\minerware\utils\Utils;
 
-use pocketmine\block\Block;
 use pocketmine\block\TNT;
 use pocketmine\block\VanillaBlocks;
 use pocketmine\entity\projectile\Arrow;
@@ -35,7 +33,6 @@ use pocketmine\event\block\BlockBreakEvent;
 use pocketmine\event\block\BlockPlaceEvent;
 use pocketmine\event\entity\EntityDamageEvent;
 use pocketmine\event\entity\ProjectileHitBlockEvent;
-use pocketmine\event\HandlerListManager;
 use pocketmine\event\Listener;
 use pocketmine\item\enchantment\EnchantmentInstance;
 use pocketmine\item\enchantment\VanillaEnchantments;
@@ -46,15 +43,12 @@ use pocketmine\world\Position;
 
 class BowSpleef extends Microgame implements Listener {
 
-	/** @var Block[] */
-	protected array $changedBlocks = [];
-
 	public function getName() : string {
 		return "Bow Spleef";
 	}
 
 	public function getLevel() : Level {
-		return Level::BOSS();
+		return Level::BOSS;
 	}
 
 	public function getGameDuration() : float {
@@ -66,17 +60,10 @@ class BowSpleef extends Microgame implements Listener {
 	}
 
 	public function start() : void {
-		$this->plugin->getServer()->getPluginManager()->registerEvents($this, $this->plugin);
-
 		$map = $this->arena->getMap();
 		$world = $this->arena->getWorld();
 		$minPos = Position::fromObject($map->getPlatformMinPos(), $world);
-		foreach (Map::MINI_PLATFORMS as $key => $values) {
-			foreach ($values as $blockPos) {
-				$this->changedBlocks[] = $world->getBlockAt((int) ($minPos->x + $blockPos[0]), (int) ($minPos->y + $blockPos[1]), (int) ($minPos->z + $blockPos[2]));
-				$world->setBlockAt((int) ($minPos->x + $blockPos[0]), (int) ($minPos->y + $blockPos[1]), (int) ($minPos->z + $blockPos[2]), VanillaBlocks::AIR(), true);
-			}
-		}
+		$this->setMiniPlatforms(VanillaBlocks::AIR(), true);
 		foreach (Utils::fill($minPos, $map->getPlatformMaxPos(), VanillaBlocks::TNT(), true) as $changedBlock) {
 			$this->changedBlocks[] = $changedBlock;
 		}
@@ -86,7 +73,7 @@ class BowSpleef extends Microgame implements Listener {
 		$arrow = VanillaItems::ARROW();
 		foreach ($this->arena->getPlayers() as $player) {
 			Utils::initPlayer($player);
-			$player->setGamemode(GameMode::ADVENTURE());
+			$player->setGamemode(GameMode::ADVENTURE);
 			$player->getInventory()->setItem(0, $bow);
 			$player->getInventory()->setItem(1, $arrow);
 			$player->getInventory()->setHeldItemIndex(0);
@@ -98,7 +85,7 @@ class BowSpleef extends Microgame implements Listener {
 
 	public function tick() : void {
 		$timeLeft = $this->getTimeLeft();
-		$players = $this->arena->getPlayers();
+$players = $this->arena->getPlayers();
 		if ($timeLeft <= 0) {
 			foreach ($players as $player) {
 				if (!$this->isLoser($player) && !$this->isWinner($player)) {
@@ -108,14 +95,10 @@ class BowSpleef extends Microgame implements Listener {
 			$this->arena->endCurrentMicrogame();
 			return;
 		}
-		foreach ($players as $player) {
-			$player->getXpManager()->setXpAndProgress((int) $timeLeft, $timeLeft / $this->getGameDuration());
-		}
+		$this->updateTimeBar($timeLeft);
 	}
 
 	public function end() : void {
-		HandlerListManager::global()->unregisterAll($this);
-
 		foreach ($this->arena->getPlayers() as $player) {
 			if ($this->isWinner($player)) {
 				$player->sendMessage($this->plugin->getTranslator()->translate($player, "microgame.bowspleef.won"));
@@ -123,9 +106,6 @@ class BowSpleef extends Microgame implements Listener {
 				$player->sendMessage($this->plugin->getTranslator()->translate($player, "microgame.bowspleef.lose"
 				));
 			}
-		}
-		foreach ($this->changedBlocks as $block) {
-			$this->arena->getWorld()->setBlock($block->getPosition(), $block, true);
 		}
 		parent::end();
 	}

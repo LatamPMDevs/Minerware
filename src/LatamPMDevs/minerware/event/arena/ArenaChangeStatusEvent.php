@@ -1,6 +1,6 @@
 <?php
 
-/**
+/*
  *  ███╗   ███╗██╗███╗   ██╗███████╗██████╗ ██╗    ██╗ █████╗ ██████╗ ███████╗
  *  ████╗ ████║██║████╗  ██║██╔════╝██╔══██╗██║    ██║██╔══██╗██╔══██╗██╔════╝
  *  ██╔████╔██║██║██╔██╗ ██║█████╗  ██████╔╝██║ █╗ ██║███████║██████╔╝█████╗
@@ -15,7 +15,7 @@
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * Copyright 2022 © LatamPMDevs
+ * @author LatamPMDevs
  */
 
 declare(strict_types=1);
@@ -33,6 +33,7 @@ class ArenaChangeStatusEvent extends ArenaEvent {
 	public function __construct(
 		protected Status $oldStatus,
 		protected Status $newStatus,
+		protected int $countdown,
 		Arena $arena
 	) {
 		parent::__construct($arena);
@@ -48,5 +49,17 @@ class ArenaChangeStatusEvent extends ArenaEvent {
 
 	public function setNewStatus(Status $status) : void {
 		$this->newStatus = $status;
+	}
+
+	/**
+	 * How long (in ticks) the new status is supposed to last before
+	 * transitioning again.
+	 */
+	public function getCountdown() : int {
+		return $this->countdown;
+	}
+
+	public function setCountdown(int $countdown) : void {
+		$this->countdown = $countdown;
 	}
 }

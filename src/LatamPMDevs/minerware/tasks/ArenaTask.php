@@ -1,6 +1,6 @@
 <?php
 
-/**
+/*
  *  ███╗   ███╗██╗███╗   ██╗███████╗██████╗ ██╗    ██╗ █████╗ ██████╗ ███████╗
  *  ████╗ ████║██║████╗  ██║██╔════╝██╔══██╗██║    ██║██╔══██╗██╔══██╗██╔════╝
  *  ██╔████╔██║██║██╔██╗ ██║█████╗  ██████╔╝██║ █╗ ██║███████║██████╔╝█████╗
@@ -15,7 +15,7 @@
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * Copyright 2022 © LatamPMDevs
+ * @author LatamPMDevs
  */
 
 declare(strict_types=1);
@@ -30,6 +30,7 @@ use LatamPMDevs\minerware\Minerware;
 use pocketmine\scheduler\CancelTaskException;
 use pocketmine\scheduler\Task;
 use function count;
+use function max;
 
 final class ArenaTask extends Task {
 
@@ -43,27 +44,25 @@ final class ArenaTask extends Task {
 		$arena = $this->arena;
 		$status = $arena->getStatus();
 		$players = $arena->getPlayers();
-		$world = $arena->getWorld();
-		switch (true) {
-			case ($status->equals(Status::WAITING())):
+		switch ($status) {
+			case Status::WAITING:
 				if (count($players) < $arena->getMinPlayers()) {
 					foreach ($players as $player) {
 						$player->sendTip($this->plugin->getTranslator()->translate($player, "game.arena.needMorePlayers"));
 					}
 				} else {
-					$arena->setStatus(Status::STARTING());
+					$arena->setStatus(Status::STARTING);
 				}
 				break;
 
-			case ($status->equals(Status::STARTING())):
+			case Status::STARTING:
 				if (count($players) < $arena->getMinPlayers()) {
 					foreach ($players as $player) {
 						$player->sendMessage($this->plugin->getTranslator()->translate($player, "game.arena.countCancelled"));
 					}
-					$arena->startingtime = $arena->defaultStartingtime;
-					$arena->setStatus(Status::WAITING());
+					$arena->setStatus(Status::WAITING);
 				} else {
-					if ($arena->startingtime > 15 && count($players) >= Arena::MAX_PLAYERS) {
+					if ($arena->getCountdown() > 15 && count($players) >= Arena::MAX_PLAYERS) {
 						foreach ($players as $player) {
 							$player->sendMessage($this->plugin->getTranslator()->translate(
 								$player, "game.arena.startingByReachCapacity", [
@@ -71,63 +70,70 @@ final class ArenaTask extends Task {
 								]
 							));
 						}
-						$arena->startingtime = 15;
+						$arena->setCountdown(15);
 					}
 					foreach ($players as $player) {
-						$player->getXpManager()->setXpAndProgress($arena->startingtime, 0);
+						$player->getXpManager()->setXpAndProgress($arena->getCountdown(), 0);
 					}
-					if ($arena->startingtime <= 0) {
+					if ($arena->getCountdown() <= 0) {
 						$arena->start();
 					}
 				}
-				$arena->startingtime--;
+				if ($arena->getStatus() === Status::STARTING) {
+					$arena->decrementCountdown();
+				}
 				break;
 
-			case ($status->equals(Status::INBETWEEN())):
-				if ($arena->inbetweentime === 3) {
+			case Status::INBETWEEN:
+				$total = max(1, $arena->getCountdownTotal());
+				$countdown = $arena->getCountdown();
+				if ($countdown === max(1, $total - 2)) {
 					if ($arena->getNextMicrogame() === null) {
 						$arena->end();
 						return;
 					}
 				}
-				if ($arena->inbetweentime === 10) {
-					foreach ($players as $player) {
-						$player->sendTitle("§6MinerWare", $this->plugin->getTranslator()->translate($player, "game.arena.inbetween.credits"), 10, 10, 10);
-					}
-				} elseif ($arena->inbetweentime === 6) {
-					foreach ($players as $player) {
-						$player->sendTitle("§1§2", $this->plugin->getTranslator()->translate($player, "game.arena.inbetween.winthemost"), 10, 10, 10);
-					}
-				}
-				if ($arena->inbetweentime <= 3 && $arena->inbetweentime >= 1) {
-					$isBoss = $arena->getNextMicrogameNonNull()->getLevel()->equals(Level::BOSS());
-					foreach ($players as $player) {
-						if ($isBoss) {
-							$player->sendTitle("§6BOSS GAME", "§c" . $arena->getNextMicrogameNonNull()->getName(), 10, 10, 10);
-						} else {
-							$player->sendTitle("§k§4|||§r§6" . $arena->inbetweentime . "§k§4|||", "§5" . $arena->getNextMicrogameNonNull()->getName(), 10, 10, 10);
+				if ($countdown > 0) {
+					$pct = $countdown / $total;
+					if ($pct >= 0.7) {
+						foreach ($players as $player) {
+							$player->sendTitle("§6MinerWare", $this->plugin->getTranslator()->translate($player, "game.arena.inbetween.credits"), 10, 10, 10);
+						}
+					} elseif ($pct >= 0.4) {
+						foreach ($players as $player) {
+							$player->sendTitle("§1§2", $this->plugin->getTranslator()->translate($player, "game.arena.inbetween.winthemost"), 10, 10, 10);
+						}
+					} else {
+						$isBoss = $arena->getNextMicrogameNonNull()->getLevel() === Level::BOSS;
+						foreach ($players as $player) {
+							if ($isBoss) {
+								$player->sendTitle("§6BOSS GAME", "§c" . $arena->getNextMicrogameNonNull()->getName(), 10, 10, 10);
+							} else {
+								$player->sendTitle("§k§4|||§r§6" . $countdown . "§k§4|||", "§5" . $arena->getNextMicrogameNonNull()->getName(), 10, 10, 10);
+							}
 						}
 					}
 				}
-				if ($arena->inbetweentime <= 0) {
+				if ($countdown <= 0) {
 					foreach ($players as $player) {
 						$player->sendTitle("§6GO", "", 10, 10, 10);
 					}
-					$arena->setStatus(Status::INGAME());
-					$arena->inbetweentime = Arena::INBETWEEN_TIME;
+					$arena->setStatus(Status::INGAME);
 					$arena->startNextMicrogame();
 				}
-				$arena->inbetweentime--;
-				break;
-
-			case ($status->equals(Status::INGAME())):
-				if ($arena->getCurrentMicrogame() === null) {
-					$this->arena->setStatus(Status::INBETWEEN());
+				if ($arena->getStatus() === Status::INBETWEEN) {
+					$arena->decrementCountdown();
 				}
 				break;
 
-			case ($status->equals(Status::ENDING())):
-				if ($arena->endingtime <= 0) {
+			case Status::INGAME:
+				if ($arena->getCurrentMicrogame() === null) {
+					$this->arena->setStatus(Status::INBETWEEN);
+				}
+				break;
+
+			case Status::ENDING:
+				if ($arena->getCountdown() <= 0) {
 					foreach ($players as $player) {
 						ArenaManager::getInstance()->join($player);
 					}
@@ -135,7 +141,7 @@ final class ArenaTask extends Task {
 					ArenaManager::getInstance()->deleteArena($arena);
 					throw new CancelTaskException("Arena is no more running");
 				}
-				$arena->endingtime--;
+				$arena->decrementCountdown();
 				break;
 		}
 		$arena->updateScoreboard();

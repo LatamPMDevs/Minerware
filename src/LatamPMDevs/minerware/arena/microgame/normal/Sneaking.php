@@ -1,6 +1,6 @@
 <?php
 
-/**
+/*
  *  ███╗   ███╗██╗███╗   ██╗███████╗██████╗ ██╗    ██╗ █████╗ ██████╗ ███████╗
  *  ████╗ ████║██║████╗  ██║██╔════╝██╔══██╗██║    ██║██╔══██╗██╔══██╗██╔════╝
  *  ██╔████╔██║██║██╔██╗ ██║█████╗  ██████╔╝██║ █╗ ██║███████║██████╔╝█████╗
@@ -15,24 +15,21 @@
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * Copyright 2022 © LatamPMDevs
+ * @author LatamPMDevs
  */
 
 declare(strict_types=1);
 
 namespace LatamPMDevs\minerware\arena\microgame\normal;
 
-use LatamPMDevs\minerware\arena\Map;
 use LatamPMDevs\minerware\arena\microgame\Level;
 use LatamPMDevs\minerware\arena\microgame\Microgame;
 use LatamPMDevs\minerware\utils\Utils;
 
-use pocketmine\block\Block;
 use pocketmine\block\VanillaBlocks;
 use pocketmine\event\block\BlockBreakEvent;
 use pocketmine\event\block\BlockPlaceEvent;
 use pocketmine\event\entity\EntityDamageEvent;
-use pocketmine\event\HandlerListManager;
 use pocketmine\event\Listener;
 use pocketmine\event\player\PlayerMoveEvent;
 use pocketmine\event\player\PlayerToggleSneakEvent;
@@ -41,9 +38,6 @@ use pocketmine\player\Player;
 
 class Sneaking extends Microgame implements Listener {
 
-	/** @var Block[] */
-	protected array $changedBlocks = [];
-
 	protected float $totalSneakedDistance = 0;
 
 	public function getName() : string {
@@ -51,7 +45,7 @@ class Sneaking extends Microgame implements Listener {
 	}
 
 	public function getLevel() : Level {
-		return Level::NORMAL();
+		return Level::NORMAL;
 	}
 
 	public function getGameDuration() : float {
@@ -63,21 +57,14 @@ class Sneaking extends Microgame implements Listener {
 	}
 
 	public function start() : void {
-		$this->plugin->getServer()->getPluginManager()->registerEvents($this, $this->plugin);
-
 		$map = $this->arena->getMap();
 		$minPos = $map->getPlatformMinPos();
 		$world = $this->arena->getWorld();
-		foreach (Map::MINI_PLATFORMS as $key => $value) {
-			foreach (Map::MINI_PLATFORMS[$key] as $blockPos) {
-				$this->changedBlocks[] = $world->getBlockAt((int) ($minPos->x + $blockPos[0]), (int) ($minPos->y + $blockPos[1]), (int) ($minPos->z + $blockPos[2]));
-				$world->setBlockAt((int) ($minPos->x + $blockPos[0]), (int) ($minPos->y + $blockPos[1]), (int) ($minPos->z + $blockPos[2]), VanillaBlocks::AIR(), true);
-			}
-		}
+		$this->setMiniPlatforms(VanillaBlocks::AIR(), true);
 
 		foreach ($this->arena->getPlayers() as $player) {
 			Utils::initPlayer($player);
-			$player->setGamemode(GameMode::ADVENTURE());
+			$player->setGamemode(GameMode::ADVENTURE);
 			$player->getInventory()->setHeldItemIndex(0);
 			$player->sendTitle("§1§2", $this->plugin->getTranslator()->translate($player, "microgame.sneaking.start"), 10, 20, 10);
 		}
@@ -109,8 +96,6 @@ class Sneaking extends Microgame implements Listener {
 	}
 
 	public function end() : void {
-		HandlerListManager::global()->unregisterAll($this);
-
 		$players = $this->arena->getPlayers();
 		foreach ($players as $player) {
 			$player->sendMessage($this->plugin->getTranslator()->translate(
@@ -123,9 +108,6 @@ class Sneaking extends Microgame implements Listener {
 			} elseif ($this->isLoser($player)) {
 				$player->sendMessage($this->plugin->getTranslator()->translate($player, "microgame.sneaking.lose"));
 			}
-		}
-		foreach ($this->changedBlocks as $block) {
-			$this->arena->getWorld()->setBlock($block->getPosition(), $block, false);
 		}
 		parent::end();
 	}

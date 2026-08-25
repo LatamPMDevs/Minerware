@@ -1,6 +1,6 @@
 <?php
 
-/**
+/*
  *  ███╗   ███╗██╗███╗   ██╗███████╗██████╗ ██╗    ██╗ █████╗ ██████╗ ███████╗
  *  ████╗ ████║██║████╗  ██║██╔════╝██╔══██╗██║    ██║██╔══██╗██╔══██╗██╔════╝
  *  ██╔████╔██║██║██╔██╗ ██║█████╗  ██████╔╝██║ █╗ ██║███████║██████╔╝█████╗
@@ -15,7 +15,7 @@
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * Copyright 2022 © LatamPMDevs
+ * @author LatamPMDevs
  */
 
 declare(strict_types=1);
@@ -23,9 +23,6 @@ declare(strict_types=1);
 namespace LatamPMDevs\minerware\utils;
 
 use pocketmine\player\Player;
-use pocketmine\utils\AssumptionFailedError;
-use function array_reverse;
-use function asort;
 
 final class PointHolder {
 
@@ -63,10 +60,6 @@ final class PointHolder {
 	 * @return array<int, int>
 	 */
 	public function getOrderedByHigherScore() : array {
-		$array = $this->points;
-		if (asort($array) === false) {
-			throw new AssumptionFailedError("Failed to sort points");
-		}
-		return array_reverse($array, true);
+		return Utils::sortScoresDescending($this->points);
 	}
 }

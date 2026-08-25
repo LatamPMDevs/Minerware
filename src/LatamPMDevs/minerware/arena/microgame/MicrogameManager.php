@@ -1,6 +1,6 @@
 <?php
 
-/**
+/*
  *  ███╗   ███╗██╗███╗   ██╗███████╗██████╗ ██╗    ██╗ █████╗ ██████╗ ███████╗
  *  ████╗ ████║██║████╗  ██║██╔════╝██╔══██╗██║    ██║██╔══██╗██╔══██╗██╔════╝
  *  ██╔████╔██║██║██╔██╗ ██║█████╗  ██████╔╝██║ █╗ ██║███████║██████╔╝█████╗
@@ -15,7 +15,7 @@
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * Copyright 2022 © LatamPMDevs
+ * @author LatamPMDevs
  */
 
 declare(strict_types=1);
@@ -83,11 +83,7 @@ final class MicrogameManager {
 	 * already-registered microgame without specifying the $override parameter.
 	 */
 	public function register(string $className, string $saveName, bool $override = false) : void {
-		Utils::testValidInstance($className, Microgame::class);
-		if (!$override && $this->isRegistered($saveName)) {
-			throw new RuntimeException("Trying to overwrite an already registered microgame");
-		}
-		$this->microgames[$saveName] = $className;
+		$this->registerTo($className, $saveName, $this->microgames, $override);
 	}
 
 	/**
@@ -101,11 +97,22 @@ final class MicrogameManager {
 	 * already-registered microgame without specifying the $override parameter.
 	 */
 	public function registerBoss(string $className, string $saveName, bool $override = false) : void {
+		$this->registerTo($className, $saveName, $this->bossgames, $override);
+	}
+
+	/**
+	 * @phpstan-param class-string<Microgame> $className
+	 * @param array<string, class-string<Microgame>> $registry
+	 *
+	 * @throws RuntimeException if something attempted to override an
+	 * already-registered microgame without specifying the $override parameter.
+	 */
+	private function registerTo(string $className, string $saveName, array &$registry, bool $override) : void {
 		Utils::testValidInstance($className, Microgame::class);
 		if (!$override && $this->isRegistered($saveName)) {
 			throw new RuntimeException("Trying to overwrite an already registered microgame");
 		}
-		$this->bossgames[$saveName] = $className;
+		$registry[$saveName] = $className;
 	}
 
 	public function isRegistered(string $saveName) : bool {

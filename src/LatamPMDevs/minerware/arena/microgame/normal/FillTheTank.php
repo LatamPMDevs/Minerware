@@ -1,6 +1,6 @@
 <?php
 
-/**
+/*
  *  ███╗   ███╗██╗███╗   ██╗███████╗██████╗ ██╗    ██╗ █████╗ ██████╗ ███████╗
  *  ████╗ ████║██║████╗  ██║██╔════╝██╔══██╗██║    ██║██╔══██╗██╔══██╗██╔════╝
  *  ██╔████╔██║██║██╔██╗ ██║█████╗  ██████╔╝██║ █╗ ██║███████║██████╔╝█████╗
@@ -15,16 +15,15 @@
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * Copyright 2022 © LatamPMDevs
+ * @author LatamPMDevs
  */
 
 declare(strict_types=1);
 
 namespace LatamPMDevs\minerware\arena\microgame\normal;
 
-use LatamPMDevs\minerware\libs\_ab0b9acea9c16069\IvanCraft623\fakeblocks\FakeBlock;
-use LatamPMDevs\minerware\libs\_ab0b9acea9c16069\IvanCraft623\fakeblocks\FakeBlockManager;
-use LatamPMDevs\minerware\arena\Map;
+use LatamPMDevs\minerware\libs\_fcb56dd69e95f228\IvanCraft623\fakeblocks\FakeBlock;
+use LatamPMDevs\minerware\libs\_fcb56dd69e95f228\IvanCraft623\fakeblocks\FakeBlockManager;
 use LatamPMDevs\minerware\arena\microgame\Level;
 
 use LatamPMDevs\minerware\arena\microgame\Microgame;
@@ -36,7 +35,6 @@ use pocketmine\block\Water;
 use pocketmine\event\block\BlockBreakEvent;
 use pocketmine\event\block\BlockPlaceEvent;
 use pocketmine\event\entity\EntityDamageEvent;
-use pocketmine\event\HandlerListManager;
 use pocketmine\event\Listener;
 use pocketmine\event\player\PlayerInteractEvent;
 use pocketmine\item\LiquidBucket;
@@ -57,9 +55,6 @@ class FillTheTank extends Microgame implements Listener {
 
 	public const WATER_PLATFORM_SIZE = 3;
 
-	/** @var Block[] */
-	protected array $changedBlocks = [];
-
 	/** @var array<int, Vector3> */
 	protected array $waterPlatform = [];
 
@@ -78,7 +73,7 @@ class FillTheTank extends Microgame implements Listener {
 	}
 
 	public function getLevel() : Level {
-		return Level::NORMAL();
+		return Level::NORMAL;
 	}
 
 	public function getGameDuration() : float {
@@ -108,7 +103,6 @@ class FillTheTank extends Microgame implements Listener {
 	}
 
 	public function start() : void {
-		$this->plugin->getServer()->getPluginManager()->registerEvents($this, $this->plugin);
 		$this->fakeblockManeger = FakeBlockManager::getInstance();
 
 		$map = $this->arena->getMap();
@@ -116,12 +110,7 @@ class FillTheTank extends Microgame implements Listener {
 		$maxPos = $map->getPlatformMaxPos();
 		$world = $this->arena->getWorld();
 
-		foreach (Map::MINI_PLATFORMS as $key => $value) {
-			foreach (Map::MINI_PLATFORMS[$key] as $blockPos) {
-				$this->changedBlocks[] = $world->getBlockAt((int) ($minPos->x + $blockPos[0]), (int) ($minPos->y + $blockPos[1]), (int) ($minPos->z + $blockPos[2]));
-				$world->setBlockAt((int) ($minPos->x + $blockPos[0]), (int) ($minPos->y + $blockPos[1]), (int) ($minPos->z + $blockPos[2]), VanillaBlocks::AIR(), true);
-			}
-		}
+		$this->setMiniPlatforms(VanillaBlocks::AIR(), true);
 		foreach (Utils::fill(Position::fromObject($minPos->down(), $world), $maxPos->down(), VanillaBlocks::STONE()) as $changedBlock) {
 			$this->changedBlocks[] = $changedBlock;
 		}
@@ -169,7 +158,7 @@ class FillTheTank extends Microgame implements Listener {
 		$players = $this->arena->getPlayers();
 		foreach ($players as $player) {
 			Utils::initPlayer($player);
-			$player->setGamemode(GameMode::SURVIVAL());
+			$player->setGamemode(GameMode::SURVIVAL);
 			$player->getInventory()->setItem(0, VanillaItems::BUCKET());
 			$player->getInventory()->setHeldItemIndex(0);
 			foreach ($players as $pl) {
@@ -225,14 +214,10 @@ class FillTheTank extends Microgame implements Listener {
 			$this->arena->endCurrentMicrogame();
 			return;
 		}
-		foreach ($players as $player) {
-			$player->getXpManager()->setXpAndProgress((int) $timeLeft, $timeLeft / $this->getGameDuration());
-		}
+		$this->updateTimeBar($timeLeft);
 	}
 
 	public function end() : void {
-		HandlerListManager::global()->unregisterAll($this);
-
 		$players = $this->arena->getPlayers();
 		foreach ($players as $player) {
 			if ($this->isWinner($player)) {
@@ -240,9 +225,6 @@ class FillTheTank extends Microgame implements Listener {
 			} elseif ($this->isLoser($player)) {
 				$player->sendMessage($this->plugin->getTranslator()->translate($player, "microgame.fillthetank.lose"));
 			}
-		}
-		foreach ($this->changedBlocks as $block) {
-			$this->arena->getWorld()->setBlock($block->getPosition(), $block, false);
 		}
 		foreach ($this->tankFakeblocks as $fakeblock) {
 			$this->fakeblockManeger->destroy($fakeblock);

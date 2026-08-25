@@ -1,6 +1,6 @@
 <?php
 
-/**
+/*
  *  ███╗   ███╗██╗███╗   ██╗███████╗██████╗ ██╗    ██╗ █████╗ ██████╗ ███████╗
  *  ████╗ ████║██║████╗  ██║██╔════╝██╔══██╗██║    ██║██╔══██╗██╔══██╗██╔════╝
  *  ██╔████╔██║██║██╔██╗ ██║█████╗  ██████╔╝██║ █╗ ██║███████║██████╔╝█████╗
@@ -15,14 +15,14 @@
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * Copyright 2022 © LatamPMDevs
+ * @author LatamPMDevs
  */
 
 declare(strict_types=1);
 
 namespace LatamPMDevs\minerware\form;
 
-use LatamPMDevs\minerware\libs\_ab0b9acea9c16069\jojoe77777\FormAPI\SimpleForm;
+use LatamPMDevs\minerware\libs\_fcb56dd69e95f228\jojoe77777\FormAPI\SimpleForm;
 use LatamPMDevs\minerware\database\PlayerData;
 use LatamPMDevs\minerware\Minerware;
 use LatamPMDevs\minerware\utils\Utils;

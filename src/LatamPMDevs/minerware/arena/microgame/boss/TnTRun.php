@@ -1,6 +1,6 @@
 <?php
 
-/**
+/*
  *  ███╗   ███╗██╗███╗   ██╗███████╗██████╗ ██╗    ██╗ █████╗ ██████╗ ███████╗
  *  ████╗ ████║██║████╗  ██║██╔════╝██╔══██╗██║    ██║██╔══██╗██╔══██╗██╔════╝
  *  ██╔████╔██║██║██╔██╗ ██║█████╗  ██████╔╝██║ █╗ ██║███████║██████╔╝█████╗
@@ -15,17 +15,17 @@
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * Copyright 2022 © LatamPMDevs
+ * @author LatamPMDevs
  */
 
 declare(strict_types=1);
 
 namespace LatamPMDevs\minerware\arena\microgame\boss;
 
-use LatamPMDevs\minerware\arena\Map;
 use LatamPMDevs\minerware\arena\microgame\Level;
 use LatamPMDevs\minerware\arena\microgame\Microgame;
 use LatamPMDevs\minerware\entity\object\FallingBlock;
+use LatamPMDevs\minerware\map\Map;
 use LatamPMDevs\minerware\utils\Utils;
 
 use pocketmine\block\Block;
@@ -38,7 +38,6 @@ use pocketmine\entity\Location;
 use pocketmine\event\block\BlockBreakEvent;
 use pocketmine\event\block\BlockPlaceEvent;
 use pocketmine\event\entity\EntityDamageEvent;
-use pocketmine\event\HandlerListManager;
 use pocketmine\event\Listener;
 use pocketmine\math\AxisAlignedBB;
 use pocketmine\player\GameMode;
@@ -60,9 +59,6 @@ class TnTRun extends Microgame implements Listener {
 
 	public const START_TIME = 11;
 
-	/** @var Block[] */
-	protected array $changedBlocks = [];
-
 	protected bool $hasActuallyStarted = false;
 
 	public function getName() : string {
@@ -70,7 +66,7 @@ class TnTRun extends Microgame implements Listener {
 	}
 
 	public function getLevel() : Level {
-		return Level::BOSS();
+		return Level::BOSS;
 	}
 
 	public function getGameDuration() : float {
@@ -82,8 +78,6 @@ class TnTRun extends Microgame implements Listener {
 	}
 
 	public function start() : void {
-		$this->plugin->getServer()->getPluginManager()->registerEvents($this, $this->plugin);
-
 		$map = $this->arena->getMap();
 		$world = $this->arena->getWorld();
 		$minPos = Position::fromObject($map->getPlatformMinPos(), $world);
@@ -128,7 +122,7 @@ class TnTRun extends Microgame implements Listener {
 		$highestPlatformY = $minPos->y + ((self::SPLACING_BETWEEN_LAYERS + 2) * self::LAYERS);
 		foreach ($this->arena->getPlayers() as $player) {
 			Utils::initPlayer($player);
-			$player->setGamemode(GameMode::ADVENTURE());
+			$player->setGamemode(GameMode::ADVENTURE);
 			$player->getInventory()->setHeldItemIndex(0);
 			$safePos = $this->arena->getSafePosition($player);
 			$safePos->y = $highestPlatformY;
@@ -194,8 +188,6 @@ class TnTRun extends Microgame implements Listener {
 	}
 
 	public function end() : void {
-		HandlerListManager::global()->unregisterAll($this);
-
 		foreach ($this->arena->getPlayers() as $player) {
 			if ($this->isWinner($player)) {
 				$player->sendMessage($this->plugin->getTranslator()->translate($player, "microgame.tntrun.won"));
@@ -203,9 +195,6 @@ class TnTRun extends Microgame implements Listener {
 				$player->sendMessage($this->plugin->getTranslator()->translate($player, "microgame.threwoffstage"
 				));
 			}
-		}
-		foreach ($this->changedBlocks as $block) {
-			$this->arena->getWorld()->setBlock($block->getPosition(), $block, true);
 		}
 		parent::end();
 	}

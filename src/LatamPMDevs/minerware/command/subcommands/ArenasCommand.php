@@ -1,6 +1,6 @@
 <?php
 
-/**
+/*
  *  ███╗   ███╗██╗███╗   ██╗███████╗██████╗ ██╗    ██╗ █████╗ ██████╗ ███████╗
  *  ████╗ ████║██║████╗  ██║██╔════╝██╔══██╗██║    ██║██╔══██╗██╔══██╗██╔════╝
  *  ██╔████╔██║██║██╔██╗ ██║█████╗  ██████╔╝██║ █╗ ██║███████║██████╔╝█████╗
@@ -15,21 +15,21 @@
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * Copyright 2022 © LatamPMDevs
+ * @author LatamPMDevs
  */
 
 declare(strict_types=1);
 
 namespace LatamPMDevs\minerware\command\subcommands;
 
-use LatamPMDevs\minerware\libs\_ab0b9acea9c16069\CortexPE\Commando\BaseCommand;
-use LatamPMDevs\minerware\libs\_ab0b9acea9c16069\CortexPE\Commando\BaseSubCommand;
-use LatamPMDevs\minerware\libs\_ab0b9acea9c16069\CortexPE\Commando\constraint\InGameRequiredConstraint;
+use LatamPMDevs\minerware\libs\_fcb56dd69e95f228\CortexPE\Commando\BaseCommand;
+use LatamPMDevs\minerware\libs\_fcb56dd69e95f228\CortexPE\Commando\BaseSubCommand;
+use LatamPMDevs\minerware\libs\_fcb56dd69e95f228\CortexPE\Commando\constraint\InGameRequiredConstraint;
 use LatamPMDevs\minerware\arena\ArenaManager;
-use LatamPMDevs\minerware\arena\MapRegisterer;
 use LatamPMDevs\minerware\arena\Status;
 use LatamPMDevs\minerware\command\args\ArenaActionArgument;
 use LatamPMDevs\minerware\command\args\WorldArgument;
+use LatamPMDevs\minerware\map\MapRegisterer;
 use LatamPMDevs\minerware\Minerware;
 use pocketmine\command\CommandSender;
 use pocketmine\player\Player;
@@ -88,13 +88,13 @@ final class ArenasCommand extends BaseSubCommand {
 					return;
 				}
 
-				if (!$arena->getStatus()->equals(Status::STARTING()) ||
+				if ($arena->getStatus() !== Status::STARTING ||
 					count($arena->getPlayers()) < $arena->getMinPlayers()
 				) {
 					$sender->sendMessage($this->plugin->getTranslator()->translate($sender, "game.arena.needMorePlayers"));
 				}
 
-				$arena->startingtime = 5;
+				$arena->forceStart();
 			break;
 		}
 	}

@@ -1,6 +1,6 @@
 <?php
 
-/**
+/*
  *  ███╗   ███╗██╗███╗   ██╗███████╗██████╗ ██╗    ██╗ █████╗ ██████╗ ███████╗
  *  ████╗ ████║██║████╗  ██║██╔════╝██╔══██╗██║    ██║██╔══██╗██╔══██╗██╔════╝
  *  ██╔████╔██║██║██╔██╗ ██║█████╗  ██████╔╝██║ █╗ ██║███████║██████╔╝█████╗
@@ -15,7 +15,7 @@
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * Copyright 2022 © LatamPMDevs
+ * @author LatamPMDevs
  */
 
 declare(strict_types=1);
@@ -23,11 +23,13 @@ declare(strict_types=1);
 namespace LatamPMDevs\minerware\arena;
 
 use LatamPMDevs\minerware\database\DataManager;
+use LatamPMDevs\minerware\map\Map;
+use LatamPMDevs\minerware\map\MapManager;
 use LatamPMDevs\minerware\Minerware;
 use pocketmine\event\HandlerListManager;
 use pocketmine\player\Player;
 use pocketmine\utils\SingletonTrait;
-use function array_rand;
+use RuntimeException;
 use function count;
 use function rand;
 use function range;
@@ -52,7 +54,7 @@ final class ArenaManager {
 
 	public function createArena(?Map $map = null) : Arena {
 		$id = $this->generateId();
-		$arena = new Arena($id, $map ?? Map::$maps[array_rand(Map::$maps)]);
+		$arena = new Arena($id, $map ?? MapManager::getInstance()->getRandom() ?? throw new RuntimeException("No maps available to create an arena"));
 		$this->arenas[$id] = $arena;
 		return $arena;
 	}
@@ -62,9 +64,9 @@ final class ArenaManager {
 		unset($this->arenas[$arena->getId()]);
 	}
 
-	public function getAvaible(?Map $map = null, bool $force = false) : ?Arena {
+	public function getAvailable(?Map $map = null, bool $force = false) : ?Arena {
 		foreach ($this->arenas as $arena) {
-			if (($arena->getStatus()->equals(Status::WAITING()) || $arena->getStatus()->equals(Status::STARTING())) && ($map === null || $arena->getMap() === $map) && count($arena->getPlayers()) < Arena::MAX_PLAYERS) {
+			if (($arena->getStatus() === Status::WAITING || $arena->getStatus() === Status::STARTING) && ($map === null || $arena->getMap() === $map) && count($arena->getPlayers()) < Arena::MAX_PLAYERS) {
 				return $arena;
 			}
 		}
@@ -87,7 +89,7 @@ final class ArenaManager {
 
 	public function join(Player $player, Arena $arena = null, Map $map = null) : void {
 		if ($arena === null) {
-			if (count(Map::$maps) === 0 || ($arena = $this->getAvaible($map)) === null) {
+			if (MapManager::getInstance()->getCount() === 0 || ($arena = $this->getAvailable($map)) === null) {
 				$player->sendMessage(Minerware::getInstance()->getTranslator()->translate($player, "game.noArenaAvaiable"));
 				return;
 			}

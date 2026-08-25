@@ -1,6 +1,6 @@
 <?php
 
-/**
+/*
  *  ███╗   ███╗██╗███╗   ██╗███████╗██████╗ ██╗    ██╗ █████╗ ██████╗ ███████╗
  *  ████╗ ████║██║████╗  ██║██╔════╝██╔══██╗██║    ██║██╔══██╗██╔══██╗██╔════╝
  *  ██╔████╔██║██║██╔██╗ ██║█████╗  ██████╔╝██║ █╗ ██║███████║██████╔╝█████╗
@@ -15,7 +15,7 @@
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * Copyright 2022 © LatamPMDevs
+ * @author LatamPMDevs
  */
 
 declare(strict_types=1);
@@ -31,7 +31,6 @@ use pocketmine\block\VanillaBlocks;
 use pocketmine\event\block\BlockBreakEvent;
 use pocketmine\event\block\BlockPlaceEvent;
 use pocketmine\event\entity\EntityDamageEvent;
-use pocketmine\event\HandlerListManager;
 use pocketmine\event\Listener;
 use pocketmine\item\enchantment\EnchantmentInstance;
 use pocketmine\item\enchantment\VanillaEnchantments;
@@ -61,9 +60,6 @@ class MineOre extends Microgame implements Listener {
 
 	protected Block $ore;
 
-	/** @var Block[] */
-	protected array $changedBlocks = [];
-
 	/** @var array<int, int> */
 	protected array $minedBlocks = [];
 
@@ -72,7 +68,7 @@ class MineOre extends Microgame implements Listener {
 	}
 
 	public function getLevel() : Level {
-		return Level::NORMAL();
+		return Level::NORMAL;
 	}
 
 	public function getGameDuration() : float {
@@ -85,7 +81,6 @@ class MineOre extends Microgame implements Listener {
 
 	public function start() : void {
 		$ores = self::getOres();
-		$this->plugin->getServer()->getPluginManager()->registerEvents($this, $this->plugin);
 		$oreKey = array_rand($ores);
 		$this->ore = $ores[$oreKey];
 		unset($ores[$oreKey]);
@@ -123,7 +118,7 @@ class MineOre extends Microgame implements Listener {
 			$pickaxe = VanillaItems::DIAMOND_PICKAXE();
 			$pickaxe->setCustomName($this->plugin->getTranslator()->translate($player, "microgame.item.pickaxe"));
 			$pickaxe->addEnchantment(new EnchantmentInstance($efficiency, self::EFFICIENCY_LEVEL));
-			$player->setGamemode(GameMode::SURVIVAL());
+			$player->setGamemode(GameMode::SURVIVAL);
 			$player->getInventory()->setItem(0, $pickaxe);
 			$player->getInventory()->setItem(8, $oreItem);
 			$player->getInventory()->setHeldItemIndex(0);
@@ -145,14 +140,10 @@ class MineOre extends Microgame implements Listener {
 			$this->arena->endCurrentMicrogame();
 			return;
 		}
-		foreach ($this->arena->getPlayers() as $player) {
-			$player->getXpManager()->setXpAndProgress((int) $timeLeft, $timeLeft / $this->getGameDuration());
-		}
+		$this->updateTimeBar($timeLeft);
 	}
 
 	public function end() : void {
-		HandlerListManager::global()->unregisterAll($this);
-
 		$miner = null;
 		$minedBlocks = 0;
 		foreach ($this->losers as $loser) {
@@ -186,9 +177,6 @@ class MineOre extends Microgame implements Listener {
 					]
 				));
 			}
-		}
-		foreach ($this->changedBlocks as $block) {
-			$this->arena->getWorld()->setBlock($block->getPosition(), $block, false);
 		}
 		parent::end();
 	}

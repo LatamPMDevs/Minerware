@@ -1,6 +1,6 @@
 <?php
 
-/**
+/*
  *  ███╗   ███╗██╗███╗   ██╗███████╗██████╗ ██╗    ██╗ █████╗ ██████╗ ███████╗
  *  ████╗ ████║██║████╗  ██║██╔════╝██╔══██╗██║    ██║██╔══██╗██╔══██╗██╔════╝
  *  ██╔████╔██║██║██╔██╗ ██║█████╗  ██████╔╝██║ █╗ ██║███████║██████╔╝█████╗
@@ -15,7 +15,7 @@
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * Copyright 2022 © LatamPMDevs
+ * @author LatamPMDevs
  */
 
 declare(strict_types=1);
@@ -63,7 +63,7 @@ final class EventListener implements Listener {
 	 * @priority MONITOR
 	 */
 	public function onPlayerWinMicrogame(PlayerWinMicrogameEvent $event) : void {
-		if ($event->getMicrogame()->getLevel()->equals(Level::BOSS())) {
+		if ($event->getMicrogame()->getLevel() === Level::BOSS) {
 			$this->dataManager->addBossgamesWon($event->getPlayer()->getName(), 1);
 		} else {
 			$this->dataManager->addMicrogamesWon($event->getPlayer()->getName(), 1);

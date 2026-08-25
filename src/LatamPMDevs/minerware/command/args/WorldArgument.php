@@ -1,6 +1,6 @@
 <?php
 
-/**
+/*
  *  ███╗   ███╗██╗███╗   ██╗███████╗██████╗ ██╗    ██╗ █████╗ ██████╗ ███████╗
  *  ████╗ ████║██║████╗  ██║██╔════╝██╔══██╗██║    ██║██╔══██╗██╔══██╗██╔════╝
  *  ██╔████╔██║██║██╔██╗ ██║█████╗  ██████╔╝██║ █╗ ██║███████║██████╔╝█████╗
@@ -15,14 +15,14 @@
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * Copyright 2022 © LatamPMDevs
+ * @author LatamPMDevs
  */
 
 declare(strict_types=1);
 
 namespace LatamPMDevs\minerware\command\args;
 
-use LatamPMDevs\minerware\libs\_ab0b9acea9c16069\CortexPE\Commando\args\RawStringArgument;
+use LatamPMDevs\minerware\libs\_fcb56dd69e95f228\CortexPE\Commando\args\RawStringArgument;
 use pocketmine\command\CommandSender;
 
 class WorldArgument extends RawStringArgument {

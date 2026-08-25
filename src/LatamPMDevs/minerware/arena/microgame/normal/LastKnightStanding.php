@@ -1,6 +1,6 @@
 <?php
 
-/**
+/*
  *  ███╗   ███╗██╗███╗   ██╗███████╗██████╗ ██╗    ██╗ █████╗ ██████╗ ███████╗
  *  ████╗ ████║██║████╗  ██║██╔════╝██╔══██╗██║    ██║██╔══██╗██╔══██╗██╔════╝
  *  ██╔████╔██║██║██╔██╗ ██║█████╗  ██████╔╝██║ █╗ ██║███████║██████╔╝█████╗
@@ -15,7 +15,7 @@
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * Copyright 2022 © LatamPMDevs
+ * @author LatamPMDevs
  */
 
 declare(strict_types=1);
@@ -30,17 +30,13 @@ use pocketmine\event\block\BlockBreakEvent;
 use pocketmine\event\block\BlockPlaceEvent;
 use pocketmine\event\entity\EntityDamageByEntityEvent;
 use pocketmine\event\entity\EntityDamageEvent;
-use pocketmine\event\HandlerListManager;
 use pocketmine\event\Listener;
 use pocketmine\item\enchantment\EnchantmentInstance;
 use pocketmine\item\enchantment\VanillaEnchantments;
 use pocketmine\item\VanillaItems;
 use pocketmine\player\GameMode;
 use pocketmine\player\Player;
-use pocketmine\utils\AssumptionFailedError;
 use function array_key_first;
-use function array_reverse;
-use function asort;
 
 class LastKnightStanding extends Microgame implements Listener {
 
@@ -54,7 +50,7 @@ class LastKnightStanding extends Microgame implements Listener {
 	}
 
 	public function getLevel() : Level {
-		return Level::NORMAL();
+		return Level::NORMAL;
 	}
 
 	public function getGameDuration() : float {
@@ -66,8 +62,6 @@ class LastKnightStanding extends Microgame implements Listener {
 	}
 
 	public function start() : void {
-		$this->plugin->getServer()->getPluginManager()->registerEvents($this, $this->plugin);
-
 		$helmet = VanillaItems::IRON_HELMET();
 		$chestplate = VanillaItems::IRON_CHESTPLATE();
 		$leggings = VanillaItems::LEATHER_PANTS();
@@ -78,7 +72,7 @@ class LastKnightStanding extends Microgame implements Listener {
 			$sword = VanillaItems::DIAMOND_SWORD();
 			$sword->setCustomName($this->plugin->getTranslator()->translate($player, "microgame.item.sword"));
 			$sword->addEnchantment(new EnchantmentInstance($sharpness, self::SHARPNESS_LEVEL));
-			$player->setGamemode(GameMode::ADVENTURE());
+			$player->setGamemode(GameMode::ADVENTURE);
 			$player->getInventory()->setItem(0, $sword);
 			$player->getArmorInventory()->setItem($helmet->getArmorSlot(), $helmet);
 			$player->getArmorInventory()->setItem($chestplate->getArmorSlot(), $chestplate);
@@ -101,14 +95,10 @@ class LastKnightStanding extends Microgame implements Listener {
 			$this->arena->endCurrentMicrogame();
 			return;
 		}
-		foreach ($this->arena->getPlayers() as $player) {
-			$player->getXpManager()->setXpAndProgress((int) $timeLeft, $timeLeft / $this->getGameDuration());
-		}
+		$this->updateTimeBar($timeLeft);
 	}
 
 	public function end() : void {
-		HandlerListManager::global()->unregisterAll($this);
-
 		$players = $this->arena->getPlayers();
 		$killer = null;
 		$kills = $this->getKillsOrderedByHigherScore();
@@ -141,11 +131,7 @@ class LastKnightStanding extends Microgame implements Listener {
 	 * @return array<int, int>
 	 */
 	public function getKillsOrderedByHigherScore() : array {
-		$array = $this->kills;
-		if (asort($array) === false) {
-			throw new AssumptionFailedError("Failed to sort score");
-		}
-		return array_reverse($array, true);
+		return Utils::sortScoresDescending($this->kills);
 	}
 
 	# Listener
