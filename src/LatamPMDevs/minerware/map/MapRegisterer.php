@@ -26,6 +26,8 @@ use LatamPMDevs\minerware\database\DataHolder;
 use LatamPMDevs\minerware\database\DataManager;
 use LatamPMDevs\minerware\Minerware;
 use LatamPMDevs\minerware\utils\Utils;
+use NetherGames\libasyncio\compression\CompressionFormat;
+use NetherGames\libasyncio\FileOrDirectoryCompressTask;
 use pocketmine\event\block\BlockBreakEvent;
 use pocketmine\event\HandlerListManager;
 use pocketmine\event\Listener;
@@ -141,10 +143,13 @@ final class MapRegisterer implements Listener {
 					# Save World
 					$folderName = $this->world->getFolderName();
 					$this->plugin->getServer()->getWorldManager()->unloadWorld($this->world);
-					Utils::setZip(
+					$this->plugin->getServer()->getAsyncPool()->submitTask(new FileOrDirectoryCompressTask(
 						$this->plugin->getServer()->getDataPath() . "worlds" . DIRECTORY_SEPARATOR . $folderName,
-						$this->plugin->getDataFolder() . "database" . DIRECTORY_SEPARATOR . "backups" . DIRECTORY_SEPARATOR . $this->data["name"] . ".zip"
-					);
+						$this->plugin->getDataFolder() . "database" . DIRECTORY_SEPARATOR . "backups" . DIRECTORY_SEPARATOR . $this->data["name"],
+						function () : void {},
+						null,
+						CompressionFormat::GZIP
+					));
 					# Unregiter Listener
 					HandlerListManager::global()->unregisterAll($this);
 				break;

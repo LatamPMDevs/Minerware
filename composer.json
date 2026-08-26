@@ -10,6 +10,7 @@
         "ivancraft623/fakeblocks": "dev-main",
         "ivancraft623/languages": "dev-main",
         "latampmdevs/formapi": "dev-master",
+        "nethergamesmc/libasyncio": "dev-stable",
         "sof3/libasynql": "^4.2.3"
     },
     "require-dev": {
@@ -57,6 +58,15 @@
         {
             "type": "vcs",
             "url": "https://github.com/IvanCraft623/languages.git"
+        },
+        {
+            "type": "path",
+            "url": "./libraries/libasyncio",
+            "options": {
+                "versions": {
+                    "nethergamesmc/libasyncio": "dev-stable"
+                }
+            }
         },
         {
             "type": "vcs",

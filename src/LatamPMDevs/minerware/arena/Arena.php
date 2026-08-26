@@ -34,11 +34,11 @@ use LatamPMDevs\minerware\event\arena\ArenaEndEvent;
 use LatamPMDevs\minerware\event\arena\PlayerJoinArenaEvent;
 use LatamPMDevs\minerware\event\arena\PlayerQuitArenaEvent;
 use LatamPMDevs\minerware\map\Map;
-use LatamPMDevs\minerware\map\MapWorldGenerator;
 use LatamPMDevs\minerware\Minerware;
 use LatamPMDevs\minerware\tasks\ArenaTask;
 use LatamPMDevs\minerware\utils\PointHolder;
 use LatamPMDevs\minerware\utils\Utils;
+use NetherGames\libasyncio\FileDeleteAsyncTask;
 use pocketmine\block\utils\DyeColor;
 
 use pocketmine\block\VanillaBlocks;
@@ -82,8 +82,6 @@ final class Arena implements Listener {
 
 	private Status $status;
 
-	private World $world;
-
 	private int $minPlayers;
 
 	/** @var Player[] */
@@ -116,9 +114,8 @@ final class Arena implements Listener {
 
 	public ?int $startTime = null;
 
-	public function __construct(private string $id, private Map $map) {
+	public function __construct(private string $id, private Map $map, private World $world) {
 		$this->plugin = Minerware::getInstance();
-		$this->world = MapWorldGenerator::generate($this->map, $this->id);
 		$this->minPlayers = DataManager::getInstance()->getMinimumStartingPlayers();
 		$this->status = Status::WAITING;
 		$this->pointHolder = new PointHolder();
@@ -343,7 +340,7 @@ final class Arena implements Listener {
 	public function deleteMap() : void {
 		$worldPath = $this->plugin->getServer()->getDataPath() . "worlds" . DIRECTORY_SEPARATOR . $this->world->getFolderName() . DIRECTORY_SEPARATOR;
 		$this->plugin->getServer()->getWorldManager()->unloadWorld($this->world, true);
-		Utils::removeDir($worldPath);
+		$this->plugin->getServer()->getAsyncPool()->submitTask(new FileDeleteAsyncTask($worldPath));
 	}
 
 	public function updateScoreboard() : void {

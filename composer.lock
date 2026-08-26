@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "98adf23f72f705f886860f7945638235",
+    "content-hash": "55d67127d8d2426490dc443ef543a296",
     "packages": [
         {
             "name": "adhocore/json-comment",
@@ -436,6 +436,42 @@
                 "source": "https://github.com/Muqsit/SimplePacketHandler/tree/0.1.6"
             },
             "time": "2026-02-17T11:40:38+00:00"
+        },
+        {
+            "name": "nethergamesmc/libasyncio",
+            "version": "dev-stable",
+            "dist": {
+                "type": "path",
+                "url": "./libraries/libasyncio",
+                "reference": "b7fd9006be7d44caaa26f7feeedad77a73a55043"
+            },
+            "require": {
+                "ext-igbinary": "*",
+                "php": "^8.1"
+            },
+            "suggest": {
+                "ext-libdeflate": "Faster DEFLATE compression",
+                "ext-zstd": "Required for ZSTD compression format"
+            },
+            "type": "library",
+            "extra": {
+                "virion": {
+                    "spec": "3.0",
+                    "namespace-root": "NetherGames\\libasyncio"
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "NetherGames\\libasyncio\\": ""
+                }
+            },
+            "license": [
+                "proprietary"
+            ],
+            "description": "An async library for PocketMine-MP",
+            "transport-options": {
+                "relative": true
+            }
         },
         {
             "name": "netresearch/jsonmapper",
@@ -3683,7 +3719,8 @@
         "ifera-mc/config-updater": 20,
         "ivancraft623/fakeblocks": 20,
         "ivancraft623/languages": 20,
-        "latampmdevs/formapi": 20
+        "latampmdevs/formapi": 20,
+        "nethergamesmc/libasyncio": 20
     },
     "prefer-stable": false,
     "prefer-lowest": false,

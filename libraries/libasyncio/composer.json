@@ -1,0 +1,27 @@
+{
+  "name": "nethergamesmc/libasyncio",
+  "description": "An async library for PocketMine-MP",
+  "license": "proprietary",
+  "type": "library",
+  "version": "dev-stable",
+  "require": {
+    "php": "^8.1",
+    "ext-igbinary": "*"
+  },
+  "suggest": {
+    "ext-zstd": "Required for ZSTD compression format",
+    "ext-libdeflate": "Faster DEFLATE compression"
+  },
+  "autoload": {
+    "psr-4": {
+      "NetherGames\\libasyncio\\": ""
+    }
+  },
+  "extra": {
+    "virion": {
+      "spec": "3.0",
+      "namespace-root": "NetherGames\\libasyncio"
+    }
+  },
+  "minimum-stability": "dev"
+}

@@ -29,6 +29,7 @@ use JackMD\ConfigUpdater\ConfigUpdater;
 use LatamPMDevs\minerware\arena\ArenaManager;
 use LatamPMDevs\minerware\command\MinerwareCommand;
 use LatamPMDevs\minerware\database\DataManager;
+use LatamPMDevs\minerware\map\MapWorldGenerator;
 use pocketmine\plugin\PluginBase;
 use pocketmine\utils\SingletonTrait;
 
@@ -65,6 +66,7 @@ final class Minerware extends PluginBase {
 		}
 
 		$dataManager = DataManager::getInstance();
+		MapWorldGenerator::migrateLegacyBackups();
 		$dataManager->loadMaps();
 		$this->getServer()->getPluginManager()->registerEvents(new EventListener($dataManager), $this);
 	}
