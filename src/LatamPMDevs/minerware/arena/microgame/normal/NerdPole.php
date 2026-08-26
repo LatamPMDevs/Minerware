@@ -25,7 +25,6 @@ namespace LatamPMDevs\minerware\arena\microgame\normal;
 use LatamPMDevs\minerware\arena\microgame\Level;
 use LatamPMDevs\minerware\arena\microgame\Microgame;
 use LatamPMDevs\minerware\entity\object\TextEntity;
-use LatamPMDevs\minerware\map\Map;
 use LatamPMDevs\minerware\utils\Utils;
 
 use pocketmine\block\Chest;
@@ -96,8 +95,9 @@ class NerdPole extends Microgame implements Listener {
 		$stainedClays = self::getStainedClays();
 
 		#Fill the platform with Stayned Clay
-		foreach (Map::MINI_PLATFORMS as $key => $value) {
-			foreach (Map::MINI_PLATFORMS[$key] as $blockPos) {
+		$miniPlatforms = $map->getMiniPlatforms();
+		foreach ($miniPlatforms as $key => $value) {
+			foreach ($miniPlatforms[$key] as $blockPos) {
 				$this->changedBlocks[] = $world->getBlockAt((int) ($minPos->x + $blockPos[0]), (int) ($minPos->y + $blockPos[1]), (int) ($minPos->z + $blockPos[2]));
 				$world->setBlockAt((int) ($minPos->x + $blockPos[0]), (int) ($minPos->y + $blockPos[1]), (int) ($minPos->z + $blockPos[2]), $stainedClays[array_rand($stainedClays)]);
 			}

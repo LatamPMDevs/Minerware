@@ -27,7 +27,6 @@ use LatamPMDevs\minerware\event\arena\microgame\MicrogameEndEvent;
 use LatamPMDevs\minerware\event\arena\microgame\MicrogameStartEvent;
 use LatamPMDevs\minerware\event\arena\microgame\PlayerLoseMicrogameEvent;
 use LatamPMDevs\minerware\event\arena\microgame\PlayerWinMicrogameEvent;
-use LatamPMDevs\minerware\map\Map;
 use LatamPMDevs\minerware\Minerware;
 
 use pocketmine\block\Block;
@@ -149,7 +148,7 @@ abstract class Microgame {
 	}
 
 	/**
-	 * Places a block on every platform of Map::MINI_PLATFORMS (or the given subset of keys),
+	 * Places a block on every platform of getMiniPlatforms() (or the given subset of keys),
 	 * recording the replaced blocks in $this->changedBlocks.
 	 *
 	 * @param int[] $keys
@@ -158,9 +157,10 @@ abstract class Microgame {
 		$map = $this->arena->getMap();
 		$world = $this->arena->getWorld();
 		$minPos = $map->getPlatformMinPos();
-		$keys = $keys === [] ? array_keys(Map::MINI_PLATFORMS) : $keys;
+		$miniPlatforms = $map->getMiniPlatforms();
+		$keys = $keys === [] ? array_keys($miniPlatforms) : $keys;
 		foreach ($keys as $key) {
-			foreach (Map::MINI_PLATFORMS[$key] as $blockPos) {
+			foreach ($miniPlatforms[$key] as $blockPos) {
 				$this->changedBlocks[] = $world->getBlockAt((int) ($minPos->x + $blockPos[0]), (int) ($minPos->y + $blockPos[1]), (int) ($minPos->z + $blockPos[2]));
 				$world->setBlockAt((int) ($minPos->x + $blockPos[0]), (int) ($minPos->y + $blockPos[1]), (int) ($minPos->z + $blockPos[2]), $block, $update);
 			}

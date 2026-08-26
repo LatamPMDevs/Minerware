@@ -37,7 +37,6 @@ use LatamPMDevs\minerware\arena\microgame\normal\StackBlocks;
 use LatamPMDevs\minerware\arena\microgame\normal\StandOnColor;
 use LatamPMDevs\minerware\arena\microgame\normal\StandOnDiamond;
 use pocketmine\utils\SingletonTrait;
-
 use pocketmine\utils\Utils;
 use RuntimeException;
 

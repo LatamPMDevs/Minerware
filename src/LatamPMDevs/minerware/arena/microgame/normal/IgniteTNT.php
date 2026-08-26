@@ -24,7 +24,6 @@ namespace LatamPMDevs\minerware\arena\microgame\normal;
 
 use LatamPMDevs\minerware\arena\microgame\Level;
 use LatamPMDevs\minerware\arena\microgame\Microgame;
-use LatamPMDevs\minerware\map\Map;
 use LatamPMDevs\minerware\utils\Utils;
 
 use pocketmine\block\TNT;
@@ -71,7 +70,7 @@ class IgniteTNT extends Microgame implements Listener {
 		$map = $this->arena->getMap();
 		$minPos = $map->getPlatformMinPos();
 		$world = $this->arena->getWorld();
-		foreach (Map::MINI_PLATFORMS as $platformBlocks) {
+		foreach ($map->getMiniPlatforms() as $platformBlocks) {
 			$blockPos = $platformBlocks[array_rand($platformBlocks)];
 			$this->changedBlocks[] = $world->getBlockAt((int) ($minPos->x + $blockPos[0]), (int) ($minPos->y + $blockPos[1]), (int) ($minPos->z + $blockPos[2]));
 			$world->setBlockAt((int) ($minPos->x + $blockPos[0]), (int) ($minPos->y + $blockPos[1]), (int) ($minPos->z + $blockPos[2]), VanillaBlocks::TNT(), false);

@@ -24,7 +24,6 @@ namespace LatamPMDevs\minerware\arena\microgame\normal;
 
 use LatamPMDevs\minerware\arena\microgame\Level;
 use LatamPMDevs\minerware\arena\microgame\Microgame;
-use LatamPMDevs\minerware\map\Map;
 use LatamPMDevs\minerware\utils\Utils;
 
 use pocketmine\block\VanillaBlocks;
@@ -79,9 +78,10 @@ class StandOnDiamond extends Microgame implements Listener {
 		$map = $this->arena->getMap();
 		$minPos = $map->getPlatformMinPos();
 		$world = $this->arena->getWorld();
-		foreach (array_rand(Map::MINI_PLATFORMS, self::DIAMOND_PLATFORMS) as $key) {
+		$miniPlatforms = $map->getMiniPlatforms();
+		foreach (array_rand($miniPlatforms, self::DIAMOND_PLATFORMS) as $key) {
 			$this->diamondPlatforms[] = $key;
-			foreach (Map::MINI_PLATFORMS[$key] as $blockPos) {
+			foreach ($miniPlatforms[$key] as $blockPos) {
 				$this->changedBlocks[] = $world->getBlockAt((int) ($minPos->x + $blockPos[0]), (int) ($minPos->y + $blockPos[1]), (int) ($minPos->z + $blockPos[2]));
 				$world->setBlockAt((int) ($minPos->x + $blockPos[0]), (int) ($minPos->y + $blockPos[1]), (int) ($minPos->z + $blockPos[2]), VanillaBlocks::DIAMOND(), false);
 			}
@@ -153,9 +153,10 @@ class StandOnDiamond extends Microgame implements Listener {
 			$world = $this->arena->getWorld();
 			$minPos = Position::fromObject($map->getPlatformMinPos(), $world);
 			$maxPos = Position::fromObject($map->getPlatformMaxPos(), $world);
-			foreach (Map::MINI_PLATFORMS as $key => $value) {
+			$miniPlatforms = $map->getMiniPlatforms();
+			foreach ($miniPlatforms as $key => $value) {
 				if (!in_array($key, $this->diamondPlatforms, true)) {
-					foreach (Map::MINI_PLATFORMS[$key] as $blockPos) {
+					foreach ($miniPlatforms[$key] as $blockPos) {
 						$this->changedBlocks[] = $world->getBlockAt((int) ($minPos->x + $blockPos[0]), (int) ($minPos->y + $blockPos[1]), (int) ($minPos->z + $blockPos[2]));
 						$world->setBlockAt((int) ($minPos->x + $blockPos[0]), (int) ($minPos->y + $blockPos[1]), (int) ($minPos->z + $blockPos[2]), VanillaBlocks::AIR(), true);
 					}

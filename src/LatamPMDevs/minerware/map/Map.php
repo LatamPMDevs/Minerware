@@ -31,18 +31,11 @@ final class Map {
 	public const PLATFORM_X_SIZE = 24;
 	public const PLATFORM_Z_SIZE = 24;
 
-	public const MINI_PLATFORMS = [// Referenced with min position
-		[[3, 1, 3], [4, 1, 3], [3, 1, 4], [4, 1, 4]],
-		[[11, 1, 3], [12, 1, 3], [11, 1, 4], [12, 1, 4]],
-		[[19, 1, 3], [20, 1, 3], [19, 1, 4], [20, 1, 4]],
-		[[3, 1, 11], [4, 1, 11], [3, 1, 12], [4, 1, 12]],
-		[[11, 1, 11], [12, 1, 11], [11, 1, 12], [12, 1, 12]],
-		[[19, 1, 11], [20, 1, 11], [19, 1, 12], [20, 1, 12]],
-		[[3, 1, 19], [4, 1, 19], [3, 1, 20], [4, 1, 20]],
-		[[11, 1, 19], [12, 1, 19], [11, 1, 20], [12, 1, 20]],
-		[[19, 1, 19], [20, 1, 19], [19, 1, 20], [20, 1, 20]]
+	public const MINI_PLATFORMS_X = 3;
+	public const MINI_PLATFORMS_Z = 3;
 
-	];
+	public const MINI_PLATFORM_SIZE = 2;
+	public const MINI_PLATFORM_MARGIN = 3;
 
 	private string $name;
 
@@ -51,6 +44,9 @@ final class Map {
 	private Vector3 $platformMaxPos;
 
 	private Vector3 $center;
+
+	/** @var array<int, list<array{0: int, 1: int, 2: int}>>|null */
+	private ?array $miniPlatforms = null;
 
 	/** @var Vector3[] */
 	private array $spawns = [];
@@ -93,6 +89,46 @@ final class Map {
 
 	public function getCenter() : Vector3 {
 		return $this->center;
+	}
+
+	/**
+	 * Returns the mini platforms as relative offsets referenced by their min position.
+	 *
+	 * @return array<int, list<array{int, int, int}>>
+	 */
+	public function getMiniPlatforms() : array {
+		if ($this->miniPlatforms === null) {
+			$this->miniPlatforms = $this->generateMiniPlatforms();
+		}
+		return $this->miniPlatforms;
+	}
+
+	/**
+	 * @return array<int, list<array{int, int, int}>>
+	 */
+	private function generateMiniPlatforms() : array {
+		$platforms = [];
+		$stepX = self::getPlatformSpacing(self::PLATFORM_X_SIZE, self::MINI_PLATFORMS_X);
+		$stepZ = self::getPlatformSpacing(self::PLATFORM_Z_SIZE, self::MINI_PLATFORMS_Z);
+		$size = self::MINI_PLATFORM_SIZE;
+		for ($z = 0; $z < self::MINI_PLATFORMS_Z; $z++) {
+			$startZ = self::MINI_PLATFORM_MARGIN + $z * $stepZ;
+			for ($x = 0; $x < self::MINI_PLATFORMS_X; $x++) {
+				$startX = self::MINI_PLATFORM_MARGIN + $x * $stepX;
+				$platform = [];
+				for ($bz = 0; $bz < $size; $bz++) {
+					for ($bx = 0; $bx < $size; $bx++) {
+						$platform[] = [$startX + $bx, 1, $startZ + $bz];
+					}
+				}
+				$platforms[] = $platform;
+			}
+		}
+		return $platforms;
+	}
+
+	private static function getPlatformSpacing(int $platformSize, int $perAxis) : int {
+		return (int) (($platformSize - self::MINI_PLATFORM_MARGIN * 2 - self::MINI_PLATFORM_SIZE) / ($perAxis - 1));
 	}
 
 	/**

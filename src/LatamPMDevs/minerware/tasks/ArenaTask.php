@@ -94,14 +94,13 @@ final class ArenaTask extends Task {
 					}
 				}
 				if ($countdown > 0) {
-					$pct = $countdown / $total;
-					if ($pct >= 0.7) {
+					if ($countdown === $total) {
 						foreach ($players as $player) {
 							$player->sendTitle("§6MinerWare", $this->plugin->getTranslator()->translate($player, "game.arena.inbetween.credits"), 10, 10, 10);
 						}
-					} elseif ($pct >= 0.4) {
+					} elseif ($countdown === $total - 1) {
 						foreach ($players as $player) {
-							$player->sendTitle("§1§2", $this->plugin->getTranslator()->translate($player, "game.arena.inbetween.winthemost"), 10, 10, 10);
+						$player->sendTitle("§1§2", $this->plugin->getTranslator()->translate($player, "	game.arena.inbetween.winthemost"), 10, 10, 10);
 						}
 					} else {
 						$isBoss = $arena->getNextMicrogameNonNull()->getLevel() === Level::BOSS;

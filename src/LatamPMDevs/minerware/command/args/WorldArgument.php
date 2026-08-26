@@ -22,7 +22,7 @@ declare(strict_types=1);
 
 namespace LatamPMDevs\minerware\command\args;
 
-use LatamPMDevs\minerware\libs\_fcb56dd69e95f228\CortexPE\Commando\args\RawStringArgument;
+use LatamPMDevs\minerware\libs\_f657fb06cbb97d69\CortexPE\Commando\args\RawStringArgument;
 use pocketmine\command\CommandSender;
 
 class WorldArgument extends RawStringArgument {

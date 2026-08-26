@@ -25,7 +25,6 @@ namespace LatamPMDevs\minerware\arena\microgame\boss;
 use LatamPMDevs\minerware\arena\microgame\Level;
 use LatamPMDevs\minerware\arena\microgame\Microgame;
 use LatamPMDevs\minerware\entity\object\FallingBlock;
-use LatamPMDevs\minerware\map\Map;
 use LatamPMDevs\minerware\utils\Utils;
 
 use pocketmine\block\Block;
@@ -81,7 +80,7 @@ class TnTRun extends Microgame implements Listener {
 		$map = $this->arena->getMap();
 		$world = $this->arena->getWorld();
 		$minPos = Position::fromObject($map->getPlatformMinPos(), $world);
-		foreach (Map::MINI_PLATFORMS as $key => $values) {
+		foreach ($map->getMiniPlatforms() as $key => $values) {
 			foreach ($values as $blockPos) {
 				$x = (int) ($minPos->x + $blockPos[0]);
 				$y = (int) ($minPos->y + $blockPos[1]);

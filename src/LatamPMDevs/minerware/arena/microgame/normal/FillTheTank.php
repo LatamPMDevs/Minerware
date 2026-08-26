@@ -22,8 +22,8 @@ declare(strict_types=1);
 
 namespace LatamPMDevs\minerware\arena\microgame\normal;
 
-use LatamPMDevs\minerware\libs\_fcb56dd69e95f228\IvanCraft623\fakeblocks\FakeBlock;
-use LatamPMDevs\minerware\libs\_fcb56dd69e95f228\IvanCraft623\fakeblocks\FakeBlockManager;
+use LatamPMDevs\minerware\libs\_f657fb06cbb97d69\IvanCraft623\fakeblocks\FakeBlock;
+use LatamPMDevs\minerware\libs\_f657fb06cbb97d69\IvanCraft623\fakeblocks\FakeBlockManager;
 use LatamPMDevs\minerware\arena\microgame\Level;
 
 use LatamPMDevs\minerware\arena\microgame\Microgame;
