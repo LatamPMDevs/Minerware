@@ -39,12 +39,13 @@ use pocketmine\event\block\BlockPlaceEvent;
 use pocketmine\event\entity\EntityDamageEvent;
 use pocketmine\event\Listener;
 use pocketmine\math\AxisAlignedBB;
+use pocketmine\math\Vector3;
 use pocketmine\player\GameMode;
 use pocketmine\player\Player;
 use pocketmine\scheduler\ClosureTask;
 use pocketmine\world\Position;
+use function ceil;
 use function count;
-use function morton3d_encode;
 
 class TnTRun extends Microgame implements Listener {
 
@@ -80,59 +81,74 @@ class TnTRun extends Microgame implements Listener {
 		$map = $this->arena->getMap();
 		$world = $this->arena->getWorld();
 		$minPos = Position::fromObject($map->getPlatformMinPos(), $world);
+		$selection = $this->getStageSelection();
 		foreach ($map->getMiniPlatforms() as $key => $values) {
 			foreach ($values as $blockPos) {
 				$x = (int) ($minPos->x + $blockPos[0]);
 				$y = (int) ($minPos->y + $blockPos[1]);
 				$z = (int) ($minPos->z + $blockPos[2]);
-				$this->changedBlocks[morton3d_encode($x, $y, $z)] = $world->getBlockAt($x, $y, $z);
-				$world->setBlockAt($x, $y, $z, VanillaBlocks::AIR(), false);
+				$selection->addCell($x, $y, $z, VanillaBlocks::AIR());
 			}
 		}
-		foreach (Utils::fill($minPos, $map->getPlatformMaxPos(), VanillaBlocks::AIR(), false) as $changedBlock) {
-			$pos = $changedBlock->getPosition();
-			$this->changedBlocks[morton3d_encode($pos->x, $pos->y, $pos->z)] = $changedBlock;
-		}
+		$selection->addFill($minPos, $map->getPlatformMaxPos(), VanillaBlocks::AIR());
 
-		foreach (Utils::fillCircle(Position::fromObject($map->getCenter(), $world), self::LAYERS_DIAMETER / 2, VanillaBlocks::TNT()) as $block) {
-			$blockPos = $block->getPosition();
-			$morton3d = morton3d_encode($blockPos->x, $blockPos->y, $blockPos->z);
-			if (!isset($this->changedBlocks[$morton3d])) $this->changedBlocks[$morton3d] = $block;
-			$b = $world->getBlock($blockPos->up());
-			$bPos = $b->getPosition();
-			$morton3d = morton3d_encode($bPos->x, $bPos->y, $bPos->z);
-			if (!isset($this->changedBlocks[$morton3d])) $this->changedBlocks[$morton3d] = $b;
-			$world->setBlock($bPos, VanillaBlocks::SAND());
+		$layerBlock = VanillaBlocks::TNT();
+		foreach (self::fillCircleCells($map->getCenter(), self::LAYERS_DIAMETER / 2) as $pos) {
+			$selection->addBlock($pos, $layerBlock);
+			$bPos = $pos->add(0, 1, 0);
+			$selection->addBlock($bPos, VanillaBlocks::SAND());
 
-			$y = $blockPos->y + self::SPLACING_BETWEEN_LAYERS + 2;
+			$y = (int) ($pos->y + self::SPLACING_BETWEEN_LAYERS + 2);
 			for ($layer = 1; $layer < self::LAYERS; $layer++) {
-				$b1 = $world->getBlockAt($blockPos->x, $y, $blockPos->z);
-				$morton3d = morton3d_encode($blockPos->x, $y, $blockPos->z);
-				if (!isset($this->changedBlocks[$morton3d])) $this->changedBlocks[$morton3d] = $b1;
-				$world->setBlock($b1->getPosition(), VanillaBlocks::TNT());
-				$b2 = $world->getBlockAt($blockPos->x, $y + 1, $blockPos->z);
-				$morton3d = morton3d_encode($blockPos->x, $y + 1, $blockPos->z);
-				if (!isset($this->changedBlocks[$morton3d])) $this->changedBlocks[$morton3d] = $b2;
-				$world->setBlock($b2->getPosition(), VanillaBlocks::SAND());
+				$selection->addCell((int) $pos->x, $y, (int) $pos->z, VanillaBlocks::TNT());
+				$selection->addCell((int) $pos->x, $y + 1, (int) $pos->z, VanillaBlocks::SAND());
 				$y += self::SPLACING_BETWEEN_LAYERS + 2;
 			}
 		}
 
 		$highestPlatformY = $minPos->y + ((self::SPLACING_BETWEEN_LAYERS + 2) * self::LAYERS);
-		foreach ($this->arena->getPlayers() as $player) {
+		$players = $this->arena->getPlayers();
+		foreach ($players as $player) {
 			Utils::initPlayer($player);
 			$player->setGamemode(GameMode::ADVENTURE);
 			$player->getInventory()->setHeldItemIndex(0);
-			$safePos = $this->arena->getSafePosition($player);
-			$safePos->y = $highestPlatformY;
-			$player->teleport($safePos);
 		}
 		$losersCage = $this->arena->getLosersCage();
 		$losersCagePos = $losersCage->getPosition();
 		$losersCagePos->y = $highestPlatformY + self::EXTRA_CAGE_Y_POS;
 		$losersCage->setPosition($losersCagePos);
+
+		# Teleport players onto the towers only once they are written, so
+		# getSafePosition() does not resolve against the stale platform.
+		$this->commitStage(function () use ($players, $highestPlatformY) : void {
+			foreach ($players as $player) {
+				$safePos = $this->arena->getSafePosition($player);
+				$safePos->y = $highestPlatformY;
+				$player->teleport($safePos);
+			}
+		});
 		$losersCage->set();
 		parent::start();
+	}
+
+	/**
+	 * Returns the world positions inside the disc of the given radius around
+	 * $center, used to stage the TnT towers without a nested fillCircle write.
+	 *
+	 * @return Vector3[]
+	 */
+	private static function fillCircleCells(Vector3 $center, float $radius) : array {
+		$cells = [];
+		$rSqrt = $radius ** 2;
+		$rInt = (int) ceil($radius);
+		for ($x = -$rInt; $x <= $rInt; $x++) {
+			for ($z = -$rInt; $z <= $rInt; $z++) {
+				if (($x ** 2) + ($z ** 2) <= $rSqrt) {
+					$cells[] = $center->add($x, 0, $z);
+				}
+			}
+		}
+		return $cells;
 	}
 
 	public function tick() : void {

@@ -63,10 +63,9 @@ class BowSpleef extends Microgame implements Listener {
 		$map = $this->arena->getMap();
 		$world = $this->arena->getWorld();
 		$minPos = Position::fromObject($map->getPlatformMinPos(), $world);
-		$this->setMiniPlatforms(VanillaBlocks::AIR(), true);
-		foreach (Utils::fill($minPos, $map->getPlatformMaxPos(), VanillaBlocks::TNT(), true) as $changedBlock) {
-			$this->changedBlocks[] = $changedBlock;
-		}
+		$selection = $this->getStageSelection();
+		$this->setMiniPlatformsAsync($selection, VanillaBlocks::AIR());
+		$selection->addFill($minPos, $map->getPlatformMaxPos(), VanillaBlocks::TNT());
 		$bow = VanillaItems::BOW();
 		$bow->addEnchantment(new EnchantmentInstance(VanillaEnchantments::FLAME(), 1));
 		$bow->addEnchantment(new EnchantmentInstance(VanillaEnchantments::INFINITY(), 1));
@@ -78,6 +77,7 @@ class BowSpleef extends Microgame implements Listener {
 			$player->getInventory()->setItem(1, $arrow);
 			$player->getInventory()->setHeldItemIndex(0);
 		}
+		$this->commitStage();
 		$this->arena->getWinnersCage()->set();
 		$this->arena->getLosersCage()->set();
 		parent::start();

@@ -22,9 +22,9 @@ declare(strict_types=1);
 
 namespace LatamPMDevs\minerware\command\subcommands;
 
-use LatamPMDevs\minerware\libs\_f657fb06cbb97d69\CortexPE\Commando\BaseCommand;
-use LatamPMDevs\minerware\libs\_f657fb06cbb97d69\CortexPE\Commando\BaseSubCommand;
-use LatamPMDevs\minerware\libs\_f657fb06cbb97d69\CortexPE\Commando\constraint\InGameRequiredConstraint;
+use LatamPMDevs\minerware\libs\_35a08fe49251e603\CortexPE\Commando\BaseCommand;
+use LatamPMDevs\minerware\libs\_35a08fe49251e603\CortexPE\Commando\BaseSubCommand;
+use LatamPMDevs\minerware\libs\_35a08fe49251e603\CortexPE\Commando\constraint\InGameRequiredConstraint;
 use LatamPMDevs\minerware\arena\ArenaManager;
 use pocketmine\command\CommandSender;
 use pocketmine\player\Player;

@@ -22,7 +22,7 @@ declare(strict_types=1);
 
 namespace LatamPMDevs\minerware\command\args;
 
-use LatamPMDevs\minerware\libs\_f657fb06cbb97d69\CortexPE\Commando\args\StringEnumArgument;
+use LatamPMDevs\minerware\libs\_35a08fe49251e603\CortexPE\Commando\args\StringEnumArgument;
 use pocketmine\command\CommandSender;
 
 final class ArenaActionArgument extends StringEnumArgument {

@@ -26,7 +26,6 @@ use LatamPMDevs\minerware\arena\microgame\Level;
 use LatamPMDevs\minerware\arena\microgame\Microgame;
 use LatamPMDevs\minerware\utils\Utils;
 
-use pocketmine\block\Block;
 use pocketmine\block\utils\DyeColor;
 use pocketmine\block\VanillaBlocks;
 use pocketmine\block\Wool;
@@ -40,7 +39,6 @@ use pocketmine\item\enchantment\VanillaEnchantments;
 use pocketmine\item\VanillaItems;
 use pocketmine\player\GameMode;
 use pocketmine\player\Player;
-use pocketmine\world\format\Chunk;
 use function array_key_first;
 use function array_rand;
 use function strtolower;
@@ -55,9 +53,6 @@ class StandOnColor extends Microgame implements Listener {
 	}
 
 	public const KNOCKBACK_LEVEL = 2;
-
-	/** @var Block[] */
-	protected array $changedBlocks = [];
 
 	protected DyeColor $color;
 
@@ -88,13 +83,12 @@ class StandOnColor extends Microgame implements Listener {
 		$minPos = $map->getPlatformMinPos();
 		$maxPos = $map->getPlatformMaxPos();
 		$world = $this->arena->getWorld();
-		$this->setMiniPlatforms(VanillaBlocks::AIR(), true);
+		$selection = $this->getStageSelection();
+		$this->setMiniPlatformsAsync($selection, VanillaBlocks::AIR());
 		for ($x = $minPos->x; $x <= $maxPos->x; ++$x) {
 			for ($z = $minPos->z; $z <= $maxPos->z; ++$z) {
-				$world->loadChunk($x >> Chunk::COORD_BIT_SIZE, $z >> Chunk::COORD_BIT_SIZE);
 				for ($y = $minPos->y; $y <= $maxPos->y; ++$y) {
-					$this->changedBlocks[] = $world->getBlockAt((int) $x, (int) $y, (int) $z);
-					$world->setBlockAt((int) $x, (int) $y, (int) $z, VanillaBlocks::WOOL()->setColor($colors[array_rand($colors)]), false);
+					$selection->addCell((int) $x, (int) $y, (int) $z, VanillaBlocks::WOOL()->setColor($colors[array_rand($colors)]));
 				}
 			}
 		}
@@ -111,6 +105,7 @@ class StandOnColor extends Microgame implements Listener {
 			$player->getInventory()->setItem(8, $woolItem);
 			$player->getInventory()->setHeldItemIndex(0);
 		}
+		$this->commitStage();
 		$this->arena->getLosersCage()->set();
 		parent::start();
 	}

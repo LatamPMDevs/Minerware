@@ -60,7 +60,8 @@ class Sneaking extends Microgame implements Listener {
 		$map = $this->arena->getMap();
 		$minPos = $map->getPlatformMinPos();
 		$world = $this->arena->getWorld();
-		$this->setMiniPlatforms(VanillaBlocks::AIR(), true);
+		$this->setMiniPlatformsAsync($this->getStageSelection(), VanillaBlocks::AIR());
+		$this->commitStage();
 
 		foreach ($this->arena->getPlayers() as $player) {
 			Utils::initPlayer($player);

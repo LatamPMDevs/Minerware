@@ -30,7 +30,7 @@ final class DataHolder {
 	/**
 	 * @param array<string, mixed> $data
 	 */
-	public function __construct(private array $data) { }
+	public function __construct(private readonly array $data) { }
 
 	public function hasData(string $key) : bool {
 		return isset($this->data[$key]);
