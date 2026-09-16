@@ -22,9 +22,9 @@ declare(strict_types=1);
 
 namespace LatamPMDevs\minerware\command\subcommands;
 
-use LatamPMDevs\minerware\libs\_e95ddc7ef74fb334\CortexPE\Commando\args\RawStringArgument;
-use LatamPMDevs\minerware\libs\_e95ddc7ef74fb334\CortexPE\Commando\BaseCommand;
-use LatamPMDevs\minerware\libs\_e95ddc7ef74fb334\CortexPE\Commando\BaseSubCommand;
+use LatamPMDevs\minerware\libs\_9ae50fda62db64f0\CortexPE\Commando\args\RawStringArgument;
+use LatamPMDevs\minerware\libs\_9ae50fda62db64f0\CortexPE\Commando\BaseCommand;
+use LatamPMDevs\minerware\libs\_9ae50fda62db64f0\CortexPE\Commando\BaseSubCommand;
 use pocketmine\command\CommandSender;
 
 final class HelpCommand extends BaseSubCommand {

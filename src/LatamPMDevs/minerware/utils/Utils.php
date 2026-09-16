@@ -23,7 +23,7 @@ declare(strict_types=1);
 namespace LatamPMDevs\minerware\utils;
 
 use InvalidArgumentException;
-use LatamPMDevs\minerware\libs\_e95ddc7ef74fb334\IvanCraft623\languages\Translator;
+use LatamPMDevs\minerware\libs\_9ae50fda62db64f0\IvanCraft623\languages\Translator;
 use pocketmine\block\Block;
 use pocketmine\block\utils\DyeColor;
 use pocketmine\command\CommandSender;

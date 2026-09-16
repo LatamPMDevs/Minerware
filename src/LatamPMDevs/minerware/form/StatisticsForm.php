@@ -22,7 +22,7 @@ declare(strict_types=1);
 
 namespace LatamPMDevs\minerware\form;
 
-use LatamPMDevs\minerware\libs\_e95ddc7ef74fb334\jojoe77777\FormAPI\SimpleForm;
+use LatamPMDevs\minerware\libs\_9ae50fda62db64f0\jojoe77777\FormAPI\SimpleForm;
 use LatamPMDevs\minerware\database\PlayerData;
 use LatamPMDevs\minerware\Minerware;
 use LatamPMDevs\minerware\utils\Utils;
