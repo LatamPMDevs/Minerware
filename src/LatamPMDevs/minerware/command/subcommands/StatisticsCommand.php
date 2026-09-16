@@ -22,9 +22,9 @@ declare(strict_types=1);
 
 namespace LatamPMDevs\minerware\command\subcommands;
 
-use LatamPMDevs\minerware\libs\_35a08fe49251e603\CortexPE\Commando\args\RawStringArgument;
-use LatamPMDevs\minerware\libs\_35a08fe49251e603\CortexPE\Commando\BaseCommand;
-use LatamPMDevs\minerware\libs\_35a08fe49251e603\CortexPE\Commando\BaseSubCommand;
+use LatamPMDevs\minerware\libs\_e95ddc7ef74fb334\CortexPE\Commando\args\RawStringArgument;
+use LatamPMDevs\minerware\libs\_e95ddc7ef74fb334\CortexPE\Commando\BaseCommand;
+use LatamPMDevs\minerware\libs\_e95ddc7ef74fb334\CortexPE\Commando\BaseSubCommand;
 use LatamPMDevs\minerware\database\DataManager;
 use LatamPMDevs\minerware\database\PlayerData;
 use LatamPMDevs\minerware\form\FormManager;
