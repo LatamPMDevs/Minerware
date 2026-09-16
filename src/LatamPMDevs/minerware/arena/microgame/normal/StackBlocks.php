@@ -170,7 +170,7 @@ class StackBlocks extends Microgame implements Listener {
 		if (!$this->arena->inGame($player)) return;
 
 		foreach ($event->getTransaction()->getBlocks() as [$x, $y, $z, $block]) {
-			$this->changedBlocks[] = $this->arena->getWorld()->getBlockAt($x, $y, $z);
+			$this->recordOriginalBlock($this->arena->getWorld()->getBlockAt($x, $y, $z));
 		}
 
 		$assignedBlock = $this->getAssignedBlock($player);

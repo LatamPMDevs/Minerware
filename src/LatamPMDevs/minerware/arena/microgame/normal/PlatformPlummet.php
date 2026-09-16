@@ -88,9 +88,6 @@ class PlatformPlummet extends Microgame implements Listener {
 
 	public const INITIAL_PHASES = [self::QUARTZ_PHASE, self::POLISHED_ANDESITE_PHASE];
 
-	/** @var Block[] */
-	protected array $changedBlocks = [];
-
 	/** @var array<int, Vector2[]> */
 	protected array $platforms = [];
 
@@ -135,7 +132,8 @@ class PlatformPlummet extends Microgame implements Listener {
 		);
 		$this->breakablePlatforms = $this->platforms;
 
-		$this->setMiniPlatforms(VanillaBlocks::AIR(), true);
+		$selection = $this->getStageSelection();
+		$this->setMiniPlatformsAsync($selection, VanillaBlocks::AIR());
 		$platformsPerLine = ($maxPos->x - $minPos->x + 1) / $this->getPlatformSize();
 		foreach (array_rand($this->platforms, self::UNBREAKABLE_PLATFORMS) as $platformHash) {
 			unset($this->breakablePlatforms[$platformHash]);
@@ -143,13 +141,12 @@ class PlatformPlummet extends Microgame implements Listener {
 		}
 		$currentPhase = self::QUARTZ_PHASE;
 		$i = 1;
-		foreach ($this->platforms as $platformHash => $positions) { //phase assigment
+		foreach ($this->platforms as $platformHash => $positions) { #phase assignment
 			$this->platformsPhase[$platformHash] = $currentPhase;
 			$block = self::getCorrespondingBlock($currentPhase);
 			foreach ($positions as $vec2) {
 				$pos = $minPos->add($vec2->x, 0, $vec2->y);
-				$this->changedBlocks[] = $world->getBlock($pos);
-				$world->setBlock($pos, $block);
+				$selection->addBlock($pos, $block);
 			}
 			if (($i % $platformsPerLine) === 0) {
 				#The block is not changed
@@ -166,6 +163,7 @@ class PlatformPlummet extends Microgame implements Listener {
 			$player->setGamemode(GameMode::ADVENTURE);
 			$player->getInventory()->setHeldItemIndex(0);
 		}
+		$this->commitStage();
 		$this->arena->getLosersCage()->set();
 		parent::start();
 	}

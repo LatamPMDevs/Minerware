@@ -67,14 +67,18 @@ class IgniteTNT extends Microgame implements Listener {
 	public function start() : void {
 		$this->plugin->getServer()->getPluginManager()->registerEvents($this, $this->plugin);
 
-		$map = $this->arena->getMap();
-		$minPos = $map->getPlatformMinPos();
-		$world = $this->arena->getWorld();
-		foreach ($map->getMiniPlatforms() as $platformBlocks) {
+		$selection = $this->getStageSelection();
+		$minPos = $this->arena->getMap()->getPlatformMinPos();
+		foreach ($this->arena->getMap()->getMiniPlatforms() as $platformBlocks) {
 			$blockPos = $platformBlocks[array_rand($platformBlocks)];
-			$this->changedBlocks[] = $world->getBlockAt((int) ($minPos->x + $blockPos[0]), (int) ($minPos->y + $blockPos[1]), (int) ($minPos->z + $blockPos[2]));
-			$world->setBlockAt((int) ($minPos->x + $blockPos[0]), (int) ($minPos->y + $blockPos[1]), (int) ($minPos->z + $blockPos[2]), VanillaBlocks::TNT(), false);
+			$selection->addCell(
+				(int) ($minPos->x + $blockPos[0]),
+				(int) ($minPos->y + $blockPos[1]),
+				(int) ($minPos->z + $blockPos[2]),
+				VanillaBlocks::TNT()
+			);
 		}
+		$this->commitStage();
 
 		foreach ($this->arena->getPlayers() as $player) {
 			Utils::initPlayer($player);

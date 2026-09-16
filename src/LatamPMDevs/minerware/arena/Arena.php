@@ -37,7 +37,9 @@ use LatamPMDevs\minerware\map\Map;
 use LatamPMDevs\minerware\map\MapWorldGenerator;
 use LatamPMDevs\minerware\Minerware;
 use LatamPMDevs\minerware\tasks\ArenaTask;
+use LatamPMDevs\minerware\utils\AsyncBlockManager;
 use LatamPMDevs\minerware\utils\PointHolder;
+use LatamPMDevs\minerware\utils\Selection;
 use LatamPMDevs\minerware\utils\Utils;
 use pocketmine\block\utils\DyeColor;
 
@@ -108,6 +110,12 @@ final class Arena implements Listener {
 
 	public bool $areInvisibleBlocksSet = false;
 
+	/**
+	 * Number of async block builds (invisible blocks, cages, microgame stage)
+	 * still draining for this arena. Gameplay is gated on this reaching zero.
+	 */
+	private int $pendingBuilds = 0;
+
 	/** @var array<int, array<int, Player>> */
 	public array $winners = [];
 
@@ -134,6 +142,8 @@ final class Arena implements Listener {
 			Position::fromObject($this->map->getLosersCage(), $this->world),
 			VanillaBlocks::STAINED_GLASS()->setColor(DyeColor::RED)
 		);
+		$this->winnersCage->setBuildCallbacks($this->onStageBuildStarted(...), $this->onStageBuildSettled(...));
+		$this->losersCage->setBuildCallbacks($this->onStageBuildStarted(...), $this->onStageBuildSettled(...));
 
 		# TODO: More Microgames!
 		$microgameManager = MicrogameManager::getInstance();
@@ -150,7 +160,7 @@ final class Arena implements Listener {
 			if ($this->status === Status::ENDING) {
 				throw new CancelTaskException("Arena is no more in-game");
 			}
-			if ($this->currentMicrogame !== null && $this->currentMicrogame->isRunning()) {
+			if ($this->currentMicrogame !== null && $this->currentMicrogame->isRunning() && !$this->isBuildingStage()) {
 				$this->currentMicrogame->tick();
 			};
 		}), 3);
@@ -331,6 +341,9 @@ final class Arena implements Listener {
 	}
 
 	public function startNextMicrogame() : ?Microgame {
+		if ($this->isBuildingStage()) {
+			return null;
+		}
 		$microgame = $this->getNextMicrogame();
 		if ($microgame !== null) {
 			$this->setCurrentMicrogame($microgame);
@@ -624,6 +637,32 @@ final class Arena implements Listener {
 		return $this->areInvisibleBlocksSet;
 	}
 
+	/**
+	 * Returns true while one or more async block builds for this arena are still
+	 * draining. Callers that read or mutate the stage (e.g. a microgame tick)
+	 * must not proceed until this returns false.
+	 */
+	public function isBuildingStage() : bool {
+		return $this->pendingBuilds > 0;
+	}
+
+	/**
+	 * Marks one async build as started. Each {@see buildStarted} must be paired
+	 * with exactly one {@see buildSettled}.
+	 */
+	public function onStageBuildStarted() : void {
+		$this->pendingBuilds++;
+	}
+
+	/**
+	 * Marks one async build as finished (its completion callback ran).
+	 */
+	public function onStageBuildSettled() : void {
+		if ($this->pendingBuilds > 0) {
+			$this->pendingBuilds--;
+		}
+	}
+
 	public function buildInvisibleBlocks() : void {
 		$min = $this->map->getPlatformMinPos();
 		$max = $this->map->getPlatformMaxPos();
@@ -631,10 +670,14 @@ final class Arena implements Listener {
 		$pos2 = new Position($max->x + 1, $min->y + 30, $max->z + 1, $this->world);
 		$pos3 = new Position($pos1->x, $min->y, $pos2->z, $this->world);
 		$pos4 = new Position($pos2->x, $min->y, $pos1->z, $this->world);
-		Utils::fill($pos1, $pos3, VanillaBlocks::INVISIBLE_BEDROCK());
-		Utils::fill($pos3, $pos2, VanillaBlocks::INVISIBLE_BEDROCK());
-		Utils::fill($pos2, $pos4, VanillaBlocks::INVISIBLE_BEDROCK());
-		Utils::fill($pos4, $pos1, VanillaBlocks::INVISIBLE_BEDROCK());
+
+		$this->onStageBuildStarted();
+		$selection = new Selection($this->world);
+		$selection->addFill($pos1, $pos3, VanillaBlocks::INVISIBLE_BEDROCK());
+		$selection->addFill($pos3, $pos2, VanillaBlocks::INVISIBLE_BEDROCK());
+		$selection->addFill($pos2, $pos4, VanillaBlocks::INVISIBLE_BEDROCK());
+		$selection->addFill($pos4, $pos1, VanillaBlocks::INVISIBLE_BEDROCK());
+		AsyncBlockManager::getInstance()->executeSet($selection, $this->onStageBuildSettled(...));
 		$this->areInvisibleBlocksSet = true;
 	}
 
@@ -645,10 +688,14 @@ final class Arena implements Listener {
 		$pos2 = new Position($max->x + 1, $min->y + 30, $max->z + 1, $this->world);
 		$pos3 = new Position($pos1->x, $min->y, $pos2->z, $this->world);
 		$pos4 = new Position($pos2->x, $min->y, $pos1->z, $this->world);
-		Utils::fill($pos1, $pos3, VanillaBlocks::AIR());
-		Utils::fill($pos3, $pos2, VanillaBlocks::AIR());
-		Utils::fill($pos2, $pos4, VanillaBlocks::AIR());
-		Utils::fill($pos4, $pos1, VanillaBlocks::AIR());
+
+		$this->onStageBuildStarted();
+		$selection = new Selection($this->world);
+		$selection->addFill($pos1, $pos3, VanillaBlocks::AIR());
+		$selection->addFill($pos3, $pos2, VanillaBlocks::AIR());
+		$selection->addFill($pos2, $pos4, VanillaBlocks::AIR());
+		$selection->addFill($pos4, $pos1, VanillaBlocks::AIR());
+		AsyncBlockManager::getInstance()->executeSet($selection, $this->onStageBuildSettled(...));
 		$this->areInvisibleBlocksSet = false;
 	}
 

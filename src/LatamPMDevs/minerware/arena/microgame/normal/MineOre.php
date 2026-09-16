@@ -37,7 +37,6 @@ use pocketmine\item\enchantment\VanillaEnchantments;
 use pocketmine\item\VanillaItems;
 use pocketmine\player\GameMode;
 use pocketmine\player\Player;
-use pocketmine\world\format\Chunk;
 use function array_rand;
 use function mt_rand;
 use function str_replace;
@@ -92,11 +91,10 @@ class MineOre extends Microgame implements Listener {
 
 		$minY = $minPos->y + 1;
 		$maxY = $maxPos->y + self::ORES_LAYERS + self::COBBLESTONE_LAYERS;
+		$selection = $this->getStageSelection();
 		for ($x = $minPos->x; $x <= $maxPos->x; ++$x) {
 			for ($z = $minPos->z; $z <= $maxPos->z; ++$z) {
-				$world->loadChunk($x >> Chunk::COORD_BIT_SIZE, $z >> Chunk::COORD_BIT_SIZE);
 				for ($y = $minY; $y <= $maxY; ++$y) {
-					$this->changedBlocks[] = $world->getBlockAt((int) $x, (int) $y, (int) $z);
 					if ($y <= ($maxY - self::COBBLESTONE_LAYERS)) {
 						if (mt_rand(1, 20) === 1) {
 							$block = $this->ore;
@@ -106,7 +104,7 @@ class MineOre extends Microgame implements Listener {
 					} else {
 						$block = VanillaBlocks::COBBLESTONE();
 					}
-					$world->setBlockAt((int) $x, (int) $y, (int) $z, $block, false);
+					$selection->addCell((int) $x, (int) $y, (int) $z, $block);
 				}
 			}
 		}
@@ -122,8 +120,17 @@ class MineOre extends Microgame implements Listener {
 			$player->getInventory()->setItem(0, $pickaxe);
 			$player->getInventory()->setItem(8, $oreItem);
 			$player->getInventory()->setHeldItemIndex(0);
-			$this->arena->tpSafePosition($player);
 		}
+
+		# Teleport players only once the ore tower has actually been written, so
+		# getSafePosition() resolves a safe spawn on top of the ores rather than
+		# the stale terrain.
+		$players = $this->arena->getPlayers();
+		$this->commitStage(function () use ($players) : void {
+			foreach ($players as $player) {
+				$this->arena->tpSafePosition($player);
+			}
+		});
 		$this->arena->getWinnersCage()->set();
 		$this->arena->getLosersCage()->set();
 		parent::start();
@@ -194,6 +201,12 @@ class MineOre extends Microgame implements Listener {
 	public function onBlockBreak(BlockBreakEvent $event) : void {
 		$player = $event->getPlayer();
 		if (!$this->arena->inGame($player)) return;
+		if ($this->arena->isBuildingStage()) {
+			# Stage terrain still being written by a worker thread; don't let a
+			# player chew on the base before the ore tower exists.
+			$event->cancel();
+			return;
+		}
 		if ($this->isWinner($player) || $this->isLoser($player)) {
 			$event->cancel();
 			return;
@@ -202,7 +215,7 @@ class MineOre extends Microgame implements Listener {
 		$y = $this->arena->getMap()->getPlatformMinPos()->y;
 		$this->minedBlocks[$player->getId()] = $this->getMinedBlocks($player) + 1;
 		if ((int) $block->getPosition()->y === $y) {
-			$this->changedBlocks[] = $block;
+			$this->recordOriginalBlock($block);
 		}
 		if ($block->hasSameTypeId($this->ore)) {
 			$this->addWinner($player);

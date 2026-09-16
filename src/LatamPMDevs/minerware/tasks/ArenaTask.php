@@ -85,6 +85,10 @@ final class ArenaTask extends Task {
 				break;
 
 			case Status::INBETWEEN:
+				if ($arena->isBuildingStage()) {
+					# Async stage teardown/build still draining; hold the countdown.
+					break;
+				}
 				$total = max(1, $arena->getCountdownTotal());
 				$countdown = $arena->getCountdown();
 				if ($countdown === max(1, $total - 2)) {
@@ -100,7 +104,7 @@ final class ArenaTask extends Task {
 						}
 					} elseif ($countdown === $total - 1) {
 						foreach ($players as $player) {
-						$player->sendTitle("§1§2", $this->plugin->getTranslator()->translate($player, "	game.arena.inbetween.winthemost"), 10, 10, 10);
+							$player->sendTitle("§1§2", $this->plugin->getTranslator()->translate($player, "game.arena.inbetween.winthemost"), 10, 10, 10);
 						}
 					} else {
 						$isBoss = $arena->getNextMicrogameNonNull()->getLevel() === Level::BOSS;

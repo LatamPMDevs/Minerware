@@ -45,9 +45,7 @@ use pocketmine\math\AxisAlignedBB;
 use pocketmine\math\Facing;
 use pocketmine\player\GameMode;
 use pocketmine\player\Player;
-use pocketmine\world\format\Chunk;
 use pocketmine\world\Position;
-use function array_merge;
 use function array_rand;
 
 class NerdPole extends Microgame implements Listener {
@@ -93,21 +91,19 @@ class NerdPole extends Microgame implements Listener {
 		$maxPos = $map->getPlatformMaxPos();
 		$world = $this->arena->getWorld();
 		$stainedClays = self::getStainedClays();
+		$selection = $this->getStageSelection();
 
-		#Fill the platform with Stayned Clay
+		#Fill the platform with Stained Clay
 		$miniPlatforms = $map->getMiniPlatforms();
 		foreach ($miniPlatforms as $key => $value) {
 			foreach ($miniPlatforms[$key] as $blockPos) {
-				$this->changedBlocks[] = $world->getBlockAt((int) ($minPos->x + $blockPos[0]), (int) ($minPos->y + $blockPos[1]), (int) ($minPos->z + $blockPos[2]));
-				$world->setBlockAt((int) ($minPos->x + $blockPos[0]), (int) ($minPos->y + $blockPos[1]), (int) ($minPos->z + $blockPos[2]), $stainedClays[array_rand($stainedClays)]);
+				$selection->addCell((int) ($minPos->x + $blockPos[0]), (int) ($minPos->y + $blockPos[1]), (int) ($minPos->z + $blockPos[2]), $stainedClays[array_rand($stainedClays)]);
 			}
 		}
 		for ($x = $minPos->x; $x <= $maxPos->x; ++$x) {
 			for ($z = $minPos->z; $z <= $maxPos->z; ++$z) {
-				$world->loadChunk($x >> Chunk::COORD_BIT_SIZE, $z >> Chunk::COORD_BIT_SIZE);
 				for ($y = $minPos->y; $y <= $maxPos->y; ++$y) {
-					$this->changedBlocks[] = $world->getBlockAt((int) $x, (int) $y, (int) $z);
-					$world->setBlockAt((int) $x, (int) $y, (int) $z, $stainedClays[array_rand($stainedClays)]);
+					$selection->addCell((int) $x, (int) $y, (int) $z, $stainedClays[array_rand($stainedClays)]);
 				}
 			}
 		}
@@ -115,54 +111,34 @@ class NerdPole extends Microgame implements Listener {
 		$defaultChesttext = $this->plugin->getTranslator()->translate(null, "microgame.nerdpole.chesttext");
 		$textEntities = [];
 
-		#Place Chests
-		$chest = VanillaBlocks::CHEST();
-
-		$pos = $minPos->add(0, 1, 0);
-		$this->changedBlocks[] = $world->getBlock($pos);
-		$chest->setFacing(Facing::SOUTH);
-		$world->setBlock($pos, $chest);
-		$textEntity = new TextEntity(Location::fromObject($pos->add(0.5, 1.2, 0.5), $world));
-		$textEntity->setNameTag($defaultChesttext);
-		$textEntity->spawnToAll();
-		$textEntities[] = $textEntity;
-
-		$pos = $minPos->add(0, 1, 0);
-		$pos->z = $maxPos->z;
-		$this->changedBlocks[] = $world->getBlock($pos);
-		$chest->setFacing(Facing::NORTH);
-		$world->setBlock($pos, $chest);
-		$textEntity = new TextEntity(Location::fromObject($pos->add(0.5, 1.2, 0.5), $world));
-		$textEntity->setNameTag($defaultChesttext);
-		$textEntity->spawnToAll();
-		$textEntities[] = $textEntity;
-
-		$pos = $maxPos->add(0, 1, 0);
-		$this->changedBlocks[] = $world->getBlock($pos);
-		$chest->setFacing(Facing::NORTH);
-		$world->setBlock($pos, $chest);
-		$textEntity = new TextEntity(Location::fromObject($pos->add(0.5, 1.2, 0.5), $world));
-		$textEntity->setNameTag($defaultChesttext);
-		$textEntity->spawnToAll();
-		$textEntities[] = $textEntity;
-
-		$pos = $maxPos->add(0, 1, 0);
-		$pos->z = $minPos->z;
-		$this->changedBlocks[] = $world->getBlock($pos);
-		$chest->setFacing(Facing::SOUTH);
-		$world->setBlock($pos, $chest);
-		$textEntity = new TextEntity(Location::fromObject($pos->add(0.5, 1.2, 0.5), $world));
-		$textEntity->setNameTag($defaultChesttext);
-		$textEntity->spawnToAll();
-		$textEntities[] = $textEntity;
+		#Place Chests (a fresh block per corner so the facing is stable in the selection)
+		$chestPositions = [
+			[$minPos->add(0, 1, 0), Facing::SOUTH],
+			[$minPos->add(0, 1, 0), Facing::NORTH],
+			[$maxPos->add(0, 1, 0), Facing::NORTH],
+			[$maxPos->add(0, 1, 0), Facing::SOUTH]
+		];
+		foreach ($chestPositions as $index => $chestPosData) {
+			$pos = $chestPosData[0];
+			if ($index === 1) {
+				$pos->z = $maxPos->z;
+			} elseif ($index === 3) {
+				$pos->z = $minPos->z;
+			}
+			$chest = VanillaBlocks::CHEST();
+			$chest->setFacing($chestPosData[1]);
+			$selection->addBlock($pos, $chest);
+			$textEntity = new TextEntity(Location::fromObject($pos->add(0.5, 1.2, 0.5), $world));
+			$textEntity->setNameTag($defaultChesttext);
+			$textEntity->spawnToAll();
+			$textEntities[] = $textEntity;
+		}
 
 		#Set the gold platform
 		$diff = $maxPos->subtractVector($minPos);
 		$platformMinPos = Position::fromObject($minPos->addVector($diff->divide(2)->add(0, self::PLATFORM_HEIGHT, 0))->floor(), $world);
 		$platformMaxPos = Position::fromObject($platformMinPos->add(1, 0, 1), $world);
-		foreach (Utils::fill($platformMinPos, $platformMaxPos, VanillaBlocks::GOLD(), true) as $changedBlock) {
-			$this->changedBlocks[] = $changedBlock;
-		}
+		$selection->addFill($platformMinPos, $platformMaxPos, VanillaBlocks::GOLD());
 		$this->platformBoundingBox = new AxisAlignedBB(
 			$platformMinPos->x,
 			$platformMinPos->y,
@@ -182,6 +158,7 @@ class NerdPole extends Microgame implements Listener {
 				$textEntity->setNameTagToPlayer($player, $chesttext);
 			}
 		}
+		$this->commitStage();
 		$this->arena->getWinnersCage()->set();
 		$this->arena->getLosersCage()->set();
 		parent::start();
@@ -241,6 +218,10 @@ class NerdPole extends Microgame implements Listener {
 	public function onBlockPlace(BlockPlaceEvent $event) : void {
 		$player = $event->getPlayer();
 		if (!$this->arena->inGame($player)) return;
+		if ($this->arena->isBuildingStage()) {
+			$event->cancel();
+			return;
+		}
 
 		$replacedBlocks = [];
 		foreach ($event->getTransaction()->getBlocks() as [$x, $y, $z, $block]) {
@@ -248,9 +229,8 @@ class NerdPole extends Microgame implements Listener {
 				$event->cancel();
 				return;
 			}
-			$replacedBlocks[] = $this->arena->getWorld()->getBlockAt($x, $y, $z);
+			$this->recordOriginalBlock($this->arena->getWorld()->getBlockAt($x, $y, $z));
 		}
-		$this->changedBlocks = array_merge($this->changedBlocks, $replacedBlocks);
 	}
 
 	public function onDamage(EntityDamageEvent $event) : void {

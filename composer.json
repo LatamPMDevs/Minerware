@@ -13,7 +13,7 @@
         "sof3/libasynql": "^4.2.3"
     },
     "require-dev": {
-        "php": "^8.0",
+        "php": "^8.1",
         "phpstan/phpstan": "2.2.8",
         "pocketmine/pocketmine-mp": "^5.36.0",
         "sof3/pharynx": "^0.3.8"

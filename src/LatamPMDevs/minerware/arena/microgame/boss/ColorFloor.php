@@ -88,11 +88,10 @@ class ColorFloor extends Microgame implements Listener {
 		$world = $this->arena->getWorld();
 		$minPos = Position::fromObject($map->getPlatformMinPos(), $world);
 		$maxPos = Position::fromObject($map->getPlatformMaxPos(), $world);
-		$this->setMiniPlatforms(VanillaBlocks::AIR(), true);
-		foreach (Utils::fill($minPos, $maxPos, VanillaBlocks::STAINED_CLAY(), false) as $changedBlock) {
-			$this->blocksCount++;
-			$this->changedBlocks[] = $changedBlock;
-		}
+		$selection = $this->getStageSelection();
+		$this->setMiniPlatformsAsync($selection, VanillaBlocks::AIR());
+		$selection->addFill($minPos, $maxPos, VanillaBlocks::STAINED_CLAY());
+		$this->blocksCount = (int) (($maxPos->x - $minPos->x + 1) * ($maxPos->z - $minPos->z + 1));
 
 		$dyeColors = DyeColor::cases();
 		shuffle($dyeColors);
@@ -119,6 +118,7 @@ class ColorFloor extends Microgame implements Listener {
 			}
 			$i++;
 		}
+		$this->commitStage();
 		if (!$this->arena->areInvisibleBlocksSet()) {
 			$this->arena->buildInvisibleBlocks();
 		}
@@ -280,6 +280,11 @@ class ColorFloor extends Microgame implements Listener {
 	public function onInteract(PlayerInteractEvent $event) : void {
 		$player = $event->getPlayer();
 		if (!$this->arena->inGame($player)) return;
+		if ($this->arena->isBuildingStage()) {
+			# Clay floor still being written asynchronously.
+			$event->cancel();
+			return;
+		}
 		if ($event->getItem() instanceof Hoe) {
 			$block = $event->getBlock();
 			if ($block instanceof StainedHardenedClay) {

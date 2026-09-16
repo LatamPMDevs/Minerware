@@ -27,9 +27,9 @@ use IvanCraft623\fakeblocks\FakeBlockManager;
 use LatamPMDevs\minerware\arena\microgame\Level;
 
 use LatamPMDevs\minerware\arena\microgame\Microgame;
+use LatamPMDevs\minerware\utils\Selection;
 use LatamPMDevs\minerware\utils\Utils;
 
-use pocketmine\block\Block;
 use pocketmine\block\VanillaBlocks;
 use pocketmine\block\Water;
 use pocketmine\event\block\BlockBreakEvent;
@@ -109,11 +109,10 @@ class FillTheTank extends Microgame implements Listener {
 		$minPos = $map->getPlatformMinPos();
 		$maxPos = $map->getPlatformMaxPos();
 		$world = $this->arena->getWorld();
+		$selection = $this->getStageSelection();
+		$this->setMiniPlatformsAsync($selection, VanillaBlocks::AIR());
 
-		$this->setMiniPlatforms(VanillaBlocks::AIR(), true);
-		foreach (Utils::fill(Position::fromObject($minPos->down(), $world), $maxPos->down(), VanillaBlocks::STONE()) as $changedBlock) {
-			$this->changedBlocks[] = $changedBlock;
-		}
+		$selection->addFill(Position::fromObject($minPos->down(), $world), $maxPos->down(), VanillaBlocks::STONE());
 
 		#Water platform
 		$waterPos = new Position(
@@ -123,11 +122,13 @@ class FillTheTank extends Microgame implements Listener {
 			$world
 		);
 		$waterSize = self::WATER_PLATFORM_SIZE - 1;
-		foreach (Utils::fill($waterPos, $waterPos->add($waterSize, 0, $waterSize), VanillaBlocks::WATER()) as $changedBlock) {
-			$this->changedBlocks[] = $changedBlock;
-			$pos = $changedBlock->getPosition();
-			$this->waterPlatform[morton3d_encode($pos->x, $pos->y, $pos->z)] = $pos;
+		$waterMax = $waterPos->add($waterSize, 0, $waterSize);
+		for ($x = $waterPos->x; $x <= $waterMax->x; ++$x) {
+			for ($z = $waterPos->z; $z <= $waterMax->z; ++$z) {
+				$this->waterPlatform[morton3d_encode((int) $x, (int) $waterPos->y, (int) $z)] = new Position((int) $x, (int) $waterPos->y, (int) $z, $world);
+			}
 		}
+		$selection->addFill($waterPos, $waterMax, VanillaBlocks::WATER());
 
 		#Tank
 		do {
@@ -138,9 +139,7 @@ class FillTheTank extends Microgame implements Listener {
 				$world
 			);
 		} while (isset($this->waterPlatform[morton3d_encode($this->tankPosition->x, $this->tankPosition->y - 1, $this->tankPosition->z)]));
-		foreach ($this->buildTank() as $changedBlock) {
-			$this->changedBlocks[] = $changedBlock;
-		}
+		$this->buildTank($selection);
 
 		#FakeBlocks
 		for ($i=0; $i < self::TANK_DEPT; $i++) {
@@ -166,6 +165,7 @@ class FillTheTank extends Microgame implements Listener {
 			}
 			$player->sendMessage($this->plugin->getTranslator()->translate($player, "microgame.fillthetank.start"));
 		}
+		$this->commitStage();
 		$this->arena->getWinnersCage()->set();
 		$this->arena->getLosersCage()->set();
 		parent::start();
@@ -173,13 +173,11 @@ class FillTheTank extends Microgame implements Listener {
 
 	/**
 	 * This is a pretty horrible hack,
-	 * in the future we plan to implement a building system
-	 *
-	 * @return Block[]
+	 * in the future we plan to implement a building system.
+	 * Adds the tank blocks to the given stage {@see Selection} rather than
+	 * writing them synchronously.
 	 */
-	private function buildTank() : array {
-		$changedBlocks = [];
-
+	private function buildTank(Selection $selection) : void {
 		$blocks = [
 			[VanillaBlocks::FURNACE(), 0, 0, 0],
 			[VanillaBlocks::COBBLESTONE_WALL(), 0, 1, 0],
@@ -193,13 +191,10 @@ class FillTheTank extends Microgame implements Listener {
 			$blocks[] = [VanillaBlocks::GLASS(), 0, $y, -1];
 			$y++;
 		}
-		$world = $this->arena->getWorld();
 		foreach ($blocks as $blockData) {
 			$pos = $this->tankPosition->add($blockData[1], $blockData[2], $blockData[3]);
-			$changedBlocks[] = $world->getBlock($pos);
-			$world->setBlock($pos, $blockData[0]);
+			$selection->addBlock($pos, $blockData[0]);
 		}
-		return $changedBlocks;
 	}
 
 	public function tick() : void {
@@ -288,6 +283,10 @@ class FillTheTank extends Microgame implements Listener {
 	public function onInteract(PlayerInteractEvent $event) : void {
 		$player = $event->getPlayer();
 		if (!$this->arena->inGame($player)) return;
+		if ($this->arena->isBuildingStage()) {
+			$event->cancel();
+			return;
+		}
 		if ($this->isWinner($player) || $this->isLoser($player)) return;
 		$item = $event->getItem();
 		$isTank = $event->getBlock()->getPosition()->equals($this->tankPosition);

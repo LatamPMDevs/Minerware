@@ -24,6 +24,7 @@ namespace LatamPMDevs\minerware\arena\microgame\normal;
 
 use LatamPMDevs\minerware\arena\microgame\Level;
 use LatamPMDevs\minerware\arena\microgame\Microgame;
+use LatamPMDevs\minerware\utils\Selection;
 use LatamPMDevs\minerware\utils\Utils;
 
 use pocketmine\block\VanillaBlocks;
@@ -76,14 +77,14 @@ class StandOnDiamond extends Microgame implements Listener {
 
 	public function start() : void {
 		$map = $this->arena->getMap();
-		$minPos = $map->getPlatformMinPos();
 		$world = $this->arena->getWorld();
+		$minPos = $map->getPlatformMinPos();
 		$miniPlatforms = $map->getMiniPlatforms();
+		$selection = $this->getStageSelection();
 		foreach (array_rand($miniPlatforms, self::DIAMOND_PLATFORMS) as $key) {
 			$this->diamondPlatforms[] = $key;
 			foreach ($miniPlatforms[$key] as $blockPos) {
-				$this->changedBlocks[] = $world->getBlockAt((int) ($minPos->x + $blockPos[0]), (int) ($minPos->y + $blockPos[1]), (int) ($minPos->z + $blockPos[2]));
-				$world->setBlockAt((int) ($minPos->x + $blockPos[0]), (int) ($minPos->y + $blockPos[1]), (int) ($minPos->z + $blockPos[2]), VanillaBlocks::DIAMOND(), false);
+				$selection->addCell((int) ($minPos->x + $blockPos[0]), (int) ($minPos->y + $blockPos[1]), (int) ($minPos->z + $blockPos[2]), VanillaBlocks::DIAMOND());
 			}
 		}
 
@@ -97,6 +98,7 @@ class StandOnDiamond extends Microgame implements Listener {
 			$player->getInventory()->setItem(0, $stick);
 			$player->getInventory()->setHeldItemIndex(0);
 		}
+		$this->commitStage();
 		$this->arena->getLosersCage()->set();
 		parent::start();
 	}
@@ -154,17 +156,16 @@ class StandOnDiamond extends Microgame implements Listener {
 			$minPos = Position::fromObject($map->getPlatformMinPos(), $world);
 			$maxPos = Position::fromObject($map->getPlatformMaxPos(), $world);
 			$miniPlatforms = $map->getMiniPlatforms();
+			$selection = new Selection($world);
 			foreach ($miniPlatforms as $key => $value) {
 				if (!in_array($key, $this->diamondPlatforms, true)) {
 					foreach ($miniPlatforms[$key] as $blockPos) {
-						$this->changedBlocks[] = $world->getBlockAt((int) ($minPos->x + $blockPos[0]), (int) ($minPos->y + $blockPos[1]), (int) ($minPos->z + $blockPos[2]));
-						$world->setBlockAt((int) ($minPos->x + $blockPos[0]), (int) ($minPos->y + $blockPos[1]), (int) ($minPos->z + $blockPos[2]), VanillaBlocks::AIR(), true);
+						$selection->addCell((int) ($minPos->x + $blockPos[0]), (int) ($minPos->y + $blockPos[1]), (int) ($minPos->z + $blockPos[2]), VanillaBlocks::AIR());
 					}
 				}
 			}
-			foreach (Utils::fill($minPos, $maxPos, VanillaBlocks::AIR(), true) as $changedBlock) {
-				$this->changedBlocks[] = $changedBlock;
-			}
+			$selection->addFill($minPos, $maxPos, VanillaBlocks::AIR());
+			$this->pushStageOperation($selection);
 			$this->isFloorBroken = true;
 			return true;
 		}

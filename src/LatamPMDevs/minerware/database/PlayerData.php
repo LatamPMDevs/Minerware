@@ -28,14 +28,14 @@ use function time;
 class PlayerData implements JsonSerializable {
 
 	public function __construct(
-		protected string $name,
-		protected int $generationTime, //Time at which the data was obtained
-		protected int $wins,
-		protected int $bossgamesWon,
-		protected int $microgamesWon,
-		protected int $gamesPlayed,
-		protected int $microgamesPlayed,
-		protected int $timePlayed
+		protected readonly string $name,
+		protected readonly int $generationTime, //Time at which the data was obtained
+		protected readonly int $wins,
+		protected readonly int $bossgamesWon,
+		protected readonly int $microgamesWon,
+		protected readonly int $gamesPlayed,
+		protected readonly int $microgamesPlayed,
+		protected readonly int $timePlayed
 	) {
 	}
 

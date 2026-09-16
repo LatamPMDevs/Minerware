@@ -22,10 +22,11 @@ declare(strict_types=1);
 
 namespace LatamPMDevs\minerware\entity\projectile;
 
+use pocketmine\entity\NeverSavedWithChunkEntity;
 use pocketmine\entity\projectile\SplashPotion;
 use pocketmine\event\entity\ProjectileHitEvent;
 
-class ColorMissile extends SplashPotion {
+class ColorMissile extends SplashPotion implements NeverSavedWithChunkEntity {
 
 	protected function onHit(ProjectileHitEvent $event) : void {
 		// Logic calculated by ColorFloor class

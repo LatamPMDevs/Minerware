@@ -193,7 +193,7 @@ final class DataManager {
 			if ($content === false) {
 				throw new AssumptionFailedError("Missing or inaccessible required resource files");
 			}
-			$data = array_map('\stripcslashes', $content);
+			$data = array_map(stripcslashes(...), $content);
 			$translator->registerLanguage(new Language($locale, $data));
 		}
 		$l = $this->config->get("default-language", "en_US");
