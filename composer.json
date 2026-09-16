@@ -14,7 +14,7 @@
     },
     "require-dev": {
         "php": "^8.1",
-        "phpstan/phpstan": "2.2.8",
+        "phpstan/phpstan": "2.2.14",
         "pocketmine/pocketmine-mp": "^5.36.0",
         "sof3/pharynx": "^0.3.8"
     },
