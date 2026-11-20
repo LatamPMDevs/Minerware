@@ -13,12 +13,13 @@ This is a **game-engine plugin**: the whole point is rotating quick-fire "microg
 - Commando's `dev-ready` branch conflicts with fakeblocks (different `muqsit/simple-packet-handler` refs); stay on the fork's `dev-ready` and do not bump the shared transitive ref.
 - `phpstan.neon.dist` is a template; copy it to `phpstan.neon` to enable analysis (neon files are gitignored).
 
-## Verification (no unit tests in this repo)
+## Verification
 
-- Code style: `php-cs-fixer fix src/` using root `.php-cs-fixer.php`. The CI auto-commits style fixes, so match it locally. Style: tabs for indentation, `declare(strict_types=1)`, fully-imported native functions/classes (no `\` prefixes in code), ordered imports, no closing `?>`.
-- Static analysis: copy `phpstan.neon.dist` → `phpstan.neon`, then `composer install` and `vendor/bin/phpstan.phar analyze --no-progress`.
-- To ship a release build, compile virions into the plugin with `vendor/bin/pharynx` (scans virion deps from `composer.json`).
-- CI PHP versions differ: `ci.yml` (php-cs-fixer) uses PHP 8.0; `phpstan.yml` uses the 8.2 PocketMine binaries.
+- Code style: `php-cs-fixer fix` (root `.php-cs-fixer.php`, covers `src/` and `tests/`), with the version `ci.yml` pins. Style: tabs, `declare(strict_types=1)`, imported native functions/classes, ordered imports.
+- Static analysis: `vendor/bin/phpstan.phar analyze --no-progress` (level 6; `phpstan.neon.dist` is picked up automatically).
+- Tests: `composer test` (PHPUnit, `tests/phpunit/`). Language files must keep the same keys as `en_US.ini`.
+- CI (`ci.yml`): code style, PHPStan, PHPUnit.
+- Release build: `vendor/bin/pharynx` compiles the virions into the plugin.
 
 ---
 
@@ -93,7 +94,7 @@ Lifecycle contract (from `Microgame.php`):
 
 ### World mutation & cleanup (important!)
 
-There are two paths for world mutation, by volume (see `docs/async-block-system.md`):
+There are two paths for world mutation, by volume:
 
 - **Bulk stage builds → async.** A microgame builds its stage into a `Selection` (`getStageSelection()`; `addCell`/`addBlock`/`addFill`) and submits it with `commitStage()`. The build operation returns an **inverse `Selection`** (every applied cell's pre-change state, computed on the worker); `end()` submits it through the same async path to restore the exact pre-build terrain. The arena gates gameplay/countdown while a build is in flight (`Arena::isBuildingStage()`); never teleport players onto a stage before `commitStage()`'s completion callback runs.
 - **Gameplay interaction writes (mined blocks, player placements).** Record the original block via `recordOriginalBlock($world->getBlockAt(...))` (BEFORE the write) or stage it into a `Selection`; `end()` restores everything asynchronously in one merged task.
@@ -157,11 +158,17 @@ Simple optimizations/special-cases, all `NeverSavedWithChunkEntity` (never seria
 - `Arena` and `MapRegisterer` implement `Listener` and register events themselves; don't duplicate registration. `Microgame` subclasses that `implements Listener` are auto-registered by `Microgame::start()` and auto-unregistered by `Microgame::end()`.
 - World/`chunk` mutation helper: `Utils::fill`/`fillCircle`/`buildCage` return the replaced `Block[]` so callers can restore them; stage builds go through `Microgame::getStageSelection()` + `commitStage()`, and `Microgame::end()` is the single async rollback point.
 
+- No `empty()` or `in_array()`; check explicitly (`count($x) !== 0`, `=== null`).
+- State the unit of quantities in the name or a trailing comment (`//ticks`, `//seconds`).
+- Broken invariants throw `AssumptionFailedError`; catch specific exceptions only.
+- Games that only cancel block break/place `use CancelsBuildEvents` instead of redeclaring the handlers.
+- Leave a `TODO` instead of speculative code, and delete what a change orphans.
+
 ## Runtime / resources
 
 - Player-facing text is localized via `.ini` files in `resources/languages/` (saved into the plugin data folder on load). Access through `Translator` (from `Minerware::getInstance()->getTranslator()`); the config `default-language` selects the locale.
 - Database via libasynql; schemas live in `resources/database/sqlite.sql` and `mysql.sql`.
 - `resources/config.yml` holds all runtime tunables (`database`, `max-runtime-arenas`, `arena-starting-time`, `minimum-starting-players`, `server-ip`, `default-language`) and is auto-versioned by ConfigUpdater (`CONFIG_VERSION = 1`).
-- `maps/*.zip` at the repo root are shipped world backups; `DataManager` copies and registers them. The `maps/` directory in the data folder holds the per-map JSON configs.
+- `maps/*.zip` at the repo root are world backups only. Nothing installs them: a map needs its JSON in `<data>/database/maps/` and its zip in `<data>/database/backups/`, both written by `MapRegisterer`.
 - Commands (`command/subcommands/`): `arenas` (create/start; op-only), `join`, `statistics`/`stats`, `language` (op), `help`, `credits`. Permissions are declared in `plugin.yml`.
 - Forms (`form/`): `FormManager` sends a `StatisticsForm` (SimpleForm) for the `statistics` command.
