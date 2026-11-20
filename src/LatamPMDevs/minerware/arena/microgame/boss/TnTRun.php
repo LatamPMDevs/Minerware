@@ -211,7 +211,7 @@ class TnTRun extends Microgame implements Listener {
 			if (!$this->isRunning() || !$pos->getWorld()->isLoaded()) {
 				return;
 			}
-			$pos->getWorld()->setBlockAt($pos->x, $pos->y, $pos->z, VanillaBlocks::AIR(), false);
+			$pos->getWorld()->setBlockAt($pos->getFloorX(), $pos->getFloorY(), $pos->getFloorZ(), VanillaBlocks::AIR(), false);
 			$fallingBlock = new FallingBlock(
 				new Location($pos->x + 0.5, $pos->y, $pos->z + 0.5, $pos->getWorld(), 0.0, 0.0),
 				$block

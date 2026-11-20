@@ -34,11 +34,7 @@ final class AsyncBlockManager {
 
 	use SingletonTrait;
 
-	/**
-	 * @var array<int, list<array{0: Selection, 1: ?Closure}>> world id →
-	 * operations waiting for the in-flight one
-	 * @phpstan-var array<int, list<array{0: Selection, 1: ?Closure(?Selection $undo) : void}>>
-	 */
+	/** @var array<int, list<PendingBlockOperation>> world id → operations waiting for the in-flight one */
 	private array $queued = [];
 
 	/** @var array<int, bool> world id → an operation is currently in flight */
@@ -61,7 +57,7 @@ final class AsyncBlockManager {
 			return;
 		}
 		$worldId = $selection->getWorld()->getId();
-		$this->queued[$worldId][] = [$selection, $onComplete];
+		$this->queued[$worldId][] = new PendingBlockOperation($selection, $onComplete);
 		if (!isset($this->running[$worldId])) {
 			$this->submitNext($worldId);
 		}
@@ -71,7 +67,9 @@ final class AsyncBlockManager {
 		/** @var list<Closure(?Selection $undo) : void> $dropped */
 		$dropped = [];
 		while (isset($this->queued[$worldId]) && $this->queued[$worldId] !== []) {
-			[$selection, $onComplete] = array_shift($this->queued[$worldId]);
+			$pending = array_shift($this->queued[$worldId]);
+			$selection = $pending->selection;
+			$onComplete = $pending->onComplete;
 			$world = $selection->getWorld();
 			if (!$world->isLoaded()) {
 				# The world was unloaded while this operation waited (e.g. the

@@ -60,11 +60,11 @@ use pocketmine\world\Position;
 use pocketmine\world\World;
 use RuntimeException;
 use Throwable;
-use function array_key_first;
 use function array_rand;
 use function array_slice;
 use function count;
 use function implode;
+use function reset;
 use function str_repeat;
 use function time;
 
@@ -560,7 +560,7 @@ final class Arena {
 				$player->sendMessage($this->plugin->getTranslator()->translate(
 					$player, "game.arena.top" . $topPosition, [
 						"{%players}" => implode("§a, §8", Utils::getPlayersNames($players)),
-						"{%points}" => $this->pointHolder->getPlayerPoints($players[array_key_first($players)])
+						"{%points}" => $this->pointHolder->getPlayerPoints(reset($players) ?: throw new AssumptionFailedError("Empty podium place"))
 					]
 				));
 			}

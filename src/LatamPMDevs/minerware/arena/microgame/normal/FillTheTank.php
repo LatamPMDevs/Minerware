@@ -114,9 +114,9 @@ class FillTheTank extends Microgame implements Listener {
 
 		#Water platform
 		$waterPos = new Position(
-			mt_rand($minPos->x + 1, $maxPos->x - (self::WATER_PLATFORM_SIZE + 1)),
-			(int) $maxPos->y,
-			mt_rand($minPos->z + 1, $maxPos->z - (self::WATER_PLATFORM_SIZE + 1)),
+			mt_rand($minPos->getFloorX() + 1, $maxPos->getFloorX() - (self::WATER_PLATFORM_SIZE + 1)),
+			$maxPos->getFloorY(),
+			mt_rand($minPos->getFloorZ() + 1, $maxPos->getFloorZ() - (self::WATER_PLATFORM_SIZE + 1)),
 			$world
 		);
 		$waterSize = self::WATER_PLATFORM_SIZE - 1;
@@ -131,12 +131,12 @@ class FillTheTank extends Microgame implements Listener {
 		#Tank
 		do {
 			$this->tankPosition = new Position(
-				mt_rand($minPos->x, $maxPos->x),
-				(int) ($maxPos->y + 1),
-				mt_rand($minPos->z, $maxPos->z),
+				mt_rand($minPos->getFloorX(), $maxPos->getFloorX()),
+				$maxPos->getFloorY() + 1,
+				mt_rand($minPos->getFloorZ(), $maxPos->getFloorZ()),
 				$world
 			);
-		} while (isset($this->waterPlatform[morton3d_encode($this->tankPosition->x, $this->tankPosition->y - 1, $this->tankPosition->z)]));
+		} while (isset($this->waterPlatform[morton3d_encode($this->tankPosition->getFloorX(), $this->tankPosition->getFloorY() - 1, $this->tankPosition->getFloorZ())]));
 		$this->buildTank($selection);
 
 		#FakeBlocks
