@@ -51,7 +51,7 @@ All entries go through `Joiner::join()`/`tryJoin()` (permission, already in aren
 ## Other
 
 - `ArenaListener` is the only player listener for arenas (`ArenaManager::getArenaOf()` is a player-id map). `SpecialItems` builds the items with a custom behavior (leave bed, editor rod), tagged `minerware:<name>`; their handlers check the tag. `/minerware arenas admin` opens `ArenaAdminForm`.
-- `MapRegisterer`: per-player map editor (chat `setplatform`, `setcages`, `setspawn`, `done`, driven by the `SpecialItems` rod). Maps live in `database/maps/*.json` (`MapData` models, strict JsonMapper) with their zip in `database/backups/`. The shipped zips need a JSON from the maintainer.
+- `MapRegisterer`: per-player map editor (chat `setplatform`, `setcages`, `setspawn`, `done`, driven by the `SpecialItems` rod). Maps live in `database/maps/*.json` (`MapData` models, strict JsonMapper) with their zip in `database/backups/`. `resources/maps/<Name>.json` + `.zip` are installed on the first run, never over existing files (only Jungle so far; the other zips in `maps/` still need a JSON).
 - Stats: libasynql (`resources/database/*.sql`), written from `EventListener` on arena and microgame events.
 - Text: `resources/languages/*.ini` through `Translator`. Locales Minecraft lacks (`vi_VN`) are skipped with a warning.
 - Config: `resources/config.yml`, versioned by ConfigUpdater (`CONFIG_VERSION = 2`).

@@ -52,7 +52,7 @@ You can find some maps [here](https://github.com/LatamPMDevs/Minerware/tree/mast
 | :--- | :--- |
 | City | [City.zip](https://github.com/LatamPMDevs/Minerware/blob/master/maps/City.zip) |
 | Gladiator | [Gladiator.zip](https://github.com/LatamPMDevs/Minerware/blob/master/maps/Gladiator.zip) |
-| Jungle | [Jungle.zip](https://github.com/LatamPMDevs/Minerware/blob/master/maps/Jungle.zip) |
+| Jungle | Bundled: installed on the first run |
 | Jurassic | [Jurassic.zip](https://github.com/LatamPMDevs/Minerware/blob/master/maps/Jurassic.zip) |
 
 > [!NOTE]

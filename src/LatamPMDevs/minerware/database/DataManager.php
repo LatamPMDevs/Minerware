@@ -39,6 +39,8 @@ use poggit\libasynql\SqlError;
 use RuntimeException;
 use function array_map;
 use function basename;
+use function copy;
+use function file_exists;
 use function glob;
 use function is_float;
 use function is_int;
@@ -76,6 +78,7 @@ final class DataManager {
 			$this->plugin->getLogger()->emergency($result->getQuery() . ' - ' . $result->getErrorMessage());
 		};
 		$this->createContext();
+		$this->installBundledMaps();
 		foreach ($this->plugin->getResources() as $path => $_) {
 			if (str_starts_with($path, "languages/") && str_ends_with($path, ".ini")) {
 				$this->plugin->saveResource($path, true);
@@ -197,6 +200,28 @@ final class DataManager {
 		], $onSuccess, $onError ?? $this->onError);
 	}
 
+	/**
+	 * Copies the maps that come with the plugin (resources/maps) on the first run,
+	 * leaving alone any a server owner already has.
+	 */
+	private function installBundledMaps() : void {
+		$resources = $this->plugin->getResources();
+		foreach ($resources as $path => $file) {
+			if (!str_starts_with($path, "maps/") || !str_ends_with($path, ".json")) {
+				continue;
+			}
+			$name = basename($path, ".json");
+			$zip = $resources["maps/" . $name . ".zip"] ?? null;
+			$json = $this->getMapPath($name);
+			$backup = $this->getMapBackupPath($name);
+			if ($zip === null || file_exists($json) || file_exists($backup)) {
+				continue;
+			}
+			copy($file->getPathname(), $json);
+			copy($zip->getPathname(), $backup);
+		}
+	}
+
 	public function loadMaps() : void {
 		$logger = $this->plugin->getLogger();
 		$mapsPath = $this->pluginPath . "database" . DIRECTORY_SEPARATOR . "maps" . DIRECTORY_SEPARATOR;
@@ -209,6 +234,10 @@ final class DataManager {
 				$logger->warning("Skipping map '" . basename($file) . "': " . $e->getMessage());
 			}
 		}
+	}
+
+	public function getMapPath(string $map) : string {
+		return $this->pluginPath . "database" . DIRECTORY_SEPARATOR . "maps" . DIRECTORY_SEPARATOR . $map . ".json";
 	}
 
 	public function getMapBackupPath(string $map) : string {
@@ -240,8 +269,7 @@ final class DataManager {
 	 */
 	public function saveMap(Map $map) : void {
 		MapTemplates::getInstance()->load($map);
-		$path = $this->pluginPath . "database" . DIRECTORY_SEPARATOR . "maps" . DIRECTORY_SEPARATOR . $map->getName() . ".json";
-		(new Config($path, Config::JSON, $map->toArray()))->save();
+		(new Config($this->getMapPath($map->getName()), Config::JSON, $map->toArray()))->save();
 		MapManager::getInstance()->add($map);
 	}
 
