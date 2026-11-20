@@ -35,6 +35,7 @@ use pocketmine\player\Player;
 use poggit\libasynql\SqlError;
 
 use function is_string;
+use function strcasecmp;
 
 final class StatisticsCommand extends BaseSubCommand {
 
@@ -57,9 +58,7 @@ final class StatisticsCommand extends BaseSubCommand {
 			return;
 		}
 		$user = is_string($args["user"] ?? null) ? $args["user"] : $sender->getName();
-		# Someone who never played has no record; only show zeros for yourself.
-		$ownStats = $sender->getName() === $user;
-		DataManager::getInstance()->getPlayerData($user, function (?PlayerData $playerdata) use ($sender, $translator, $user) {
+		$onSuccess = function (?PlayerData $playerdata) use ($sender, $translator, $user) : void {
 			if ($playerdata === null) {
 				$sender->sendMessage($translator->translate($sender, "command.statistics.notFound", ["{%user}" => $user]));
 				return;
@@ -82,10 +81,17 @@ final class StatisticsCommand extends BaseSubCommand {
 					"§a" . $translator->translate($sender, "text.statistics.timePlayed") . ": §6" . Utils::getTimeTranslated($playerdata->getTimePlayed(), $translator, $sender)
 				);
 			}
-		}, function (SqlError $error) use ($sender, $translator) : void {
+		};
+		$onError = function (SqlError $error) use ($sender, $translator) : void {
 			DataManager::getInstance()->onError->__invoke($error);
 			$sender->sendMessage($translator->translate($sender, "command.statistics.error"));
-		}, $ownStats);
+		};
+		# Someone who never played has no record; only show zeros for yourself.
+		if ($sender instanceof Player && strcasecmp($sender->getName(), $user) === 0) {
+			DataManager::getInstance()->getPlayerData($sender, $onSuccess, $onError, true);
+		} else {
+			DataManager::getInstance()->getPlayerDataByName($user, $onSuccess, $onError);
+		}
 	}
 
 	public function getParent() : BaseCommand {

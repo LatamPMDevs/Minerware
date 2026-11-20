@@ -65,9 +65,9 @@ final class EventListener implements Listener {
 		$arena = $event->getArena();
 
 		foreach ($arena->getPlayers() as $player) {
-			$this->dataManager->addGamesPlayed($player->getName(), 1);
+			$this->dataManager->addGamesPlayed($player, 1);
 			if ($arena->getPodium()->isWinner($player)) {
-				$this->dataManager->addWins($player->getName(), 1);
+				$this->dataManager->addWins($player, 1);
 			}
 		}
 	}
@@ -77,7 +77,7 @@ final class EventListener implements Listener {
 	 */
 	public function onMicrogameEnd(MicrogameEndEvent $event) : void {
 		foreach ($event->getArena()->getPlayers() as $player) {
-			$this->dataManager->addMicrogamesPlayed($player->getName(), 1);
+			$this->dataManager->addMicrogamesPlayed($player, 1);
 		}
 	}
 
@@ -86,9 +86,9 @@ final class EventListener implements Listener {
 	 */
 	public function onPlayerWinMicrogame(PlayerWinMicrogameEvent $event) : void {
 		if ($event->getMicrogame()->getLevel() === Level::BOSS) {
-			$this->dataManager->addBossgamesWon($event->getPlayer()->getName(), 1);
+			$this->dataManager->addBossgamesWon($event->getPlayer(), 1);
 		} else {
-			$this->dataManager->addMicrogamesWon($event->getPlayer()->getName(), 1);
+			$this->dataManager->addMicrogamesWon($event->getPlayer(), 1);
 		}
 	}
 
@@ -98,7 +98,7 @@ final class EventListener implements Listener {
 	public function onPlayerQuitArena(PlayerQuitArenaEvent $event) : void {
 		$startTime = $event->getArena()->getStartTime();
 		if ($startTime !== null) {
-			$this->dataManager->addTimePlayed($event->getPlayer()->getName(), time() - $startTime);
+			$this->dataManager->addTimePlayed($event->getPlayer(), time() - $startTime);
 		}
 	}
 }

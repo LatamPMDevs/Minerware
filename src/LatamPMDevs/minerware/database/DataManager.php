@@ -100,12 +100,23 @@ final class DataManager {
 
 		$this->database->executeGeneric('table.players');
 		$this->database->executeGeneric('table.languages');
+		$this->database->executeSelect('table.check', [], static function () : void {
+		}, function (SqlError $error) : void {
+			$this->plugin->getLogger()->emergency("The database was made by an older version, delete it and restart: " . $error->getErrorMessage());
+		});
 	}
 
-	public function getPlayerData(string $name, callable $onSuccess, ?callable $onError = null, bool $nonNull = false) : void {
+	/**
+	 * Statistics of the player, found by their UUID.
+	 *
+	 * @param callable(?PlayerData) : void $onSuccess
+	 * @param bool $nonNull give zeros instead of null to a player with no record
+	 */
+	public function getPlayerData(Player $player, callable $onSuccess, ?callable $onError = null, bool $nonNull = false) : void {
+		$name = $player->getName();
 		$this->database->executeSelect('data.players.get', [
-			"name" => $name
-		], function (array $rows) use ($name, $onSuccess, $nonNull) {
+			"uuid" => $player->getUniqueId()->toString()
+		], function (array $rows) use ($name, $onSuccess, $nonNull) : void {
 			$playerdata = null;
 			if (isset($rows[0])) {
 				$playerdata = PlayerData::jsonDeserialize($rows[0]);
@@ -114,6 +125,51 @@ final class DataManager {
 			}
 			$onSuccess($playerdata);
 		}, $onError ?? $this->onError);
+	}
+
+	/**
+	 * Statistics of the player last seen with this name (case-insensitive).
+	 *
+	 * @param callable(?PlayerData) : void $onSuccess
+	 */
+	public function getPlayerDataByName(string $name, callable $onSuccess, ?callable $onError = null) : void {
+		$this->database->executeSelect('data.players.getByName', [
+			"name" => $name
+		], function (array $rows) use ($onSuccess) : void {
+			$onSuccess(isset($rows[0]) ? PlayerData::jsonDeserialize($rows[0]) : null);
+		}, $onError ?? $this->onError);
+	}
+
+	public function addWins(Player $player, int $count, ?callable $onSuccess = null, ?callable $onError = null) : void {
+		$this->increment('addWins', $player, "count", $count, $onSuccess, $onError);
+	}
+
+	public function addBossgamesWon(Player $player, int $count, ?callable $onSuccess = null, ?callable $onError = null) : void {
+		$this->increment('addBossgamesWon', $player, "count", $count, $onSuccess, $onError);
+	}
+
+	public function addMicrogamesWon(Player $player, int $count, ?callable $onSuccess = null, ?callable $onError = null) : void {
+		$this->increment('addMicrogamesWon', $player, "count", $count, $onSuccess, $onError);
+	}
+
+	public function addGamesPlayed(Player $player, int $count, ?callable $onSuccess = null, ?callable $onError = null) : void {
+		$this->increment('addGamesPlayed', $player, "count", $count, $onSuccess, $onError);
+	}
+
+	public function addMicrogamesPlayed(Player $player, int $count, ?callable $onSuccess = null, ?callable $onError = null) : void {
+		$this->increment('addMicrogamesPlayed', $player, "count", $count, $onSuccess, $onError);
+	}
+
+	public function addTimePlayed(Player $player, int $seconds, ?callable $onSuccess = null, ?callable $onError = null) : void {
+		$this->increment('addTimePlayed', $player, "seconds", $seconds, $onSuccess, $onError);
+	}
+
+	private function increment(string $query, Player $player, string $variable, int $amount, ?callable $onSuccess, ?callable $onError) : void {
+		$this->database->executeGeneric('data.players.' . $query, [
+			"uuid" => $player->getUniqueId()->toString(),
+			"name" => $player->getName(),
+			$variable => $amount
+		], $onSuccess, $onError ?? $this->onError);
 	}
 
 	/**
@@ -132,71 +188,6 @@ final class DataManager {
 		$this->database->executeGeneric('data.languages.set', [
 			"uuid" => $player->getUniqueId()->toString(),
 			"locale" => $locale
-		], $onSuccess, $onError ?? $this->onError);
-	}
-
-	public function addPlayer(
-		string $name,
-		int $wins = 0,
-		int $bossgamesWon = 0,
-		int $microgamesWon = 0,
-		int $gamesPlayed = 0,
-		int $microgamesPlayed = 0,
-		int $timePlayed = 0,
-		?callable $onSuccess = null,
-		?callable $onError = null
-	) : void {
-		$values = [
-			"name" => $name,
-			"wins" => $wins,
-			"bossgamesWon" => $bossgamesWon,
-			"microgamesWon" => $microgamesWon,
-			"gamesPlayed" => $gamesPlayed,
-			"microgamesPlayed" => $microgamesPlayed,
-			"timePlayed" => $timePlayed
-		];
-		$this->database->executeGeneric('data.players.add', $values, $onSuccess, $onError ?? $this->onError);
-	}
-
-	public function addWins(string $name, int $count, ?callable $onSuccess = null, ?callable $onError = null) : void {
-		$this->database->executeGeneric('data.players.addWins', [
-			"name" => $name,
-			"count" => $count
-		], $onSuccess, $onError ?? $this->onError);
-	}
-
-	public function addBossgamesWon(string $name, int $count, ?callable $onSuccess = null, ?callable $onError = null) : void {
-		$this->database->executeGeneric('data.players.addBossgamesWon', [
-			"name" => $name,
-			"count" => $count
-		], $onSuccess, $onError ?? $this->onError);
-	}
-
-	public function addMicrogamesWon(string $name, int $count, ?callable $onSuccess = null, ?callable $onError = null) : void {
-		$this->database->executeGeneric('data.players.addMicrogamesWon', [
-			"name" => $name,
-			"count" => $count
-		], $onSuccess, $onError ?? $this->onError);
-	}
-
-	public function addGamesPlayed(string $name, int $count, ?callable $onSuccess = null, ?callable $onError = null) : void {
-		$this->database->executeGeneric('data.players.addGamesPlayed', [
-			"name" => $name,
-			"count" => $count
-		], $onSuccess, $onError ?? $this->onError);
-	}
-
-	public function addMicrogamesPlayed(string $name, int $count, ?callable $onSuccess = null, ?callable $onError = null) : void {
-		$this->database->executeGeneric('data.players.addMicrogamesPlayed', [
-			"name" => $name,
-			"count" => $count
-		], $onSuccess, $onError ?? $this->onError);
-	}
-
-	public function addTimePlayed(string $name, int $seconds, ?callable $onSuccess = null, ?callable $onError = null) : void {
-		$this->database->executeGeneric('data.players.addTimePlayed', [
-			"name" => $name,
-			"seconds" => $seconds
 		], $onSuccess, $onError ?? $this->onError);
 	}
 

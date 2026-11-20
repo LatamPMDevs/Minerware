@@ -4,7 +4,8 @@
 	-- #{ players
 		CREATE TABLE IF NOT EXISTS MinerwarePlayers
 		(
-			name             VARCHAR(32) PRIMARY KEY NOT NULL,
+			uuid             VARCHAR(36) PRIMARY KEY NOT NULL,
+			name             VARCHAR(32) NOT NULL,
 			wins             NUMERIC     DEFAULT 0,
 			bossgamesWon     NUMERIC     DEFAULT 0,
 			microgamesWon    NUMERIC     DEFAULT 0,
@@ -20,83 +21,68 @@
 			locale VARCHAR(8)  NOT NULL
 		);
 	-- #}
+	-- #{ check
+		SELECT uuid FROM MinerwarePlayers LIMIT 1;
+	-- #}
 -- #}
 
 -- #{ data
 	-- #{ players
-		-- #{ add
-			-- # :name string
-			-- # :wins int 0
-			-- # :bossgamesWon int 0
-			-- # :microgamesWon int 0
-			-- # :gamesPlayed int 0
-			-- # :microgamesPlayed int 0
-			-- # :timePlayed int 0
-			INSERT OR IGNORE INTO
-			MinerwarePlayers(name, wins, bossgamesWon, microgamesWon, gamesPlayed, microgamesPlayed, timePlayed)
-			VALUES (:name, :wins, :bossgamesWon, :microgamesWon, :gamesPlayed, :microgamesPlayed, :timePlayed);
-		-- #}
 		-- #{ get
-			-- # :name string
-			SELECT * FROM MinerwarePlayers WHERE name = :name;
+			-- # :uuid string
+			SELECT * FROM MinerwarePlayers WHERE uuid = :uuid;
 		-- #}
-		-- #{ set
+		-- #{ getByName
 			-- # :name string
-			-- # :wins int 0
-			-- # :bossgamesWon int 0
-			-- # :microgamesWon int 0
-			-- # :gamesPlayed int 0
-			-- # :microgamesPlayed int 0
-			-- # :timePlayed int 0
-			INSERT OR REPLACE INTO
-			MinerwarePlayers(name, wins, bossgamesWon, microgamesWon, gamesPlayed, microgamesPlayed, timePlayed)
-			VALUES (:name, :wins, :bossgamesWon, :microgamesWon, :gamesPlayed, :microgamesPlayed, :timePlayed);
+			SELECT * FROM MinerwarePlayers WHERE LOWER(name) = LOWER(:name) ORDER BY gamesPlayed DESC LIMIT 1;
 		-- #}
 		-- #{ addWins
+			-- # :uuid string
 			-- # :name string
 			-- # :count int
-			INSERT INTO MinerwarePlayers(name, wins)
-			VALUES(:name, :count)
-			ON CONFLICT(name) DO UPDATE SET wins = wins + :count;
+			INSERT INTO MinerwarePlayers(uuid, name, wins)
+			VALUES(:uuid, :name, :count)
+			ON CONFLICT(uuid) DO UPDATE SET wins = wins + :count, name = :name;
 		-- #}
 		-- #{ addBossgamesWon
+			-- # :uuid string
 			-- # :name string
 			-- # :count int
-			INSERT INTO MinerwarePlayers(name, bossgamesWon)
-			VALUES(:name, :count)
-			ON CONFLICT(name) DO UPDATE SET bossgamesWon = bossgamesWon + :count;
+			INSERT INTO MinerwarePlayers(uuid, name, bossgamesWon)
+			VALUES(:uuid, :name, :count)
+			ON CONFLICT(uuid) DO UPDATE SET bossgamesWon = bossgamesWon + :count, name = :name;
 		-- #}
 		-- #{ addMicrogamesWon
+			-- # :uuid string
 			-- # :name string
 			-- # :count int
-			INSERT INTO MinerwarePlayers(name, microgamesWon)
-			VALUES(:name, :count)
-			ON CONFLICT(name) DO UPDATE SET microgamesWon = microgamesWon + :count;
+			INSERT INTO MinerwarePlayers(uuid, name, microgamesWon)
+			VALUES(:uuid, :name, :count)
+			ON CONFLICT(uuid) DO UPDATE SET microgamesWon = microgamesWon + :count, name = :name;
 		-- #}
 		-- #{ addGamesPlayed
+			-- # :uuid string
 			-- # :name string
 			-- # :count int
-			INSERT INTO MinerwarePlayers(name, gamesPlayed)
-			VALUES(:name, :count)
-			ON CONFLICT(name) DO UPDATE SET gamesPlayed = gamesPlayed + :count;
+			INSERT INTO MinerwarePlayers(uuid, name, gamesPlayed)
+			VALUES(:uuid, :name, :count)
+			ON CONFLICT(uuid) DO UPDATE SET gamesPlayed = gamesPlayed + :count, name = :name;
 		-- #}
 		-- #{ addMicrogamesPlayed
+			-- # :uuid string
 			-- # :name string
 			-- # :count int
-			INSERT INTO MinerwarePlayers(name, microgamesPlayed)
-			VALUES(:name, :count)
-			ON CONFLICT(name) DO UPDATE SET microgamesPlayed = microgamesPlayed + :count;
+			INSERT INTO MinerwarePlayers(uuid, name, microgamesPlayed)
+			VALUES(:uuid, :name, :count)
+			ON CONFLICT(uuid) DO UPDATE SET microgamesPlayed = microgamesPlayed + :count, name = :name;
 		-- #}
 		-- #{ addTimePlayed
+			-- # :uuid string
 			-- # :name string
 			-- # :seconds int
-			INSERT INTO MinerwarePlayers(name, timePlayed)
-			VALUES(:name, :seconds)
-			ON CONFLICT(name) DO UPDATE SET timePlayed = timePlayed + :seconds;
-		-- #}
-		-- #{ delete
-			-- # :name string
-			DELETE FROM MinerwarePlayers WHERE name = :name;
+			INSERT INTO MinerwarePlayers(uuid, name, timePlayed)
+			VALUES(:uuid, :name, :seconds)
+			ON CONFLICT(uuid) DO UPDATE SET timePlayed = timePlayed + :seconds, name = :name;
 		-- #}
 	-- #}
 	-- #{ languages
