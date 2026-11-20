@@ -141,7 +141,7 @@ class StandOnColor extends Microgame implements Listener {
 				$player->sendMessage($this->plugin->getTranslator()->translate(
 					$player, "microgame.standoncolor.hitscount", [
 						"{%player}" => $hitter->getName(),
-						"{%hits_count}" => $this->getHits($player)
+						"{%hits_count}" => $this->getHits($hitter)
 					]
 				));
 			}
