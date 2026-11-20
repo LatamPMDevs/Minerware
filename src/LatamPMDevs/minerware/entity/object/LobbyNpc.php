@@ -24,7 +24,6 @@ namespace LatamPMDevs\minerware\entity\object;
 
 use LatamPMDevs\minerware\join\JoinStats;
 use LatamPMDevs\minerware\Minerware;
-use pocketmine\entity\Human;
 use pocketmine\event\entity\EntityDamageByEntityEvent;
 use pocketmine\event\entity\EntityDamageEvent;
 use pocketmine\math\Vector3;
@@ -34,7 +33,7 @@ use pocketmine\player\Player;
 /**
  * An NPC that joins whoever hits or clicks it.
  */
-final class LobbyNpc extends Human {
+final class LobbyNpc extends PerPlayerTagHuman {
 
 	public const SAVE_ID = "minerware:lobby_npc";
 
@@ -45,6 +44,8 @@ final class LobbyNpc extends Human {
 	private ?string $mapFilter = null;
 
 	private int $ticksSinceRefresh = 0;
+
+	private ?JoinStats $stats = null;
 
 	protected function initEntity(CompoundTag $nbt) : void {
 		parent::initEntity($nbt);
@@ -110,13 +111,23 @@ final class LobbyNpc extends Human {
 	}
 
 	private function refreshNameTag() : void {
-		$translator = Minerware::getInstance()->getTranslator();
-		$stats = JoinStats::forMap($this->mapFilter);
-		$tag = $translator->translate(null, "joinpoint.npc.title") . "\n" .
-			$translator->translate(null, "joinpoint.sign.playing", ["{%players}" => (string) $stats->players]) . "\n" .
-			$translator->translate(null, $stats->joinable ? "joinpoint.npc.joinable" : "joinpoint.sign.full");
+		$this->stats = JoinStats::forMap($this->mapFilter);
+		$tag = $this->buildNameTag(null);
 		if ($tag !== $this->getNameTag()) {
 			$this->setNameTag($tag);
 		}
+		$this->refreshNameTags();
+	}
+
+	protected function resolveNameTag(Player $viewer) : string {
+		return $this->buildNameTag($viewer);
+	}
+
+	private function buildNameTag(?Player $viewer) : string {
+		$translator = Minerware::getInstance()->getTranslator();
+		$stats = $this->stats ??= JoinStats::forMap($this->mapFilter);
+		return $translator->translate($viewer, "joinpoint.npc.title") . "\n" .
+			$translator->translate($viewer, "joinpoint.sign.playing", ["{%players}" => (string) $stats->players]) . "\n" .
+			$translator->translate($viewer, $stats->joinable ? "joinpoint.npc.joinable" : "joinpoint.sign.full");
 	}
 }

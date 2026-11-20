@@ -140,7 +140,7 @@ There are two paths for world mutation, by volume:
 
 - Every way into a game goes through `Joiner::join()` / `tryJoin()` (permission `minerware.join`, already in an arena, `join-cooldown`, map filter) and returns a `JoinResult`; `ArenaManager::join()` is the unchecked low-level call (also used to requeue after a game).
 - `JoinSigns`: a sign whose line 1 is `[Minerware]` (line 2 optional map) joins on click. The world is the only record; an in-memory index (filled on chunk load) lets lines 3-4 refresh every second, only when changed.
-- `LobbyNpc` (`entity/object/`): saved with the world, so registered in `onLoad()` before worlds load. Hit or click joins. Its name tag uses the default language.
+- `LobbyNpc` (`entity/object/`): saved with the world, so registered in `onLoad()` before worlds load. Hit or click joins. Its name tag is shown in each player's language.
 - `/mw joinpoint npc [map] | remove | list`. `remove` arms the next hit on an NPC for 10 seconds; signs are removed by breaking them (permission `minerware.joinpoint.remove`).
 
 ### Localization (`resources/languages/*.ini`)
@@ -153,7 +153,8 @@ There are two paths for world mutation, by volume:
 ### Custom entities (`src/LatamPMDevs/minerware/entity/`)
 
 Simple optimizations/special-cases, all `NeverSavedWithChunkEntity` (never serialized to disk):
-- `object/TextEntity` — a tiny invisible `Human` used to render per-player name tags over chests (NerdPole). Exists because a FloatingTextParticle can't show a different string per player (for translations).
+- `object/PerPlayerTagHuman` — a `Human` whose name tag can differ per viewer: `sendData()` swaps in each target's tag, and it is sent again right after the spawn packet. Override `resolveNameTag(Player)` to compute it. Base of `TextEntity` and `LobbyNpc`.
+- `object/TextEntity` — a tiny invisible `PerPlayerTagHuman` used to render per-player name tags over chests (NerdPole). Exists because a FloatingTextParticle can't show a different string per player (for translations).
 - `object/FallingBlock` — a `FallingBlock` with a bounded lifetime (`getMaxTicksOfLife`/`setMaxTicksOfLife`) so crumbs don't persist.
 - `projectile/ColorMissile` — a `SplashPotion` whose on-hit is computed by `ColorFloor` (overrides `onHit` to no-op; the boss game reads its hit in `onProjectileHit`).
 
