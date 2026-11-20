@@ -101,7 +101,7 @@ final class Minerware extends PluginBase {
 
 	protected function onDisable() : void {
 		foreach (ArenaManager::getInstance()->getArenas() as $arena) {
-			$arena->deleteMap();
+			$arena->close();
 		}
 		$this->getConfig()->set("default-language", $this->translator->getDefaultLanguage()->getLocale());
 		$this->saveConfig();

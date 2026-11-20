@@ -22,6 +22,7 @@ declare(strict_types=1);
 
 namespace LatamPMDevs\minerware\arena;
 
+use Closure;
 use InvalidArgumentException;
 use jackmd\scorefactory\ScoreFactory;
 use LatamPMDevs\minerware\arena\microgame\Level;
@@ -42,8 +43,8 @@ use LatamPMDevs\minerware\utils\AsyncBlockManager;
 use LatamPMDevs\minerware\utils\PointHolder;
 use LatamPMDevs\minerware\utils\Selection;
 use LatamPMDevs\minerware\utils\Utils;
-use pocketmine\block\utils\DyeColor;
 
+use pocketmine\block\utils\DyeColor;
 use pocketmine\block\VanillaBlocks;
 use pocketmine\event\entity\EntityDamageEvent;
 use pocketmine\event\entity\EntityTeleportEvent;
@@ -60,11 +61,13 @@ use pocketmine\utils\AssumptionFailedError;
 use pocketmine\world\Position;
 use pocketmine\world\World;
 use RuntimeException;
+use Throwable;
 use function array_key_first;
 use function array_rand;
 use function array_slice;
 use function count;
 use function implode;
+use function microtime;
 use function shuffle;
 use function str_repeat;
 use function time;
@@ -118,6 +121,11 @@ final class Arena implements Listener {
 	 */
 	private int $pendingBuilds = 0;
 
+	/** Seconds (microtime) of the last build started or settled; see {@see settleStuckBuilds()}. */
+	private float $lastBuildActivity = 0.0;
+
+	private bool $closed = false;
+
 	/** @var array<int, array<int, Player>> */
 	public array $winners = [];
 
@@ -150,11 +158,14 @@ final class Arena implements Listener {
 		$this->losersCage->setBuildCallbacks($this->onStageBuildStarted(...), $this->onStageBuildSettled(...));
 
 		$this->plugin->getScheduler()->scheduleRepeatingTask(new ClosureTask(function () : void {
-			if ($this->status === Status::ENDING) {
+			if ($this->closed || $this->status === Status::ENDING) {
 				throw new CancelTaskException("Arena is no more in-game");
 			}
 			if ($this->currentMicrogame !== null && $this->currentMicrogame->isRunning() && !$this->isBuildingStage()) {
-				$this->currentMicrogame->tick();
+				$microgame = $this->currentMicrogame;
+				if (!$this->runGuarded($microgame->tick(...))) {
+					throw new CancelTaskException("Arena crashed");
+				}
 			}
 		}), 3); //ticks
 
@@ -374,6 +385,53 @@ final class Arena implements Listener {
 			$this->nextMicrogameIndex++;
 		}
 		return $microgame;
+	}
+
+	public function isClosed() : bool {
+		return $this->closed;
+	}
+
+	/**
+	 * Runs one step of the arena (a tick).
+	 */
+	public function runGuarded(Closure $step) : bool {
+		try {
+			$step();
+			return true;
+		} catch (CancelTaskException $e) {
+			throw $e;
+		} catch (Throwable $e) {
+			$this->plugin->getLogger()->logException($e);
+			$this->sendMessage($this->plugin->getTranslator()->translate(null, "game.arena.crashed"));
+			$this->close();
+			return false;
+		}
+	}
+
+	/**
+	 * Sends the players away and removes the arena and its world, whatever its state.
+	 */
+	public function close() : void {
+		if ($this->closed) {
+			return;
+		}
+		$this->closed = true;
+		$spawn = $this->plugin->getServer()->getWorldManager()->getDefaultWorld()?->getSafeSpawn();
+		foreach ($this->players as $player) {
+			$this->quit($player);
+			if ($player->isConnected()) {
+				Utils::initPlayer($player);
+				$player->setGamemode($this->plugin->getServer()->getGamemode());
+				if ($spawn !== null) {
+					$player->teleport($spawn);
+				}
+			}
+		}
+		if ($this->currentMicrogame instanceof Listener) {
+			HandlerListManager::global()->unregisterAll($this->currentMicrogame);
+		}
+		ArenaManager::getInstance()->deleteArena($this);
+		$this->deleteMap();
 	}
 
 	public function deleteMap() : void {
@@ -663,6 +721,19 @@ final class Arena implements Listener {
 	 * draining. Callers that read or mutate the stage (e.g. a microgame tick)
 	 * must not proceed until this returns false.
 	 */
+	/**
+	 * Releases the stage gate when a build never reported back (a lost worker),
+	 * so the arena can't wait for it forever.
+	 *
+	 * @param float $timeout seconds without any build activity
+	 */
+	public function settleStuckBuilds(float $timeout) : void {
+		if ($this->pendingBuilds > 0 && microtime(true) - $this->lastBuildActivity > $timeout) {
+			$this->plugin->getLogger()->error("Arena " . $this->id . ": " . $this->pendingBuilds . " stage build(s) never finished, releasing them");
+			$this->pendingBuilds = 0;
+		}
+	}
+
 	public function isBuildingStage() : bool {
 		return $this->pendingBuilds > 0;
 	}
@@ -673,14 +744,18 @@ final class Arena implements Listener {
 	 */
 	public function onStageBuildStarted() : void {
 		$this->pendingBuilds++;
+		$this->lastBuildActivity = microtime(true);
 	}
 
 	/**
 	 * Marks one async build as finished (its completion callback ran).
 	 */
 	public function onStageBuildSettled() : void {
+		$this->lastBuildActivity = microtime(true);
 		if ($this->pendingBuilds > 0) {
 			$this->pendingBuilds--;
+		} else {
+			$this->plugin->getLogger()->warning("Arena " . $this->id . ": a stage build settled twice");
 		}
 	}
 

@@ -34,6 +34,8 @@ use function max;
 
 final class ArenaTask extends Task {
 
+	private const BUILD_TIMEOUT = 30.0; //seconds
+
 	private Minerware $plugin;
 
 	public function __construct(private Arena $arena) {
@@ -41,7 +43,14 @@ final class ArenaTask extends Task {
 	}
 
 	public function onRun() : void {
+		if ($this->arena->isClosed() || !$this->arena->runGuarded($this->tick(...))) {
+			throw new CancelTaskException("Arena is closed");
+		}
+	}
+
+	private function tick() : void {
 		$arena = $this->arena;
+		$arena->settleStuckBuilds(self::BUILD_TIMEOUT);
 		$status = $arena->getStatus();
 		$players = $arena->getPlayers();
 		switch ($status) {
