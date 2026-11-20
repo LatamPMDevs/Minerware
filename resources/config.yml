@@ -16,7 +16,7 @@
 
 # Do not edit this value!
 # Only for internal use.
-config-version: 1
+config-version: 2
 
 #Settings
 default-language: en_US #See languages folder
@@ -45,3 +45,4 @@ database:
 max-runtime-arenas: 15 #15 ~ 20 recommended.
 arena-starting-time: 120 #In seconds.
 minimum-starting-players: 2 #4 ~ 6 recommended.
+join-cooldown: 2 #In seconds, between join attempts of a player (command, signs, NPCs).

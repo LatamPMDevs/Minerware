@@ -29,3 +29,15 @@ permissions:
   minerware.command.statistics:
     description: "View a player's statistics"
     default: true
+  minerware.command.joinpoint:
+    description: "Manage join NPCs and signs"
+    default: op
+  minerware.join:
+    description: "Join games from commands, signs and NPCs"
+    default: true
+  minerware.joinpoint.create:
+    description: "Create join signs and NPCs"
+    default: op
+  minerware.joinpoint.remove:
+    description: "Remove join signs and NPCs"
+    default: op

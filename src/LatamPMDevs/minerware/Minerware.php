@@ -29,10 +29,19 @@ use JackMD\ConfigUpdater\ConfigUpdater;
 use LatamPMDevs\minerware\arena\ArenaManager;
 use LatamPMDevs\minerware\command\MinerwareCommand;
 use LatamPMDevs\minerware\database\DataManager;
+use LatamPMDevs\minerware\entity\object\LobbyNpc;
+use LatamPMDevs\minerware\join\Joiner;
+use LatamPMDevs\minerware\join\JoinPointRemovals;
+use LatamPMDevs\minerware\join\JoinSigns;
 use LatamPMDevs\minerware\map\world\MapTemplates;
 use LatamPMDevs\minerware\map\world\MapWorldProviderEntry;
+use pocketmine\entity\EntityDataHelper;
+use pocketmine\entity\EntityFactory;
+use pocketmine\entity\Human;
+use pocketmine\nbt\tag\CompoundTag;
 use pocketmine\plugin\PluginBase;
 use pocketmine\utils\SingletonTrait;
+use pocketmine\world\World;
 
 final class Minerware extends PluginBase {
 	use SingletonTrait {
@@ -40,9 +49,15 @@ final class Minerware extends PluginBase {
 		reset as protected;
 	}
 
-	public const CONFIG_VERSION = 1;
+	public const CONFIG_VERSION = 2;
 
 	private Translator $translator;
+
+	private Joiner $joiner;
+
+	private JoinPointRemovals $joinPointRemovals;
+
+	private JoinSigns $joinSigns;
 
 	protected function onLoad() : void {
 		self::setInstance($this);
@@ -54,6 +69,15 @@ final class Minerware extends PluginBase {
 		DataManager::getInstance();
 		ArenaManager::getInstance();
 		$this->translator = new Translator($this);
+		$this->joiner = new Joiner($this);
+		$this->joinPointRemovals = new JoinPointRemovals();
+		$this->joinSigns = new JoinSigns($this, $this->joiner);
+		# Saved with the world, so registered before any world loads.
+		EntityFactory::getInstance()->register(
+			LobbyNpc::class,
+			static fn (World $world, CompoundTag $nbt) : LobbyNpc => new LobbyNpc(EntityDataHelper::parseLocation($nbt, $world), Human::parseSkinNBT($nbt), $nbt),
+			[LobbyNpc::SAVE_ID]
+		);
 		DataManager::getInstance()->loadLanguages();
 		$this->getServer()->getCommandMap()->register("minerware", new MinerwareCommand($this));
 	}
@@ -72,6 +96,7 @@ final class Minerware extends PluginBase {
 		$dataManager = DataManager::getInstance();
 		$dataManager->loadMaps();
 		$this->getServer()->getPluginManager()->registerEvents(new EventListener($dataManager), $this);
+		$this->joinSigns->enable();
 	}
 
 	protected function onDisable() : void {
@@ -86,6 +111,18 @@ final class Minerware extends PluginBase {
 
 	public function getPrefix() : string {
 		return "§aMinerware§r ";
+	}
+
+	public function getJoiner() : Joiner {
+		return $this->joiner;
+	}
+
+	public function getJoinPointRemovals() : JoinPointRemovals {
+		return $this->joinPointRemovals;
+	}
+
+	public function getJoinSigns() : JoinSigns {
+		return $this->joinSigns;
 	}
 
 	public function getTranslator() : Translator {

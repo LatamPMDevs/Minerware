@@ -25,20 +25,17 @@ namespace LatamPMDevs\minerware\command\subcommands;
 use CortexPE\Commando\BaseCommand;
 use CortexPE\Commando\BaseSubCommand;
 use CortexPE\Commando\constraint\InGameRequiredConstraint;
-use LatamPMDevs\minerware\arena\ArenaManager;
+use LatamPMDevs\minerware\Minerware;
 use pocketmine\command\CommandSender;
 use pocketmine\player\Player;
 
 final class JoinCommand extends BaseSubCommand {
 
-	public function __construct() {
+	public function __construct(private Minerware $plugin) {
 		parent::__construct("join", "Join a random arena.");
 		$this->setPermission("minerware.command.join");
 	}
 
-	/**
-	 * @deprecated
-	 */
 	protected function prepare() : void {
 		$this->addConstraint(new InGameRequiredConstraint($this));
 	}
@@ -48,7 +45,7 @@ final class JoinCommand extends BaseSubCommand {
 	 * @param array<string, mixed> $args
 	 */
 	public function onRun(CommandSender $sender, string $aliasUsed, array $args) : void {
-		ArenaManager::getInstance()->join($sender);
+		$this->plugin->getJoiner()->join($sender);
 	}
 
 	public function getParent() : BaseCommand {

@@ -131,6 +131,13 @@ There are two paths for world mutation, by volume:
 - `PlayerData` is a JSON-serializable value object (name, generationTime, wins, bossgamesWon, microgamesWon, gamesPlayed, microgamesPlayed, timePlayed). Stats persist via `EventListener` (`MONITOR`-priority listeners for ArenaEnd, MicrogameEnd, PlayerWinMicrogame, PlayerQuitArena) calling `DataManager::add*` methods — so most stat writing is automatic from events, not hand-wired into gameplay code.
 - Tunables read from config via `DataManager`: `getServerIp`, `getMaxRuntimeArenas`, `getArenaStartingTime`, `getMinimumStartingPlayers`.
 
+### Join points (`join/`)
+
+- Every way into a game goes through `Joiner::join()` / `tryJoin()` (permission `minerware.join`, already in an arena, `join-cooldown`, map filter) and returns a `JoinResult`; `ArenaManager::join()` is the unchecked low-level call (also used to requeue after a game).
+- `JoinSigns`: a sign whose line 1 is `[Minerware]` (line 2 optional map) joins on click. The world is the only record; an in-memory index (filled on chunk load) lets lines 3-4 refresh every second, only when changed.
+- `LobbyNpc` (`entity/object/`): saved with the world, so registered in `onLoad()` before worlds load. Hit or click joins. Its name tag uses the default language.
+- `/mw joinpoint npc [map] | remove | list`. `remove` arms the next hit on an NPC for 10 seconds; signs are removed by breaking them (permission `minerware.joinpoint.remove`).
+
 ### Localization (`resources/languages/*.ini`)
 
 - Player-facing text is localized via `.ini` files saved into the plugin data folder on load; access through `Translator` (`Minerware::getInstance()->getTranslator()`). `default-language` selects the locale.
@@ -170,5 +177,5 @@ Simple optimizations/special-cases, all `NeverSavedWithChunkEntity` (never seria
 - Database via libasynql; schemas live in `resources/database/sqlite.sql` and `mysql.sql`.
 - `resources/config.yml` holds all runtime tunables (`database`, `max-runtime-arenas`, `arena-starting-time`, `minimum-starting-players`, `server-ip`, `default-language`) and is auto-versioned by ConfigUpdater (`CONFIG_VERSION = 1`).
 - `maps/*.zip` at the repo root are world backups only. Nothing installs them: a map needs its JSON in `<data>/database/maps/` and its zip in `<data>/database/backups/`, both written by `MapRegisterer`; the zip may wrap the world in one folder.
-- Commands (`command/subcommands/`): `arenas` (create/start; op-only), `join`, `statistics`/`stats`, `language` (op), `help`, `credits`. Permissions are declared in `plugin.yml`.
+- Commands (`command/subcommands/`): `arenas` (create/start; op-only), `join`, `joinpoint` (op), `statistics`/`stats`, `language` (op), `help`, `credits`. Permissions are declared in `plugin.yml`.
 - Forms (`form/`): `FormManager` sends a `StatisticsForm` (SimpleForm) for the `statistics` command.

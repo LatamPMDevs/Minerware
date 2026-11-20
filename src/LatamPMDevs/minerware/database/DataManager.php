@@ -221,6 +221,10 @@ final class DataManager {
 		return $this->config->get("server-ip", "yourserverip.net");
 	}
 
+	public function getJoinCooldown() : float {
+		return max((float) $this->config->get("join-cooldown", 2), 0.0);
+	}
+
 	public function getMaxRuntimeArenas() : int {
 		return max((int) $this->config->get("max-runtime-arenas", 15), 1);
 	}

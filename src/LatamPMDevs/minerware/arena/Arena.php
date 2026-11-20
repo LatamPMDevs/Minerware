@@ -261,14 +261,14 @@ final class Arena implements Listener {
 		return ($this->status === Status::WAITING || $this->status === Status::STARTING) && count($this->players) < self::MAX_PLAYERS;
 	}
 
-	public function join(Player $player) : void {
+	public function join(Player $player) : bool {
 		if (!$this->canJoin() || $this->inGame($player)) {
-			return;
+			return false;
 		}
 		$ev = new PlayerJoinArenaEvent($player, $this);
 		$ev->call();
 		if ($ev->isCancelled()) {
-			return;
+			return false;
 		}
 		$this->players[$player->getId()] = $player;
 		foreach ($this->players as $pl) {
@@ -285,6 +285,7 @@ final class Arena implements Listener {
 		if (!$this->areInvisibleBlocksSet) {
 			$this->buildInvisibleBlocks();
 		}
+		return true;
 	}
 
 	public function quit(Player $player) : void {

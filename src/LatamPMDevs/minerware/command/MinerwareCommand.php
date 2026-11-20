@@ -27,6 +27,7 @@ use LatamPMDevs\minerware\command\subcommands\ArenasCommand;
 use LatamPMDevs\minerware\command\subcommands\CreditsCommand;
 use LatamPMDevs\minerware\command\subcommands\HelpCommand;
 use LatamPMDevs\minerware\command\subcommands\JoinCommand;
+use LatamPMDevs\minerware\command\subcommands\JoinPointCommand;
 use LatamPMDevs\minerware\command\subcommands\LanguageCommand;
 use LatamPMDevs\minerware\command\subcommands\StatisticsCommand;
 use LatamPMDevs\minerware\Minerware;
@@ -44,7 +45,8 @@ final class MinerwareCommand extends BaseCommand {
 		$this->registerSubCommand(new ArenasCommand($this->plugin));
 		$this->registerSubCommand(new CreditsCommand($this->plugin));
 		$this->registerSubcommand(new HelpCommand());
-		$this->registerSubcommand(new JoinCommand());
+		$this->registerSubcommand(new JoinCommand($this->plugin));
+		$this->registerSubcommand(new JoinPointCommand($this->plugin));
 		$this->registerSubcommand(new LanguageCommand($this->plugin));
 		$this->registerSubcommand(new StatisticsCommand($this->plugin));
 	}

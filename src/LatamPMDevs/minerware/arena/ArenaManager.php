@@ -23,9 +23,9 @@ declare(strict_types=1);
 namespace LatamPMDevs\minerware\arena;
 
 use LatamPMDevs\minerware\database\DataManager;
+use LatamPMDevs\minerware\join\JoinResult;
 use LatamPMDevs\minerware\map\Map;
 use LatamPMDevs\minerware\map\MapManager;
-use LatamPMDevs\minerware\Minerware;
 use pocketmine\event\HandlerListManager;
 use pocketmine\player\Player;
 use pocketmine\utils\SingletonTrait;
@@ -82,17 +82,33 @@ final class ArenaManager {
 		return $id;
 	}
 
-	public function join(Player $player, ?Arena $arena = null, ?Map $map = null) : void {
+	public function getArenaOf(Player $player) : ?Arena {
+		foreach ($this->arenas as $arena) {
+			if ($arena->inGame($player)) {
+				return $arena;
+			}
+		}
+		return null;
+	}
+
+	/**
+	 * Puts the player in the given arena, or in an available one (on the given map, if any).
+	 *
+	 * @throws RuntimeException
+	 */
+	public function join(Player $player, ?Arena $arena = null, ?Map $map = null) : JoinResult {
 		if ($arena === null) {
-			if (MapManager::getInstance()->getCount() === 0 || ($arena = $this->getAvailable($map)) === null) {
-				$player->sendMessage(Minerware::getInstance()->getTranslator()->translate($player, "game.noArenaAvaiable"));
-				return;
+			if (MapManager::getInstance()->getCount() === 0) {
+				return JoinResult::NO_MAPS;
+			}
+			$arena = $this->getAvailable($map);
+			if ($arena === null) {
+				return JoinResult::FULL;
 			}
 		}
 		if (!$arena->canJoin()) {
-			$player->sendMessage(Minerware::getInstance()->getTranslator()->translate($player, "game.noArenaAvaiable"));
-			return;
+			return JoinResult::FULL;
 		}
-		$arena->join($player);
+		return $arena->join($player) ? JoinResult::JOINED : JoinResult::DENIED;
 	}
 }

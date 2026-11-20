@@ -136,7 +136,7 @@ final class ArenaTask extends Task {
 			case Status::ENDING:
 				if ($arena->getCountdown() <= 0 && !$arena->isBuildingStage()) {
 					foreach ($players as $player) {
-						ArenaManager::getInstance()->join($player);
+						$this->plugin->getJoiner()->notify($player, ArenaManager::getInstance()->join($player));
 					}
 					$arena->deleteMap();
 					ArenaManager::getInstance()->deleteArena($arena);
