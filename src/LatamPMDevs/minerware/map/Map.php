@@ -23,13 +23,13 @@ declare(strict_types=1);
 namespace LatamPMDevs\minerware\map;
 
 use InvalidArgumentException;
+use LatamPMDevs\minerware\map\data\MapData;
+use LatamPMDevs\minerware\map\data\MapDataParser;
+use LatamPMDevs\minerware\map\data\PositionData;
 use LatamPMDevs\minerware\utils\Utils;
 use pocketmine\math\Vector3;
 use function array_map;
 use function count;
-use function is_array;
-use function is_numeric;
-use function is_string;
 
 final class Map {
 
@@ -67,26 +67,38 @@ final class Map {
 	 * @throws InvalidArgumentException
 	 */
 	public static function fromArray(array $data) : self {
+		return self::fromData(MapDataParser::parse($data));
+	}
+
+	/**
+	 * @throws InvalidArgumentException
+	 */
+	public static function fromData(MapData $data) : self {
 		$map = new self();
-		$map->name = is_string($data["name"] ?? null) && $data["name"] !== "" ? $data["name"] :
-			throw new InvalidArgumentException("Missing map name");
+		if ($data->name === "") {
+			throw new InvalidArgumentException("The map has no name");
+		}
+		$map->name = $data->name;
 
-		$platform = self::array($data, "platform");
-		$minMax = Utils::calculateMinAndMaxPos(self::vector($platform, "pos1"), self::vector($platform, "pos2"));
-		$map->platformMinPos = $minMax[0];
-		$map->platformMaxPos = $minMax[1];
-		$map->center = $map->platformMinPos->add(self::PLATFORM_X_SIZE / 2, 0, self::PLATFORM_Z_SIZE / 2);
+		[$min, $max] = Utils::calculateMinAndMaxPos(self::vector($data->platform->pos1), self::vector($data->platform->pos2));
+		$size = (int) ($max->x - $min->x) + 1;
+		$depth = (int) ($max->z - $min->z) + 1;
+		if ($size !== self::PLATFORM_X_SIZE || $depth !== self::PLATFORM_Z_SIZE) {
+			throw new InvalidArgumentException("The platform must be " . self::PLATFORM_X_SIZE . "x" . self::PLATFORM_Z_SIZE . ", got {$size}x{$depth}");
+		}
+		$map->platformMinPos = $min;
+		$map->platformMaxPos = $max;
+		$map->center = $min->add(self::PLATFORM_X_SIZE / 2, 0, self::PLATFORM_Z_SIZE / 2);
 
-		foreach (self::array($data, "spawns") as $spawn) {
-			$map->spawns[] = self::toVector($spawn, "spawns");
+		foreach ($data->spawns as $spawn) {
+			$map->spawns[] = self::vector($spawn);
 		}
 		if (count($map->spawns) === 0) {
 			throw new InvalidArgumentException("The map has no spawns");
 		}
 
-		$cages = self::array($data, "cages");
-		$map->winnersCage = self::vector($cages, "winners");
-		$map->losersCage = self::vector($cages, "losers");
+		$map->winnersCage = self::vector($data->cages->winners);
+		$map->losersCage = self::vector($data->cages->losers);
 		return $map;
 	}
 
@@ -108,26 +120,8 @@ final class Map {
 		];
 	}
 
-	/**
-	 * @param array<mixed> $data
-	 * @return array<mixed>
-	 */
-	private static function array(array $data, string $key) : array {
-		return is_array($data[$key] ?? null) ? $data[$key] : throw new InvalidArgumentException("Missing '$key'");
-	}
-
-	/**
-	 * @param array<mixed> $data
-	 */
-	private static function vector(array $data, string $key) : Vector3 {
-		return self::toVector($data[$key] ?? null, $key);
-	}
-
-	private static function toVector(mixed $data, string $key) : Vector3 {
-		if (!is_array($data) || !is_numeric($data["X"] ?? null) || !is_numeric($data["Y"] ?? null) || !is_numeric($data["Z"] ?? null)) {
-			throw new InvalidArgumentException("Invalid position '$key'");
-		}
-		return new Vector3((float) $data["X"], (float) $data["Y"], (float) $data["Z"]);
+	private static function vector(PositionData $position) : Vector3 {
+		return new Vector3($position->X, $position->Y, $position->Z);
 	}
 
 	/**

@@ -67,8 +67,10 @@ final class MapTest extends TestCase {
 		yield "no name" => ["name", null];
 		yield "no platform" => ["platform", null];
 		yield "no spawns" => ["spawns", []];
-		yield "bad spawn" => ["spawns", [["X" => "a", "Y" => 0, "Z" => 0]]];
 		yield "no cages" => ["cages", null];
+		yield "unknown key" => ["extra", 1];
+		yield "missing axis" => ["cages", ["winners" => ["X" => 0, "Y" => 0], "losers" => ["X" => 0, "Y" => 0, "Z" => 0]]];
+		yield "wrong size" => ["platform", ["pos1" => ["X" => 0, "Y" => 64, "Z" => 0], "pos2" => ["X" => 9, "Y" => 64, "Z" => 23]]];
 	}
 
 	/**
