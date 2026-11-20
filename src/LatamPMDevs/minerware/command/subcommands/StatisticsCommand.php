@@ -55,6 +55,9 @@ final class StatisticsCommand extends BaseSubCommand {
 		}
 		DataManager::getInstance()->getPlayerData($args["user"] ?? $sender->getName(), function (PlayerData $playerdata) use ($sender, $translator) {
 			if ($sender instanceof Player) {
+				if (!$sender->isConnected()) {
+					return;
+				}
 				FormManager::getInstance()->sendStatistics($sender, $playerdata);
 			} else {
 				$sender->sendMessage(
