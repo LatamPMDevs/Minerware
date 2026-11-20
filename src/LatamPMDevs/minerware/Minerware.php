@@ -74,6 +74,7 @@ final class Minerware extends PluginBase {
 			$arena->deleteMap();
 		}
 		$this->getConfig()->set("default-language", $this->translator->getDefaultLanguage()->getLocale());
+		$this->saveConfig();
 		DataManager::getInstance()->closeDatabase();
 	}
 
