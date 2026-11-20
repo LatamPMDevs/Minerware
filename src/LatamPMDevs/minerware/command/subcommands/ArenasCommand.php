@@ -54,7 +54,7 @@ final class ArenasCommand extends BaseSubCommand {
 	 */
 	public function onRun(CommandSender $sender, string $aliasUsed, array $args) : void {
 		if (!isset($args["action"])) {
-			# TODO...
+			$this->sendUsage();
 			return;
 		}
 		switch ($args["action"]) {
@@ -92,6 +92,7 @@ final class ArenasCommand extends BaseSubCommand {
 					count($arena->getPlayers()) < $arena->getMinPlayers()
 				) {
 					$sender->sendMessage($this->plugin->getTranslator()->translate($sender, "game.arena.needMorePlayers"));
+					return;
 				}
 
 				$arena->forceStart();

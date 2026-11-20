@@ -28,12 +28,10 @@ use pocketmine\command\CommandSender;
 final class ArenaActionArgument extends StringEnumArgument {
 
 	public const CREATE_ARENA = "create";
-	public const DELETE_ARENA = "delete";
 	public const START_ARENA = "start";
 
 	protected const VALUES = [
 		"create" => self::CREATE_ARENA,
-		"delete" => self::DELETE_ARENA,
 		"start" => self::START_ARENA
 	];
 
