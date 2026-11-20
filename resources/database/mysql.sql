@@ -45,9 +45,6 @@
 			MinerwarePlayers(name, wins, bossgamesWon, microgamesWon, gamesPlayed, microgamesPlayed, timePlayed)
 			VALUES (:name, :wins, :bossgamesWon, :microgamesWon, :gamesPlayed, :microgamesPlayed, :timePlayed);
 		-- #}
-		-- #{ getAll
-			SELECT * FROM MinerwarePlayers;
-		-- #}
 		-- #{ addWins
 			-- # :name string
 			-- # :count int
