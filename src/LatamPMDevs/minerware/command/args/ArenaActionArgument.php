@@ -29,10 +29,12 @@ final class ArenaActionArgument extends StringEnumArgument {
 
 	public const CREATE_ARENA = "create";
 	public const START_ARENA = "start";
+	public const ADMIN_ARENAS = "admin";
 
 	protected const VALUES = [
 		"create" => self::CREATE_ARENA,
-		"start" => self::START_ARENA
+		"start" => self::START_ARENA,
+		"admin" => self::ADMIN_ARENAS
 	];
 
 	public function __construct(string $name) {

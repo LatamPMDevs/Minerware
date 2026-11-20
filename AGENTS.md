@@ -131,6 +131,11 @@ There are two paths for world mutation, by volume:
 - `PlayerData` is a JSON-serializable value object (name, generationTime, wins, bossgamesWon, microgamesWon, gamesPlayed, microgamesPlayed, timePlayed). Stats persist via `EventListener` (`MONITOR`-priority listeners for ArenaEnd, MicrogameEnd, PlayerWinMicrogame, PlayerQuitArena) calling `DataManager::add*` methods — so most stat writing is automatic from events, not hand-wired into gameplay code.
 - Tunables read from config via `DataManager`: `getServerIp`, `getMaxRuntimeArenas`, `getArenaStartingTime`, `getMinimumStartingPlayers`.
 
+### Lobby items and admin (`item/`, `form/`)
+
+- `LobbyItem`s (`LeaveItem`) are NBT-tagged items given when a player joins; `ArenaListener` runs them on use and blocks inventory moves while an arena waits or starts. Add one by registering it in `LobbyItems`.
+- `/mw arenas admin` opens `ArenaAdminForm`: arena list, then force start, pause or resume the countdown (`Arena::setCountdownPaused`), kick a player, close the arena.
+
 ### Join points (`join/`)
 
 - Every way into a game goes through `Joiner::join()` / `tryJoin()` (permission `minerware.join`, already in an arena, `join-cooldown`, map filter) and returns a `JoinResult`; `ArenaManager::join()` is the unchecked low-level call (also used to requeue after a game).

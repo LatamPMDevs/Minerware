@@ -29,6 +29,10 @@ use pocketmine\utils\SingletonTrait;
 final class FormManager {
 	use SingletonTrait;
 
+	public function sendArenaAdmin(Player $admin) : void {
+		(new ArenaAdminForm())->sendList($admin);
+	}
+
 	public function sendStatistics(Player $player, PlayerData $playerdata) : void {
 		(new StatisticsForm())->send($player, $playerdata);
 	}

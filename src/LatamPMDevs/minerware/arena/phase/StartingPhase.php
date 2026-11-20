@@ -50,6 +50,12 @@ final class StartingPhase extends LobbyPhase {
 			$arena->setPhase(WaitingPhase::getInstance());
 			return;
 		}
+		if ($arena->isCountdownPaused()) {
+			foreach ($players as $player) {
+				$player->sendTip($translator->translate($player, "game.arena.countdownPaused"));
+			}
+			return;
+		}
 		if ($arena->getCountdown() > self::FULL_ARENA_COUNTDOWN && count($players) >= Arena::MAX_PLAYERS) {
 			foreach ($players as $player) {
 				$player->sendMessage($translator->translate(

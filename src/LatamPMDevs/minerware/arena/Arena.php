@@ -37,6 +37,7 @@ use LatamPMDevs\minerware\event\arena\ArenaCreationEvent;
 use LatamPMDevs\minerware\event\arena\ArenaEndEvent;
 use LatamPMDevs\minerware\event\arena\PlayerJoinArenaEvent;
 use LatamPMDevs\minerware\event\arena\PlayerQuitArenaEvent;
+use LatamPMDevs\minerware\item\SpecialItems;
 use LatamPMDevs\minerware\map\Map;
 use LatamPMDevs\minerware\map\MapWorldGenerator;
 use LatamPMDevs\minerware\map\world\MapTemplates;
@@ -75,6 +76,8 @@ final class Arena {
 
 	public const NORMAL_MICROGAMES = 15;
 
+	private const LEAVE_ITEM_SLOT = 8; //hotbar
+
 	public const FIRST_PLACE = 1;
 	public const SECOND_PLACE = 2;
 	public const THIRD_PLACE = 3;
@@ -111,6 +114,8 @@ final class Arena {
 	private bool $areInvisibleBlocksSet = false;
 
 	private bool $closed = false;
+
+	private bool $countdownPaused = false;
 
 	/** @var array<int, array<int, Player>> */
 	private array $winners = [];
@@ -236,6 +241,20 @@ final class Arena {
 		$this->countdown--;
 	}
 
+	public function isCountdownPaused() : bool {
+		return $this->countdownPaused;
+	}
+
+	/**
+	 * Holds the starting countdown (an admin is waiting for something).
+	 *
+	 * @return $this
+	 */
+	public function setCountdownPaused(bool $paused) : self {
+		$this->countdownPaused = $paused;
+		return $this;
+	}
+
 	public function forceStart() : void {
 		if (!$this->phase instanceof StartingPhase) {
 			return;
@@ -269,6 +288,7 @@ final class Arena {
 		$player->teleport($this->getRandomSpawn());
 		Utils::initPlayer($player);
 		$player->setGamemode(GameMode::ADVENTURE);
+		$player->getInventory()->setItem(self::LEAVE_ITEM_SLOT, SpecialItems::LEAVE_GAME_BED($this->plugin->getTranslator()->getLanguageOf($player)));
 		if (!$this->areInvisibleBlocksSet) {
 			$this->buildInvisibleBlocks();
 		}
@@ -300,6 +320,18 @@ final class Arena {
 				HandlerListManager::global()->unregisterAll($this->currentMicrogame);
 			}
 			$this->setPhase(EndingPhase::getInstance());
+		}
+	}
+
+	/**
+	 * Sends every player a translated message, each in their own language.
+	 *
+	 * @param array<string, string|int> $replacements
+	 */
+	public function broadcast(string $key, array $replacements = []) : void {
+		$translator = $this->plugin->getTranslator();
+		foreach ($this->players as $player) {
+			$player->sendMessage($translator->translate($player, $key, $replacements));
 		}
 	}
 
@@ -390,6 +422,22 @@ final class Arena {
 	}
 
 	/**
+	 * Takes a player out of the arena and sends them to the default world.
+	 */
+	public function kick(Player $player) : void {
+		$this->quit($player);
+		if (!$player->isConnected()) {
+			return;
+		}
+		Utils::initPlayer($player);
+		$player->setGamemode($this->plugin->getServer()->getGamemode());
+		$spawn = $this->plugin->getServer()->getWorldManager()->getDefaultWorld()?->getSafeSpawn();
+		if ($spawn !== null) {
+			$player->teleport($spawn);
+		}
+	}
+
+	/**
 	 * Sends the players away and removes the arena and its world, whatever its state.
 	 */
 	public function close() : void {
@@ -397,16 +445,8 @@ final class Arena {
 			return;
 		}
 		$this->closed = true;
-		$spawn = $this->plugin->getServer()->getWorldManager()->getDefaultWorld()?->getSafeSpawn();
 		foreach ($this->players as $player) {
-			$this->quit($player);
-			if ($player->isConnected()) {
-				Utils::initPlayer($player);
-				$player->setGamemode($this->plugin->getServer()->getGamemode());
-				if ($spawn !== null) {
-					$player->teleport($spawn);
-				}
-			}
+			$this->kick($player);
 		}
 		if ($this->currentMicrogame instanceof Listener) {
 			HandlerListManager::global()->unregisterAll($this->currentMicrogame);
