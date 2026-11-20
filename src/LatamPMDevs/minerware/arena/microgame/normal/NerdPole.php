@@ -50,6 +50,9 @@ use function array_rand;
 
 class NerdPole extends Microgame implements Listener {
 
+	/** @var TextEntity[] */
+	protected array $textEntities = [];
+
 	/**
 	 * @return StainedHardenedClay[]
 	 */
@@ -109,7 +112,7 @@ class NerdPole extends Microgame implements Listener {
 		}
 
 		$defaultChesttext = $this->plugin->getTranslator()->translate(null, "microgame.nerdpole.chesttext");
-		$textEntities = [];
+		$this->textEntities = [];
 
 		#Place Chests (a fresh block per corner so the facing is stable in the selection)
 		$chestPositions = [
@@ -131,7 +134,7 @@ class NerdPole extends Microgame implements Listener {
 			$textEntity = new TextEntity(Location::fromObject($pos->add(0.5, 1.2, 0.5), $world));
 			$textEntity->setNameTag($defaultChesttext);
 			$textEntity->spawnToAll();
-			$textEntities[] = $textEntity;
+			$this->textEntities[] = $textEntity;
 		}
 
 		#Set the gold platform
@@ -154,7 +157,7 @@ class NerdPole extends Microgame implements Listener {
 			$player->getInventory()->setHeldItemIndex(0);
 
 			$chesttext = $this->plugin->getTranslator()->translate($player, "microgame.nerdpole.chesttext");
-			foreach ($textEntities as $textEntity) {
+			foreach ($this->textEntities as $textEntity) {
 				$textEntity->setNameTagToPlayer($player, $chesttext);
 			}
 		}
@@ -179,6 +182,10 @@ class NerdPole extends Microgame implements Listener {
 	}
 
 	public function end() : void {
+		foreach ($this->textEntities as $textEntity) {
+			$textEntity->flagForDespawn();
+		}
+		$this->textEntities = [];
 		$players = $this->arena->getPlayers();
 		foreach ($players as $player) {
 			if ($this->isWinner($player)) {

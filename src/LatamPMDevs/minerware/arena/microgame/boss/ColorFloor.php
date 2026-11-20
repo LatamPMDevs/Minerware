@@ -22,6 +22,7 @@ declare(strict_types=1);
 
 namespace LatamPMDevs\minerware\arena\microgame\boss;
 
+use LatamPMDevs\minerware\arena\microgame\CancelsBuildEvents;
 use LatamPMDevs\minerware\arena\microgame\Level;
 use LatamPMDevs\minerware\arena\microgame\Microgame;
 use LatamPMDevs\minerware\entity\projectile\ColorMissile;
@@ -32,8 +33,6 @@ use pocketmine\block\StainedHardenedClay;
 use pocketmine\block\utils\DyeColor;
 use pocketmine\block\VanillaBlocks;
 use pocketmine\entity\projectile\SplashPotion;
-use pocketmine\event\block\BlockBreakEvent;
-use pocketmine\event\block\BlockPlaceEvent;
 use pocketmine\event\entity\EntityDamageEvent;
 use pocketmine\event\entity\ProjectileHitEvent;
 use pocketmine\event\entity\ProjectileLaunchEvent;
@@ -53,6 +52,8 @@ use function count;
 use function shuffle;
 
 class ColorFloor extends Microgame implements Listener {
+
+	use CancelsBuildEvents;
 
 	public const COLOR_MISSILE_COUNT = 2;
 
@@ -254,18 +255,6 @@ class ColorFloor extends Microgame implements Listener {
 	}
 
 	# Listener
-
-	public function onBlockBreak(BlockBreakEvent $event) : void {
-		$player = $event->getPlayer();
-		if (!$this->arena->inGame($player)) return;
-		$event->cancel();
-	}
-
-	public function onBlockPlace(BlockPlaceEvent $event) : void {
-		$player = $event->getPlayer();
-		if (!$this->arena->inGame($player)) return;
-		$event->cancel();
-	}
 
 	public function onDamage(EntityDamageEvent $event) : void {
 		$player = $event->getEntity();

@@ -22,6 +22,7 @@ declare(strict_types=1);
 
 namespace LatamPMDevs\minerware\arena\microgame\normal;
 
+use LatamPMDevs\minerware\arena\microgame\CancelsBuildEvents;
 use LatamPMDevs\minerware\arena\microgame\Level;
 use LatamPMDevs\minerware\arena\microgame\Microgame;
 use LatamPMDevs\minerware\utils\Utils;
@@ -29,8 +30,6 @@ use LatamPMDevs\minerware\utils\Utils;
 use pocketmine\block\TNT;
 use pocketmine\block\VanillaBlocks;
 use pocketmine\entity\object\PrimedTNT;
-use pocketmine\event\block\BlockBreakEvent;
-use pocketmine\event\block\BlockPlaceEvent;
 use pocketmine\event\entity\EntityDamageEvent;
 use pocketmine\event\entity\EntityPreExplodeEvent;
 use pocketmine\event\Listener;
@@ -42,6 +41,8 @@ use pocketmine\player\Player;
 use function array_rand;
 
 class IgniteTNT extends Microgame implements Listener {
+
+	use CancelsBuildEvents;
 
 	/** @var array<int, int> */
 	protected array $ignitedTNTs = [];
@@ -138,18 +139,6 @@ public function tick() : void {
 	}
 
 	# Listener
-
-	public function onBlockBreak(BlockBreakEvent $event) : void {
-		$player = $event->getPlayer();
-		if (!$this->arena->inGame($player)) return;
-		$event->cancel();
-	}
-
-	public function onBlockPlace(BlockPlaceEvent $event) : void {
-		$player = $event->getPlayer();
-		if (!$this->arena->inGame($player)) return;
-		$event->cancel();
-	}
 
 	public function onDamage(EntityDamageEvent $event) : void {
 		$player = $event->getEntity();

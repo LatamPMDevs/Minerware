@@ -51,7 +51,7 @@ abstract class Microgame {
 
 	protected bool $hasEnded = false;
 
-	protected float $startTime;
+	protected float $startTime = 0.0; //seconds, microtime
 
 	/** @var Player[] */
 	protected array $winners = [];
@@ -322,6 +322,9 @@ abstract class Microgame {
 	}
 
 	public function end() : void {
+		if ($this->hasEnded) {
+			return;
+		}
 		if ($this instanceof Listener) {
 			HandlerListManager::global()->unregisterAll($this);
 		}

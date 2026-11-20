@@ -22,6 +22,7 @@ declare(strict_types=1);
 
 namespace LatamPMDevs\minerware\arena\microgame\boss;
 
+use LatamPMDevs\minerware\arena\microgame\CancelsBuildEvents;
 use LatamPMDevs\minerware\arena\microgame\Level;
 use LatamPMDevs\minerware\arena\microgame\Microgame;
 use LatamPMDevs\minerware\entity\object\FallingBlock;
@@ -34,8 +35,6 @@ use pocketmine\block\VanillaBlocks;
 use pocketmine\entity\effect\EffectInstance;
 use pocketmine\entity\effect\VanillaEffects;
 use pocketmine\entity\Location;
-use pocketmine\event\block\BlockBreakEvent;
-use pocketmine\event\block\BlockPlaceEvent;
 use pocketmine\event\entity\EntityDamageEvent;
 use pocketmine\event\Listener;
 use pocketmine\math\AxisAlignedBB;
@@ -48,6 +47,8 @@ use function ceil;
 use function count;
 
 class TnTRun extends Microgame implements Listener {
+
+	use CancelsBuildEvents;
 
 	public const LAYERS = 4;
 
@@ -221,6 +222,9 @@ class TnTRun extends Microgame implements Listener {
 	public function delayedBlockDestruction(Block $block, int $ticks) : void {
 		$task = new ClosureTask(function () use ($block) : void {
 			$pos = $block->getPosition();
+			if (!$this->isRunning() || !$pos->getWorld()->isLoaded()) {
+				return;
+			}
 			$pos->getWorld()->setBlockAt($pos->x, $pos->y, $pos->z, VanillaBlocks::AIR(), false);
 			$fallingBlock = new FallingBlock(
 				new Location($pos->x + 0.5, $pos->y, $pos->z + 0.5, $pos->getWorld(), 0.0, 0.0),
@@ -234,18 +238,6 @@ class TnTRun extends Microgame implements Listener {
 	}
 
 	# Listener
-
-	public function onBlockBreak(BlockBreakEvent $event) : void {
-		$player = $event->getPlayer();
-		if (!$this->arena->inGame($player)) return;
-		$event->cancel();
-	}
-
-	public function onBlockPlace(BlockPlaceEvent $event) : void {
-		$player = $event->getPlayer();
-		if (!$this->arena->inGame($player)) return;
-		$event->cancel();
-	}
 
 	public function onDamage(EntityDamageEvent $event) : void {
 		$player = $event->getEntity();

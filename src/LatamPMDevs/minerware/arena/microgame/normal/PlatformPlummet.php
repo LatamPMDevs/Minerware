@@ -23,6 +23,7 @@ declare(strict_types=1);
 namespace LatamPMDevs\minerware\arena\microgame\normal;
 
 use InvalidArgumentException;
+use LatamPMDevs\minerware\arena\microgame\CancelsBuildEvents;
 use LatamPMDevs\minerware\arena\microgame\Level;
 use LatamPMDevs\minerware\arena\microgame\Microgame;
 use LatamPMDevs\minerware\entity\object\FallingBlock;
@@ -31,10 +32,7 @@ use LatamPMDevs\minerware\utils\Utils;
 use pocketmine\block\Block;
 use pocketmine\block\VanillaBlocks;
 use pocketmine\entity\Location;
-use pocketmine\event\block\BlockBreakEvent;
-use pocketmine\event\block\BlockPlaceEvent;
 use pocketmine\event\entity\EntityDamageEvent;
-use pocketmine\event\HandlerListManager;
 use pocketmine\event\Listener;
 use pocketmine\math\Vector2;
 use pocketmine\player\GameMode;
@@ -46,6 +44,8 @@ use function min;
 use function morton2d_encode;
 
 class PlatformPlummet extends Microgame implements Listener {
+
+	use CancelsBuildEvents;
 
 	public static function platformHash(int $x, int $z) : int {
 		return morton2d_encode($x, $z);
@@ -227,8 +227,6 @@ class PlatformPlummet extends Microgame implements Listener {
 	}
 
 	public function end() : void {
-		HandlerListManager::global()->unregisterAll($this);
-
 		$players = $this->arena->getPlayers();
 		foreach ($players as $player) {
 			if ($this->isWinner($player)) {
@@ -266,18 +264,6 @@ class PlatformPlummet extends Microgame implements Listener {
 	}
 
 	# Listener
-
-	public function onBlockBreak(BlockBreakEvent $event) : void {
-		$player = $event->getPlayer();
-		if (!$this->arena->inGame($player)) return;
-		$event->cancel();
-	}
-
-	public function onBlockPlace(BlockPlaceEvent $event) : void {
-		$player = $event->getPlayer();
-		if (!$this->arena->inGame($player)) return;
-		$event->cancel();
-	}
 
 	public function onDamage(EntityDamageEvent $event) : void {
 		$player = $event->getEntity();

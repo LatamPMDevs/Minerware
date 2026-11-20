@@ -24,6 +24,7 @@ namespace LatamPMDevs\minerware\arena\microgame\normal;
 
 use IvanCraft623\fakeblocks\FakeBlock;
 use IvanCraft623\fakeblocks\FakeBlockManager;
+use LatamPMDevs\minerware\arena\microgame\CancelsBuildEvents;
 use LatamPMDevs\minerware\arena\microgame\Level;
 
 use LatamPMDevs\minerware\arena\microgame\Microgame;
@@ -32,8 +33,6 @@ use LatamPMDevs\minerware\utils\Utils;
 
 use pocketmine\block\VanillaBlocks;
 use pocketmine\block\Water;
-use pocketmine\event\block\BlockBreakEvent;
-use pocketmine\event\block\BlockPlaceEvent;
 use pocketmine\event\entity\EntityDamageEvent;
 use pocketmine\event\Listener;
 use pocketmine\event\player\PlayerInteractEvent;
@@ -48,6 +47,8 @@ use function morton3d_encode;
 use function mt_rand;
 
 class FillTheTank extends Microgame implements Listener {
+
+	use CancelsBuildEvents;
 
 	/** Should this be configurable? */
 	public const TANK_WATER_Y_POS = 3;
@@ -251,18 +252,6 @@ class FillTheTank extends Microgame implements Listener {
 	}
 
 	# Listener
-
-	public function onBlockBreak(BlockBreakEvent $event) : void {
-		$player = $event->getPlayer();
-		if (!$this->arena->inGame($player)) return;
-		$event->cancel();
-	}
-
-	public function onBlockPlace(BlockPlaceEvent $event) : void {
-		$player = $event->getPlayer();
-		if (!$this->arena->inGame($player)) return;
-		$event->cancel();
-	}
 
 	public function onDamage(EntityDamageEvent $event) : void {
 		$player = $event->getEntity();
