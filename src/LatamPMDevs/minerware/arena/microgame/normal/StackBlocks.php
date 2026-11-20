@@ -76,9 +76,7 @@ class StackBlocks extends Microgame implements Listener {
 			}
 			$i++;
 		}
-		if (!$this->arena->areInvisibleBlocksSet()) {
-			$this->arena->buildInvisibleBlocks();
-		}
+		$this->arena->getWalls()->raise();
 		parent::start();
 	}
 

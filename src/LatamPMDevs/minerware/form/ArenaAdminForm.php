@@ -79,7 +79,7 @@ final class ArenaAdminForm {
 					$arena->forceStart();
 					break;
 				case self::BUTTON_PAUSE:
-					$arena->setCountdownPaused(!$arena->isCountdownPaused());
+					$arena->getCountdown()->setPaused(!$arena->getCountdown()->isPaused());
 					break;
 				case self::BUTTON_KICK:
 					$this->sendKick($admin, $arena);
@@ -101,7 +101,7 @@ final class ArenaAdminForm {
 		]));
 		if ($arena->getPhase() instanceof StartingPhase) {
 			$form->addButton($translator->translate($admin, "admin.forceStart"), -1, "", self::BUTTON_START);
-			$form->addButton($translator->translate($admin, $arena->isCountdownPaused() ? "admin.resume" : "admin.pause"), -1, "", self::BUTTON_PAUSE);
+			$form->addButton($translator->translate($admin, $arena->getCountdown()->isPaused() ? "admin.resume" : "admin.pause"), -1, "", self::BUTTON_PAUSE);
 		}
 		$form->addButton($translator->translate($admin, "admin.kick"), -1, "", self::BUTTON_KICK);
 		$form->addButton($translator->translate($admin, "admin.closeArena"), -1, "", self::BUTTON_CLOSE);

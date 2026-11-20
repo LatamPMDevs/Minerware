@@ -43,7 +43,6 @@ use LatamPMDevs\minerware\map\MapWorldGenerator;
 use LatamPMDevs\minerware\map\world\MapTemplates;
 use LatamPMDevs\minerware\Minerware;
 use LatamPMDevs\minerware\utils\PointHolder;
-use LatamPMDevs\minerware\utils\Selection;
 use LatamPMDevs\minerware\utils\Utils;
 
 use pocketmine\block\utils\DyeColor;
@@ -60,7 +59,6 @@ use pocketmine\world\World;
 use RuntimeException;
 use Throwable;
 use function array_rand;
-use function array_slice;
 use function count;
 use function implode;
 use function reset;
@@ -102,25 +100,17 @@ final class Arena {
 
 	private ?Microgame $currentMicrogame = null;
 
-	private int $countdown = 0;
-
-	private int $countdownTotal = 0;
+	private Countdown $countdown;
 
 	private Cage $winnersCage;
 
 	private Cage $losersCage;
 
-	private bool $areInvisibleBlocksSet = false;
+	private ArenaWalls $walls;
 
 	private bool $closed = false;
 
-	private bool $countdownPaused = false;
-
-	/** @var array<int, array<int, Player>> */
-	private array $winners = [];
-
-	/** @var array<int, Player> */
-	private array $losers = [];
+	private Podium $podium;
 
 	private ?int $startTime = null;
 
@@ -129,11 +119,14 @@ final class Arena {
 		# Built first: it can throw, and nothing has been allocated yet.
 		$this->queue = MicrogameQueue::create($this);
 		$this->gate = new StageGate($this->id);
+		$this->countdown = new Countdown();
+		$this->podium = new Podium();
 		$this->scoreboard = new ScoreboardRenderer();
 		$this->world = MapWorldGenerator::generate($this->map, $this->id);
 		$this->minPlayers = DataManager::getInstance()->getMinimumStartingPlayers();
 		$this->phase = WaitingPhase::getInstance();
 		$this->pointHolder = new PointHolder();
+		$this->walls = new ArenaWalls($this->map, $this->world, $this->gate);
 		$this->world->setTime(World::TIME_NOON);
 		$this->world->stopTime();
 		$this->winnersCage = new Cage(
@@ -215,7 +208,7 @@ final class Arena {
 		$ev = new ArenaChangePhaseEvent($this->phase, $phase, $phase->getDuration(), $this);
 		$ev->call();
 		$this->phase = $ev->getNewPhase();
-		$this->countdown = $this->countdownTotal = $ev->getCountdown();
+		$this->countdown->reset($ev->getCountdown());
 		$this->scoreboard->reset();
 		foreach ($this->players as $player) {
 			if (ScoreFactory::hasObjective($player)) {
@@ -224,41 +217,15 @@ final class Arena {
 		}
 	}
 
-	public function getCountdown() : int {
+	public function getCountdown() : Countdown {
 		return $this->countdown;
-	}
-
-	public function getCountdownTotal() : int {
-		return $this->countdownTotal;
-	}
-
-	public function setCountdown(int $countdown) : void {
-		$this->countdown = $countdown;
-	}
-
-	public function decrementCountdown() : void {
-		$this->countdown--;
-	}
-
-	public function isCountdownPaused() : bool {
-		return $this->countdownPaused;
-	}
-
-	/**
-	 * Holds the starting countdown (an admin is waiting for something).
-	 *
-	 * @return $this
-	 */
-	public function setCountdownPaused(bool $paused) : self {
-		$this->countdownPaused = $paused;
-		return $this;
 	}
 
 	public function forceStart() : void {
 		if (!$this->phase instanceof StartingPhase) {
 			return;
 		}
-		$this->countdown = 5;
+		$this->countdown->set(5);
 	}
 
 	public function canJoin() : bool {
@@ -288,9 +255,7 @@ final class Arena {
 		Utils::initPlayer($player);
 		$player->setGamemode(GameMode::ADVENTURE);
 		$player->getInventory()->setItem(self::LEAVE_ITEM_SLOT, SpecialItems::LEAVE_GAME_BED($this->plugin->getTranslator()->getLanguageOf($player)));
-		if (!$this->areInvisibleBlocksSet) {
-			$this->buildInvisibleBlocks();
-		}
+		$this->walls->raise();
 		return true;
 	}
 
@@ -461,34 +426,7 @@ final class Arena {
 	public function endCurrentMicrogame() : void {
 		$microgame = $this->getCurrentMicrogameNonNull();
 		if ($microgame->isRunning()) {
-			$winners = $microgame->getWinners();
-			$winnersCount = count($winners);
-			$playersCount = count($this->players);
-			foreach ($this->players as $player) {
-				$player->sendMessage("\n§l§e" . $microgame->getName());
-				if ($winnersCount >= $playersCount) {
-					$player->sendMessage($this->plugin->getTranslator()->translate($player, "microgame.nolosers"));
-				} elseif ($winnersCount <= 0) {
-					$player->sendMessage($this->plugin->getTranslator()->translate(
-						$player, "microgame.nowinners", [
-							"{%count}" => $playersCount
-						]
-					));
-				} elseif ($winnersCount <= 3) {
-					$player->sendMessage($this->plugin->getTranslator()->translate(
-						$player, "microgame.winners", [
-							"{%players}" => implode("§a, §8", Utils::getPlayersNames($winners))
-						]
-					));
-				} else {
-					$player->sendMessage($this->plugin->getTranslator()->translate(
-						$player, "microgame.winners2", [
-							"{%winners_count}" => $winnersCount,
-							"{%players_count}" => $playersCount
-						]
-					));
-				}
-			}
+			$microgame->announceResults();
 			$microgame->end();
 			$recompense = $microgame->getRecompensePoints();
 			$showWorthMessage = $recompense > Microgame::DEFAULT_RECOMPENSE_POINTS;
@@ -520,9 +458,7 @@ final class Arena {
 			}
 			$this->setCurrentMicrogame(null);
 		}
-		if ($this->areInvisibleBlocksSet) {
-			$this->unsetInvisibleBlocks();
-		}
+		$this->walls->lower();
 		$this->resetCages();
 	}
 
@@ -535,80 +471,33 @@ final class Arena {
 		foreach ($this->players as $player) {
 			$this->pointHolder->addPlayer($player);
 		}
-		if ($this->areInvisibleBlocksSet()) {
-			$this->unsetInvisibleBlocks();
-		}
+		$this->walls->lower();
 		$this->startTime = time();
 	}
 
 	public function end() : void {
 		$this->setPhase(EndingPhase::getInstance());
-		$winners = [];
-		$scores = array_slice(Utils::chunkScores($this->pointHolder->getOrderedByHigherScore()), 0, 3);
-		$i = 1;
-		foreach ($scores as $points => $playersIds) {
-			foreach ($playersIds as $id) {
-				$pl = $this->players[$id];
-				$this->addWinner($i, $pl);
-			}
-			$i++;
-		}
+		$this->podium->rank($this->players, $this->pointHolder);
 		foreach ($this->players as $player) {
 			$player->sendMessage("§7" . str_repeat("-", 31));
-			foreach ($this->winners as $topPosition => $players) {
+			foreach ($this->podium->getWinners() as $place => $placed) {
 				$player->sendMessage($this->plugin->getTranslator()->translate(
-					$player, "game.arena.top" . $topPosition, [
-						"{%players}" => implode("§a, §8", Utils::getPlayersNames($players)),
-						"{%points}" => $this->pointHolder->getPlayerPoints(reset($players) ?: throw new AssumptionFailedError("Empty podium place"))
+					$player, "game.arena.top" . $place, [
+						"{%players}" => implode("§a, §8", Utils::getPlayersNames($placed)),
+						"{%points}" => $this->pointHolder->getPlayerPoints(reset($placed) ?: throw new AssumptionFailedError("Empty podium place"))
 					]
 				));
 			}
 			$player->sendMessage("§7" . str_repeat("-", 31));
-			if ($this->isWinner($player)) {
+			if ($this->podium->isWinner($player)) {
 				$player->sendMessage($this->plugin->getTranslator()->translate($player, "game.arena.youwin"));
-			} else {
-				$this->addLoser($player);
 			}
 		}
 		(new ArenaEndEvent($this))->call();
 	}
 
-	/**
-	 * @return array<int, array<int, Player>>
-	 */
-	public function getWinners() : array {
-		return $this->winners;
-	}
-
-	public function addWinner(int $topPosition, Player $player) : void {
-		if ($topPosition < self::FIRST_PLACE || $topPosition > self::THIRD_PLACE) {
-			throw new InvalidArgumentException("Invalid top position, must be " . self::FIRST_PLACE . "-" . self::THIRD_PLACE);
-		}
-		$this->winners[$topPosition][$player->getId()] = $player;
-	}
-
-	public function isWinner(Player $player) : bool {
-		foreach ($this->winners as $topPosition => $players) {
-			if (isset($players[$player->getId()])) {
-				return true;
-			}
-		}
-		return false;
-	}
-
-	/**
-	 * @return array<int, Player>
-	 */
-	public function getLosers() : array {
-		return $this->losers;
-	}
-
-	public function addLoser(Player $player) : void {
-		$this->losers[$player->getId()] = $player;
-	}
-
-	public function isLoser(Player $player) : bool {
-		return isset($this->losers[$player->getId()]);
+	public function getPodium() : Podium {
+		return $this->podium;
 	}
 
 	public function getWinnersCage() : Cage {
@@ -659,8 +548,8 @@ final class Arena {
 		return Position::fromObject($spawns[array_rand($spawns)], $this->world);
 	}
 
-	public function areInvisibleBlocksSet() : bool {
-		return $this->areInvisibleBlocksSet;
+	public function getWalls() : ArenaWalls {
+		return $this->walls;
 	}
 
 	public function getGate() : StageGate {
@@ -672,40 +561,6 @@ final class Arena {
 	 */
 	public function isBuildingStage() : bool {
 		return $this->gate->isBuilding();
-	}
-
-	public function buildInvisibleBlocks() : void {
-		$min = $this->map->getPlatformMinPos();
-		$max = $this->map->getPlatformMaxPos();
-		$pos1 = new Position($min->x - 1, $min->y + 30, $min->z - 1, $this->world);
-		$pos2 = new Position($max->x + 1, $min->y + 30, $max->z + 1, $this->world);
-		$pos3 = new Position($pos1->x, $min->y, $pos2->z, $this->world);
-		$pos4 = new Position($pos2->x, $min->y, $pos1->z, $this->world);
-
-		$selection = new Selection($this->world);
-		$selection->addFill($pos1, $pos3, VanillaBlocks::INVISIBLE_BEDROCK());
-		$selection->addFill($pos3, $pos2, VanillaBlocks::INVISIBLE_BEDROCK());
-		$selection->addFill($pos2, $pos4, VanillaBlocks::INVISIBLE_BEDROCK());
-		$selection->addFill($pos4, $pos1, VanillaBlocks::INVISIBLE_BEDROCK());
-		$this->gate->build($selection);
-		$this->areInvisibleBlocksSet = true;
-	}
-
-	public function unsetInvisibleBlocks() : void {
-		$min = $this->map->getPlatformMinPos();
-		$max = $this->map->getPlatformMaxPos();
-		$pos1 = new Position($min->x - 1, $min->y + 30, $min->z - 1, $this->world);
-		$pos2 = new Position($max->x + 1, $min->y + 30, $max->z + 1, $this->world);
-		$pos3 = new Position($pos1->x, $min->y, $pos2->z, $this->world);
-		$pos4 = new Position($pos2->x, $min->y, $pos1->z, $this->world);
-
-		$selection = new Selection($this->world);
-		$selection->addFill($pos1, $pos3, VanillaBlocks::AIR());
-		$selection->addFill($pos3, $pos2, VanillaBlocks::AIR());
-		$selection->addFill($pos2, $pos4, VanillaBlocks::AIR());
-		$selection->addFill($pos4, $pos1, VanillaBlocks::AIR());
-		$this->gate->build($selection);
-		$this->areInvisibleBlocksSet = false;
 	}
 
 	/**

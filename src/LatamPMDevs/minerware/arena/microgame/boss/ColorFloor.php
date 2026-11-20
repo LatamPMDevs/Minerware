@@ -116,9 +116,7 @@ class ColorFloor extends Microgame implements Listener {
 			$i++;
 		}
 		$this->commitStage();
-		if (!$this->arena->areInvisibleBlocksSet()) {
-			$this->arena->buildInvisibleBlocks();
-		}
+		$this->arena->getWalls()->raise();
 		parent::start();
 	}
 

@@ -51,8 +51,8 @@ final class InbetweenPhase extends PlayingPhase {
 		}
 		$players = $arena->getPlayers();
 		$translator = $arena->getPlugin()->getTranslator();
-		$total = max(1, $arena->getCountdownTotal());
-		$countdown = $arena->getCountdown();
+		$total = max(1, $arena->getCountdown()->getTotal());
+		$countdown = $arena->getCountdown()->getRemaining();
 		if ($countdown <= max(1, $total - 2) && $arena->getNextMicrogame() === null) {
 			$arena->end();
 			return;
@@ -86,7 +86,7 @@ final class InbetweenPhase extends PlayingPhase {
 			$arena->startNextMicrogame();
 		}
 		if ($arena->getPhase() === $this) {
-			$arena->decrementCountdown();
+			$arena->getCountdown()->decrement();
 		}
 	}
 }

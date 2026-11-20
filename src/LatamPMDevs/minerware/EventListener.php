@@ -44,7 +44,7 @@ final class EventListener implements Listener {
 
 		foreach ($arena->getPlayers() as $player) {
 			$this->dataManager->addGamesPlayed($player->getName(), 1);
-			if ($arena->isWinner($player)) {
+			if ($arena->getPodium()->isWinner($player)) {
 				$this->dataManager->addWins($player->getName(), 1);
 			}
 		}

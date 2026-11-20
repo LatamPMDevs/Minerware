@@ -30,12 +30,15 @@ use LatamPMDevs\minerware\event\arena\microgame\PlayerLoseMicrogameEvent;
 use LatamPMDevs\minerware\event\arena\microgame\PlayerWinMicrogameEvent;
 use LatamPMDevs\minerware\Minerware;
 use LatamPMDevs\minerware\utils\Selection;
+use LatamPMDevs\minerware\utils\Utils;
 
 use pocketmine\block\Block;
 use pocketmine\event\HandlerListManager;
 use pocketmine\event\Listener;
 use pocketmine\player\Player;
 use function array_keys;
+use function count;
+use function implode;
 use function microtime;
 
 abstract class Microgame {
@@ -142,6 +145,32 @@ abstract class Microgame {
 			$player->sendMessage($this->plugin->getTranslator()->translate($player, $wonKey, $replacements));
 		} elseif ($this->isLoser($player)) {
 			$player->sendMessage($this->plugin->getTranslator()->translate($player, $loseKey, $replacements));
+		}
+	}
+
+	/**
+	 * Tells every player how the game went, each in their own language.
+	 */
+	public function announceResults() : void {
+		$translator = $this->plugin->getTranslator();
+		$winnersCount = count($this->winners);
+		$playersCount = count($this->arena->getPlayers());
+		foreach ($this->arena->getPlayers() as $player) {
+			$player->sendMessage("\n§l§e" . $this->getName());
+			if ($winnersCount >= $playersCount) {
+				$player->sendMessage($translator->translate($player, "microgame.nolosers"));
+			} elseif ($winnersCount <= 0) {
+				$player->sendMessage($translator->translate($player, "microgame.nowinners", ["{%count}" => $playersCount]));
+			} elseif ($winnersCount <= 3) {
+				$player->sendMessage($translator->translate($player, "microgame.winners", [
+					"{%players}" => implode("§a, §8", Utils::getPlayersNames($this->winners))
+				]));
+			} else {
+				$player->sendMessage($translator->translate($player, "microgame.winners2", [
+					"{%winners_count}" => $winnersCount,
+					"{%players_count}" => $playersCount
+				]));
+			}
 		}
 	}
 

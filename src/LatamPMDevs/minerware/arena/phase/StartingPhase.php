@@ -50,13 +50,13 @@ final class StartingPhase extends LobbyPhase {
 			$arena->setPhase(WaitingPhase::getInstance());
 			return;
 		}
-		if ($arena->isCountdownPaused()) {
+		if ($arena->getCountdown()->isPaused()) {
 			foreach ($players as $player) {
 				$player->sendTip($translator->translate($player, "game.arena.countdownPaused"));
 			}
 			return;
 		}
-		if ($arena->getCountdown() > self::FULL_ARENA_COUNTDOWN && count($players) >= Arena::MAX_PLAYERS) {
+		if ($arena->getCountdown()->getRemaining() > self::FULL_ARENA_COUNTDOWN && count($players) >= Arena::MAX_PLAYERS) {
 			foreach ($players as $player) {
 				$player->sendMessage($translator->translate(
 					$player, "game.arena.startingByReachCapacity", [
@@ -64,16 +64,16 @@ final class StartingPhase extends LobbyPhase {
 					]
 				));
 			}
-			$arena->setCountdown(self::FULL_ARENA_COUNTDOWN);
+			$arena->getCountdown()->set(self::FULL_ARENA_COUNTDOWN);
 		}
 		foreach ($players as $player) {
-			$player->getXpManager()->setXpAndProgress($arena->getCountdown(), 0);
+			$player->getXpManager()->setXpAndProgress($arena->getCountdown()->getRemaining(), 0);
 		}
-		if ($arena->getCountdown() <= 0) {
+		if ($arena->getCountdown()->getRemaining() <= 0) {
 			$arena->start();
 		}
 		if ($arena->getPhase() === $this) {
-			$arena->decrementCountdown();
+			$arena->getCountdown()->decrement();
 		}
 	}
 }

@@ -40,8 +40,8 @@ final class EndingPhase extends ArenaPhase {
 	}
 
 	public function tick(Arena $arena) : void {
-		if ($arena->getCountdown() > 0 || $arena->isBuildingStage()) {
-			$arena->decrementCountdown();
+		if ($arena->getCountdown()->getRemaining() > 0 || $arena->isBuildingStage()) {
+			$arena->getCountdown()->decrement();
 			return;
 		}
 		$plugin = $arena->getPlugin();

@@ -73,9 +73,7 @@ class OneInTheChamber extends Microgame implements Listener {
 			$player->getInventory()->setItem(8, VanillaItems::ARROW());
 			$player->getInventory()->setHeldItemIndex(0);
 		}
-		if (!$this->arena->areInvisibleBlocksSet()) {
-			$this->arena->buildInvisibleBlocks();
-		}
+		$this->arena->getWalls()->raise();
 		$this->arena->getLosersCage()->set();
 		parent::start();
 	}
