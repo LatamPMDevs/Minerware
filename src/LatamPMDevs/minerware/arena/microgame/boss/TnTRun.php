@@ -115,7 +115,7 @@ class TnTRun extends Microgame implements Listener {
 			$player->getInventory()->setHeldItemIndex(0);
 		}
 		$losersCage = $this->arena->getLosersCage();
-		$losersCagePos = $losersCage->getPosition();
+		$losersCagePos = clone $losersCage->getPosition();
 		$losersCagePos->y = $highestPlatformY + self::EXTRA_CAGE_Y_POS;
 		$losersCage->setPosition($losersCagePos);
 
