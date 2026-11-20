@@ -135,7 +135,8 @@ final class AsyncBlockOperation extends AsyncTask {
 	 * Runs on a worker thread.
 	 */
 	public function onRun() : void {
-		$manager = $this->makeChunkManager();
+		$serialized = $this->getSerializedChunks();
+		$manager = $this->makeChunkManager($serialized);
 		$undoStates = [];
 		$tileCells = [];
 		$tileClassByState = [];
@@ -166,7 +167,7 @@ final class AsyncBlockOperation extends AsyncTask {
 		$this->undoStates = igbinary_serialize($undoStates);
 		$this->tileCells = igbinary_serialize($tileCells);
 
-		$this->saveChunkManager($manager);
+		$this->saveChunkManager($manager, $serialized);
 	}
 
 	/**
@@ -246,18 +247,26 @@ final class AsyncBlockOperation extends AsyncTask {
 		}
 	}
 
-	protected function makeChunkManager() : SimpleChunkManager {
+	/**
+	 * @param array<int, string> $serializedChunks
+	 * @phpstan-param array<ChunkPosHash, string> $serializedChunks
+	 */
+	protected function makeChunkManager(array $serializedChunks) : SimpleChunkManager {
 		$manager = new SimpleChunkManager($this->minY, $this->maxY);
-		foreach ($this->getSerializedChunks() as $chunkHash => $serializedChunk) {
+		foreach ($serializedChunks as $chunkHash => $serializedChunk) {
 			World::getXZ($chunkHash, $chunkX, $chunkZ);
 			$manager->setChunk($chunkX, $chunkZ, FastChunkSerializer::deserializeTerrain($serializedChunk));
 		}
 		return $manager;
 	}
 
-	protected function saveChunkManager(SimpleChunkManager $manager) : void {
+	/**
+	 * @param array<int, string> $original
+	 * @phpstan-param array<ChunkPosHash, string> $original
+	 */
+	protected function saveChunkManager(SimpleChunkManager $manager, array $original) : void {
 		$serializedChunks = [];
-		foreach ($this->getSerializedChunks() as $chunkHash => $unused) {
+		foreach ($original as $chunkHash => $unused) {
 			World::getXZ($chunkHash, $chunkX, $chunkZ);
 			/** @var ?Chunk $chunk */
 			$chunk = $manager->getChunk($chunkX, $chunkZ);
