@@ -22,12 +22,17 @@ declare(strict_types=1);
 
 namespace LatamPMDevs\minerware\arena;
 
+use LatamPMDevs\minerware\item\SpecialItems;
 use pocketmine\event\entity\EntityDamageEvent;
 use pocketmine\event\entity\EntityTeleportEvent;
+use pocketmine\event\inventory\InventoryTransactionEvent;
 use pocketmine\event\Listener;
 use pocketmine\event\player\PlayerDropItemEvent;
 use pocketmine\event\player\PlayerExhaustEvent;
+use pocketmine\event\player\PlayerInteractEvent;
+use pocketmine\event\player\PlayerItemUseEvent;
 use pocketmine\event\player\PlayerQuitEvent;
+use pocketmine\item\Item;
 use pocketmine\player\Player;
 
 /**
@@ -69,6 +74,38 @@ final class ArenaListener implements Listener {
 		$player = $event->getPlayer();
 		if ($player instanceof Player && ArenaManager::getInstance()->getArenaOf($player) !== null) {
 			$event->cancel();
+		}
+	}
+
+	public function onItemUse(PlayerItemUseEvent $event) : void {
+		$this->useSpecialItem($event->getPlayer(), $event->getItem(), $event);
+	}
+
+	public function onInteract(PlayerInteractEvent $event) : void {
+		$this->useSpecialItem($event->getPlayer(), $event->getItem(), $event);
+	}
+
+	/**
+	 * The players of an arena can't move items around while they wait.
+	 */
+	public function onTransaction(InventoryTransactionEvent $event) : void {
+		$arena = ArenaManager::getInstance()->getArenaOf($event->getTransaction()->getSource());
+		if ($arena !== null && $arena->getPhase()->isLobby()) {
+			$event->cancel();
+		}
+	}
+
+	private function useSpecialItem(Player $player, Item $item, PlayerItemUseEvent|PlayerInteractEvent $event) : void {
+		if (ArenaManager::getInstance()->getArenaOf($player) === null) {
+			return;
+		}
+		if ($item->getNamedTag()->getTag(SpecialItems::LEAVE_GAME) !== null) {
+			$event->cancel();
+			$spawn = $player->getServer()->getWorldManager()->getDefaultWorld()?->getSafeSpawn();
+			if ($spawn !== null) {
+				# Leaving the arena's world is what removes the player from it.
+				$player->teleport($spawn);
+			}
 		}
 	}
 
