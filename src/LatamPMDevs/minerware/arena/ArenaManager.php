@@ -30,10 +30,9 @@ use pocketmine\event\HandlerListManager;
 use pocketmine\player\Player;
 use pocketmine\utils\SingletonTrait;
 use RuntimeException;
+use function chr;
 use function count;
-use function rand;
-use function range;
-use function shuffle;
+use function random_int;
 
 final class ArenaManager {
 	use SingletonTrait;
@@ -49,7 +48,7 @@ final class ArenaManager {
 	}
 
 	public function getById(string $id) : ?Arena {
-		return (isset($this->arenas[$id]) ? $this->arenas[$id] : null);
+		return $this->arenas[$id] ?? null;
 	}
 
 	public function createArena(?Map $map = null) : Arena {
@@ -64,30 +63,26 @@ final class ArenaManager {
 		unset($this->arenas[$arena->getId()]);
 	}
 
-	public function getAvailable(?Map $map = null, bool $force = false) : ?Arena {
+	public function getAvailable(?Map $map = null) : ?Arena {
 		foreach ($this->arenas as $arena) {
 			if (($arena->getStatus() === Status::WAITING || $arena->getStatus() === Status::STARTING) && ($map === null || $arena->getMap() === $map) && count($arena->getPlayers()) < Arena::MAX_PLAYERS) {
 				return $arena;
 			}
 		}
-		if ($force && count($this->arenas) >= DataManager::getInstance()->getMaxRuntimeArenas()) {
+		if (count($this->arenas) >= DataManager::getInstance()->getMaxRuntimeArenas()) {
 			return null;
 		}
 		return $this->createArena($map);
 	}
 
 	public function generateId() : string {
-		$az = range("a", "z");
-		shuffle($az);
-
-		$name = "";
-		$name .= $az[0];
-		$name .= $az[1];
-		$name .= rand(10, 99);
-		return $name;
+		do {
+			$id = chr(random_int(97, 122)) . chr(random_int(97, 122)) . random_int(10, 99);
+		} while (isset($this->arenas[$id]));
+		return $id;
 	}
 
-	public function join(Player $player, Arena $arena = null, Map $map = null) : void {
+	public function join(Player $player, ?Arena $arena = null, ?Map $map = null) : void {
 		if ($arena === null) {
 			if (MapManager::getInstance()->getCount() === 0 || ($arena = $this->getAvailable($map)) === null) {
 				$player->sendMessage(Minerware::getInstance()->getTranslator()->translate($player, "game.noArenaAvaiable"));
