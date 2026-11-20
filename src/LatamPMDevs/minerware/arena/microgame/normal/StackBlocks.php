@@ -66,7 +66,6 @@ class StackBlocks extends Microgame implements Listener {
 	}
 
 	public function start() : void {
-		$this->plugin->getServer()->getPluginManager()->registerEvents($this, $this->plugin);
 		$dyeColors = DyeColor::getAll();
 		shuffle($dyeColors);
 		$i = 0;

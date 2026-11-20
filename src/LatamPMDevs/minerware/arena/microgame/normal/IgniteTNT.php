@@ -65,7 +65,6 @@ class IgniteTNT extends Microgame implements Listener {
 	}
 
 	public function start() : void {
-		$this->plugin->getServer()->getPluginManager()->registerEvents($this, $this->plugin);
 
 		$selection = $this->getStageSelection();
 		$minPos = $this->arena->getMap()->getPlatformMinPos();
