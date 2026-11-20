@@ -46,7 +46,9 @@ use pocketmine\player\GameMode;
 use pocketmine\player\Player;
 use pocketmine\world\Position;
 use pocketmine\world\sound\ThrowSound;
+use function array_filter;
 use function array_slice;
+use function array_values;
 use function count;
 use function shuffle;
 
@@ -93,15 +95,13 @@ class ColorFloor extends Microgame implements Listener {
 		$selection->addFill($minPos, $maxPos, VanillaBlocks::STAINED_CLAY());
 		$this->blocksCount = (int) (($maxPos->x - $minPos->x + 1) * ($maxPos->z - $minPos->z + 1));
 
-		$dyeColors = DyeColor::cases();
+		// Players must not have the color white
+		$dyeColors = array_values(array_filter(DyeColor::cases(), static fn(DyeColor $c) => $c !== DyeColor::WHITE));
 		shuffle($dyeColors);
 		$i = 0;
 		foreach ($this->arena->getPlayers() as $player) {
 			Utils::initPlayer($player);
 			$player->setGamemode(GameMode::SURVIVAL);
-			if ($dyeColors[$i] === DyeColor::WHITE) {
-				$i++; // Players must not have the color white
-			}
 			if ($i < count($dyeColors)) {
 				$this->setAssignedColor($player, $dyeColors[$i]);
 				$hoe = VanillaItems::DIAMOND_HOE();
@@ -215,12 +215,13 @@ class ColorFloor extends Microgame implements Listener {
 		if ($blockColor === $color) {
 			return;
 		}
-		if ($blockColor !== DyeColor::WHITE) {
+		if ($blockColor === DyeColor::WHITE) {
+			$this->totalColoredBlocks++;
+		} else {
 			$this->coloredBlocksCount[$blockColor->id()] = $this->getBlocksOfColor($blockColor) - 1;
 		}
 		$this->arena->getWorld()->setBlock($block->getPosition(), VanillaBlocks::STAINED_CLAY()->setColor($color), false);
 		$this->coloredBlocksCount[$color->id()] = $this->getBlocksOfColor($color) + 1;
-		$this->totalColoredBlocks++;
 	}
 
 	/**
