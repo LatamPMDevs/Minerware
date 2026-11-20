@@ -32,6 +32,7 @@ use LatamPMDevs\minerware\Minerware;
 use LatamPMDevs\minerware\utils\Utils;
 use pocketmine\command\CommandSender;
 use pocketmine\player\Player;
+use poggit\libasynql\SqlError;
 
 final class StatisticsCommand extends BaseSubCommand {
 
@@ -53,7 +54,14 @@ final class StatisticsCommand extends BaseSubCommand {
 			$sender->sendMessage($translator->translate($sender, "command.statistics.noUserProvided"));
 			return;
 		}
-		DataManager::getInstance()->getPlayerData($args["user"] ?? $sender->getName(), function (PlayerData $playerdata) use ($sender, $translator) {
+		$user = $args["user"] ?? $sender->getName();
+		# Someone who never played has no record; only show zeros for yourself.
+		$ownStats = $sender->getName() === $user;
+		DataManager::getInstance()->getPlayerData($user, function (?PlayerData $playerdata) use ($sender, $translator, $user) {
+			if ($playerdata === null) {
+				$sender->sendMessage($translator->translate($sender, "command.statistics.notFound", ["{%user}" => $user]));
+				return;
+			}
 			if ($sender instanceof Player) {
 				if (!$sender->isConnected()) {
 					return;
@@ -72,7 +80,10 @@ final class StatisticsCommand extends BaseSubCommand {
 					"§a" . $translator->translate($sender, "text.statistics.timePlayed") . ": §6" . Utils::getTimeTranslated($playerdata->getTimePlayed(), $translator, $sender)
 				);
 			}
-		}, null, true);
+		}, function (SqlError $error) use ($sender, $translator) : void {
+			DataManager::getInstance()->onError->__invoke($error);
+			$sender->sendMessage($translator->translate($sender, "command.statistics.error"));
+		}, $ownStats);
 	}
 
 	public function getParent() : BaseCommand {
