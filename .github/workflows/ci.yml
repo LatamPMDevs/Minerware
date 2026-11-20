@@ -1,0 +1,63 @@
+name: CI
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  code-style:
+    name: PHP-CS-Fixer
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      # The fixer is pinned, so a newer version can't start flagging files nobody touched.
+      - name: Set up PHP and PHP-CS-Fixer
+        uses: shivammathur/setup-php@2.37.2
+        with:
+          php-version: 8.2
+          tools: php-cs-fixer:3.95.27
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Run PHP-CS-Fixer
+        run: php-cs-fixer fix --dry-run --diff --ansi
+
+  checks:
+    name: PHPStan and PHPUnit
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up PHP
+        uses: pmmp/setup-php-action@3.2.0
+        with:
+          php-version: 8.2
+          install-path: ./bin
+
+      - name: Validate composer.json
+        run: composer validate --no-check-publish
+
+      - name: Install Composer dependencies
+        id: install
+        run: composer install --prefer-dist --no-interaction --no-progress
+
+      # Each check runs even if an earlier one failed, so one run reports every problem.
+      - name: PHPStan
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
+        run: php vendor/bin/phpstan.phar analyze --no-progress
+
+      - name: PHPUnit
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
+        run: composer test

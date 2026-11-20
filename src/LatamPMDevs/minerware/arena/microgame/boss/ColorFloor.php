@@ -97,7 +97,7 @@ class ColorFloor extends Microgame implements Listener {
 		$this->blocksCount = (int) (($maxPos->x - $minPos->x + 1) * ($maxPos->z - $minPos->z + 1));
 
 		// Players must not have the color white
-		$dyeColors = array_values(array_filter(DyeColor::cases(), static fn(DyeColor $c) => $c !== DyeColor::WHITE));
+		$dyeColors = array_values(array_filter(DyeColor::cases(), static fn (DyeColor $c) => $c !== DyeColor::WHITE));
 		shuffle($dyeColors);
 		$i = 0;
 		foreach ($this->arena->getPlayers() as $player) {
