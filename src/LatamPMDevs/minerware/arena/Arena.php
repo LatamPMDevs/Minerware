@@ -35,6 +35,7 @@ use LatamPMDevs\minerware\event\arena\PlayerJoinArenaEvent;
 use LatamPMDevs\minerware\event\arena\PlayerQuitArenaEvent;
 use LatamPMDevs\minerware\map\Map;
 use LatamPMDevs\minerware\map\MapWorldGenerator;
+use LatamPMDevs\minerware\map\world\MapTemplates;
 use LatamPMDevs\minerware\Minerware;
 use LatamPMDevs\minerware\tasks\ArenaTask;
 use LatamPMDevs\minerware\utils\AsyncBlockManager;
@@ -375,12 +376,7 @@ final class Arena implements Listener {
 	}
 
 	public function deleteMap() : void {
-		$worldPath = $this->plugin->getServer()->getDataPath() . "worlds" . DIRECTORY_SEPARATOR . $this->world->getFolderName() . DIRECTORY_SEPARATOR;
-		if (!$this->plugin->getServer()->getWorldManager()->unloadWorld($this->world, true)) {
-			$this->plugin->getLogger()->warning("Could not unload the world of arena " . $this->id . ", it was not deleted");
-			return;
-		}
-		Utils::removeDir($worldPath);
+		MapTemplates::getInstance()->removeInstance($this->world);
 	}
 
 	public function updateScoreboard() : void {

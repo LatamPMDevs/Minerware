@@ -36,6 +36,7 @@ use pocketmine\item\VanillaItems;
 use pocketmine\math\Vector3;
 use pocketmine\player\Player;
 use pocketmine\world\World;
+use RuntimeException;
 use function explode;
 use function strtolower;
 
@@ -158,7 +159,12 @@ final class MapRegisterer implements Listener {
 						$this->plugin->getServer()->getDataPath() . "worlds" . DIRECTORY_SEPARATOR . $folderName,
 						DataManager::getInstance()->getMapBackupPath($map->getName())
 					);
-					DataManager::getInstance()->saveMap($map);
+					try {
+						DataManager::getInstance()->saveMap($map);
+					} catch (RuntimeException $e) {
+						$player->sendMessage("§c" . $e->getMessage());
+						break;
+					}
 					$this->close();
 					$player->sendMessage($this->plugin->getTranslator()->translate($player, "configurator.mode.registered.successfully"));
 				break;

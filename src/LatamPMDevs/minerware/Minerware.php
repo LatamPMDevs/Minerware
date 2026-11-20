@@ -29,6 +29,8 @@ use JackMD\ConfigUpdater\ConfigUpdater;
 use LatamPMDevs\minerware\arena\ArenaManager;
 use LatamPMDevs\minerware\command\MinerwareCommand;
 use LatamPMDevs\minerware\database\DataManager;
+use LatamPMDevs\minerware\map\world\MapTemplates;
+use LatamPMDevs\minerware\map\world\MapWorldProviderEntry;
 use pocketmine\plugin\PluginBase;
 use pocketmine\utils\SingletonTrait;
 
@@ -64,6 +66,9 @@ final class Minerware extends PluginBase {
 			FakeBlockManager::register($this);
 		}
 
+		$this->getServer()->getWorldManager()->getProviderManager()->addProvider(new MapWorldProviderEntry(), "minerware");
+		MapTemplates::getInstance()->cleanupStaleInstances();
+
 		$dataManager = DataManager::getInstance();
 		$dataManager->loadMaps();
 		$this->getServer()->getPluginManager()->registerEvents(new EventListener($dataManager), $this);
@@ -75,6 +80,7 @@ final class Minerware extends PluginBase {
 		}
 		$this->getConfig()->set("default-language", $this->translator->getDefaultLanguage()->getLocale());
 		$this->saveConfig();
+		MapTemplates::getInstance()->closeAll();
 		DataManager::getInstance()->closeDatabase();
 	}
 

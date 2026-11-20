@@ -27,6 +27,7 @@ use InvalidArgumentException;
 use IvanCraft623\languages\Language;
 use LatamPMDevs\minerware\map\Map;
 use LatamPMDevs\minerware\map\MapManager;
+use LatamPMDevs\minerware\map\world\MapTemplates;
 use LatamPMDevs\minerware\Minerware;
 use pocketmine\utils\AssumptionFailedError;
 use pocketmine\utils\Config;
@@ -34,9 +35,9 @@ use pocketmine\utils\SingletonTrait;
 use poggit\libasynql\DataConnector;
 use poggit\libasynql\libasynql;
 use poggit\libasynql\SqlError;
+use RuntimeException;
 use function array_map;
 use function basename;
-use function file_exists;
 use function glob;
 use function max;
 use function mkdir;
@@ -178,11 +179,9 @@ final class DataManager {
 		foreach (glob($mapsPath . "*.json") ?: [] as $file) {
 			try {
 				$map = Map::fromArray((new Config($file, Config::JSON))->getAll());
-				if (!file_exists($this->getMapBackupPath($map->getName()))) {
-					throw new InvalidArgumentException("Missing world backup");
-				}
+				MapTemplates::getInstance()->load($map);
 				MapManager::getInstance()->add($map);
-			} catch (InvalidArgumentException $e) {
+			} catch (InvalidArgumentException | RuntimeException $e) {
 				$logger->warning("Skipping map '" . basename($file) . "': " . $e->getMessage());
 			}
 		}
@@ -208,7 +207,11 @@ final class DataManager {
 		$translator->setDefaultLanguage($lang);
 	}
 
+	/**
+	 * @throws RuntimeException
+	 */
 	public function saveMap(Map $map) : void {
+		MapTemplates::getInstance()->load($map);
 		$path = $this->pluginPath . "database" . DIRECTORY_SEPARATOR . "maps" . DIRECTORY_SEPARATOR . $map->getName() . ".json";
 		(new Config($path, Config::JSON, $map->toArray()))->save();
 		MapManager::getInstance()->add($map);

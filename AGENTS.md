@@ -42,7 +42,7 @@ Minerware (PluginBase, singleton)
 
 Four singletons use `SingletonTrait` and are reached via `X::getInstance()`: `Minerware`, `DataManager`, `ArenaManager`, `MicrogameManager`. `MapManager` and `FormManager` are also singletons but you normally reach them through `DataManager`/commands.
 
-A **map** is a fixed mid-air `/platform` (exactly 24×24) built by MapWorldGenerator from a zipped world backup; each arena extracts its own copy of the map world into `worlds/<name>-<id>`, so every game is fully isolated and disposable (deleted via `Arena::deleteMap()` when the arena ends).
+A **map** is a fixed mid-air `/platform` (exactly 24×24) loaded once as a `MapTemplate` from its zipped world backup; each arena gets its own volatile in-memory world (`worlds/<name>-<id>` holds only a marker file), so every game is isolated and nothing is copied or saved (removed via `Arena::deleteMap()` when the arena ends).
 
 ### Lifecycle
 
@@ -122,7 +122,7 @@ There are two paths for world mutation, by volume:
 
 - `Map::fromArray` validates and parses a map JSON (from `database/maps/*.json`; bad maps are skipped with a warning) into: name, platform min/max (must be exactly 24×24 — `Utils::calculateSize` enforces during registration), computed center, spawns[], winners/losers cage positions. It lazily generates the 9 **mini-platforms** (a 3×3 grid of 2×2 elevated tiles with 3-tile margins) used by most microgames (`getMiniPlatforms()` returns relative [x, y, z] offsets).
 - `MapManager` is the in-memory `name → Map` registry (`add`/`remove`/`getByName`/`getRandom`/`getAll`/`getCount`).
-- `MapWorldGenerator::generate(Map, uniqueId)` extracts the map's world `.zip` (from `database/backups/*.zip`) into `worlds/<name>-<id>` and loads it as the arena's disposable `World`.
+- `map/world/`: `MapTemplates` extracts a backup once (again only if the zip changed) into `database/templates/<name>/` and opens it as a `MapTemplate`, which caches chunks lazily. `MapWorldProvider` serves clones of them to one arena world and ignores saves; `MapWorldProviderEntry` (registered as `minerware`) recognises the marker folders. `MapWorldGenerator::generate` creates an instance, `MapTemplates::removeInstance` deletes it, and stale instance folders are removed at enable. Backups may hold the world at the zip root (editor) or inside one folder.
 - `MapRegisterer` is the **interactive map editor**: while active it listens on chat (`help`, `setplatform`, `setcages`, `setspawn`, `done`) and block-break events (blaze rod = pick corners/blocks). The platform must resolve to `24x24` or it errors. `done` saves the JSON via `DataManager::saveMapData`, zips the world backup, and unregisters. It also implements `Listener` and registers itself — don't register it twice.
 
 ### Database & persistence (`src/LatamPMDevs/minerware/database/`)
@@ -169,6 +169,6 @@ Simple optimizations/special-cases, all `NeverSavedWithChunkEntity` (never seria
 - Player-facing text is localized via `.ini` files in `resources/languages/` (saved into the plugin data folder on load). Access through `Translator` (from `Minerware::getInstance()->getTranslator()`); the config `default-language` selects the locale.
 - Database via libasynql; schemas live in `resources/database/sqlite.sql` and `mysql.sql`.
 - `resources/config.yml` holds all runtime tunables (`database`, `max-runtime-arenas`, `arena-starting-time`, `minimum-starting-players`, `server-ip`, `default-language`) and is auto-versioned by ConfigUpdater (`CONFIG_VERSION = 1`).
-- `maps/*.zip` at the repo root are world backups only. Nothing installs them: a map needs its JSON in `<data>/database/maps/` and its zip in `<data>/database/backups/`, both written by `MapRegisterer`.
+- `maps/*.zip` at the repo root are world backups only. Nothing installs them: a map needs its JSON in `<data>/database/maps/` and its zip in `<data>/database/backups/`, both written by `MapRegisterer`; the zip may wrap the world in one folder.
 - Commands (`command/subcommands/`): `arenas` (create/start; op-only), `join`, `statistics`/`stats`, `language` (op), `help`, `credits`. Permissions are declared in `plugin.yml`.
 - Forms (`form/`): `FormManager` sends a `StatisticsForm` (SimpleForm) for the `statistics` command.
