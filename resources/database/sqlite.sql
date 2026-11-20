@@ -52,7 +52,7 @@
 			-- # :name string
 			-- # :count int
 			INSERT INTO MinerwarePlayers(name, wins)
-			VALUES(:name, :wins)
+			VALUES(:name, :count)
 			ON CONFLICT(name) DO UPDATE SET wins = wins + :count;
 		-- #}
 		-- #{ addBossgamesWon

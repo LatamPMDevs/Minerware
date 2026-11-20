@@ -25,7 +25,7 @@
 			-- # :gamesPlayed int 0
 			-- # :microgamesPlayed int 0
 			-- # :timePlayed int 0
-			INSERT OR IGNORE INTO
+			INSERT IGNORE INTO
 			MinerwarePlayers(name, wins, bossgamesWon, microgamesWon, gamesPlayed, microgamesPlayed, timePlayed)
 			VALUES (:name, :wins, :bossgamesWon, :microgamesWon, :gamesPlayed, :microgamesPlayed, :timePlayed);
 		-- #}
@@ -41,7 +41,7 @@
 			-- # :gamesPlayed int 0
 			-- # :microgamesPlayed int 0
 			-- # :timePlayed int 0
-			INSERT OR REPLACE INTO
+			REPLACE INTO
 			MinerwarePlayers(name, wins, bossgamesWon, microgamesWon, gamesPlayed, microgamesPlayed, timePlayed)
 			VALUES (:name, :wins, :bossgamesWon, :microgamesWon, :gamesPlayed, :microgamesPlayed, :timePlayed);
 		-- #}
