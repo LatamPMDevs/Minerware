@@ -29,8 +29,10 @@ use LatamPMDevs\minerware\utils\Utils;
 
 use pocketmine\block\TNT;
 use pocketmine\block\VanillaBlocks;
+use pocketmine\entity\object\PrimedTNT;
 use pocketmine\entity\projectile\Arrow;
 use pocketmine\event\entity\EntityDamageEvent;
+use pocketmine\event\entity\EntityPreExplodeEvent;
 use pocketmine\event\entity\ProjectileHitBlockEvent;
 use pocketmine\event\Listener;
 use pocketmine\item\enchantment\EnchantmentInstance;
@@ -123,6 +125,14 @@ $players = $this->arena->getPlayers();
 		if ($event->getCause() === EntityDamageEvent::CAUSE_VOID && !$this->isWinner($player)) {
 			$this->addLoser($player);
 			$this->arena->getLosersCage()->addPlayer($player);
+		}
+	}
+
+	public function onExplosion(EntityPreExplodeEvent $event) : void {
+		$entity = $event->getEntity();
+		if ($entity->getWorld() !== $this->arena->getWorld()) return;
+		if ($entity instanceof PrimedTNT) {
+			$event->setBlockBreaking(false);
 		}
 	}
 
