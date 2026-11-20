@@ -128,7 +128,7 @@ $players = $this->arena->getPlayers();
 		$player = $event->getEntity();
 		if (!$player instanceof Player) return;
 		if (!$this->arena->inGame($player)) return;
-		if ($this->arena->isWinner($player) || $this->arena->isLoser($player)) return;
+		if ($this->isWinner($player) || $this->isLoser($player)) return;
 		$event->cancel();
 		$player->extinguish();
 		if ($event->getCause() === EntityDamageEvent::CAUSE_VOID && !$this->isWinner($player)) {
