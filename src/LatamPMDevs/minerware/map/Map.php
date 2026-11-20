@@ -26,6 +26,7 @@ use InvalidArgumentException;
 use LatamPMDevs\minerware\utils\Utils;
 use pocketmine\math\Vector3;
 use function array_map;
+use function count;
 use function is_array;
 use function is_numeric;
 use function is_string;
@@ -79,7 +80,7 @@ final class Map {
 		foreach (self::array($data, "spawns") as $spawn) {
 			$map->spawns[] = self::toVector($spawn, "spawns");
 		}
-		if ($map->spawns === []) {
+		if (count($map->spawns) === 0) {
 			throw new InvalidArgumentException("The map has no spawns");
 		}
 

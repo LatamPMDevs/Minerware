@@ -46,6 +46,7 @@ use pocketmine\block\utils\DyeColor;
 use pocketmine\block\VanillaBlocks;
 use pocketmine\event\entity\EntityDamageEvent;
 use pocketmine\event\entity\EntityTeleportEvent;
+use pocketmine\event\HandlerListManager;
 use pocketmine\event\Listener;
 use pocketmine\event\player\PlayerDropItemEvent;
 use pocketmine\event\player\PlayerExhaustEvent;
@@ -126,11 +127,13 @@ final class Arena implements Listener {
 
 	public function __construct(private string $id, private Map $map) {
 		$this->plugin = Minerware::getInstance();
+		# Built first: it can throw, and nothing has been allocated yet.
+		$this->buildMicrogamesQueue();
 		$this->world = MapWorldGenerator::generate($this->map, $this->id);
 		$this->minPlayers = DataManager::getInstance()->getMinimumStartingPlayers();
 		$this->status = Status::WAITING;
 		$this->pointHolder = new PointHolder();
-		$this->plugin->getScheduler()->scheduleRepeatingTask(new ArenaTask($this), 20);
+		$this->plugin->getScheduler()->scheduleRepeatingTask(new ArenaTask($this), 20); //ticks
 		$this->plugin->getServer()->getPluginManager()->registerEvents($this, $this->plugin);
 		$this->world->setTime(World::TIME_NOON);
 		$this->world->stopTime();
@@ -145,27 +148,31 @@ final class Arena implements Listener {
 		$this->winnersCage->setBuildCallbacks($this->onStageBuildStarted(...), $this->onStageBuildSettled(...));
 		$this->losersCage->setBuildCallbacks($this->onStageBuildStarted(...), $this->onStageBuildSettled(...));
 
-		# TODO: More Microgames!
-		$microgameManager = MicrogameManager::getInstance();
-		$normalMicrogames = $microgameManager->getMicrogames();
-		shuffle($normalMicrogames);
-		foreach($normalMicrogames as $microgame) {
-			$this->microgamesQueue[] = new $microgame($this);
-		}
-		$bossMicrogames = $microgameManager->getBossgames();
-		$bossgame = $bossMicrogames[array_rand($bossMicrogames)];
-		$this->microgamesQueue[] = new $bossgame($this);
-
 		$this->plugin->getScheduler()->scheduleRepeatingTask(new ClosureTask(function () : void {
 			if ($this->status === Status::ENDING) {
 				throw new CancelTaskException("Arena is no more in-game");
 			}
 			if ($this->currentMicrogame !== null && $this->currentMicrogame->isRunning() && !$this->isBuildingStage()) {
 				$this->currentMicrogame->tick();
-			};
-		}), 3);
+			}
+		}), 3); //ticks
 
 		(new ArenaCreationEvent($this))->call();
+	}
+
+	private function buildMicrogamesQueue() : void {
+		$microgameManager = MicrogameManager::getInstance();
+		$normalMicrogames = $microgameManager->getMicrogames();
+		shuffle($normalMicrogames);
+		foreach ($normalMicrogames as $microgame) {
+			$this->microgamesQueue[] = new $microgame($this);
+		}
+		$bossMicrogames = $microgameManager->getBossgames();
+		if (count($bossMicrogames) === 0) {
+			throw new AssumptionFailedError("No boss microgames are registered");
+		}
+		$bossgame = $bossMicrogames[array_rand($bossMicrogames)];
+		$this->microgamesQueue[] = new $bossgame($this);
 	}
 
 	public function getId() : string {
@@ -215,7 +222,7 @@ final class Arena implements Listener {
 	}
 
 	/**
-	 * Default tick count a status lasts before the arena transitions again.
+	 * Default seconds a status lasts before the arena transitions again.
 	 */
 	public function getStatusDuration(Status $status) : int {
 		return match ($status) {
@@ -249,7 +256,14 @@ final class Arena implements Listener {
 		$this->countdown = 5;
 	}
 
+	public function canJoin() : bool {
+		return ($this->status === Status::WAITING || $this->status === Status::STARTING) && count($this->players) < self::MAX_PLAYERS;
+	}
+
 	public function join(Player $player) : void {
+		if (!$this->canJoin() || $this->inGame($player)) {
+			return;
+		}
 		$ev = new PlayerJoinArenaEvent($player, $this);
 		$ev->call();
 		if ($ev->isCancelled()) {
@@ -289,6 +303,13 @@ final class Arena implements Listener {
 			));
 		}
 		(new PlayerQuitArenaEvent($player, $this))->call();
+		if (count($this->players) === 0 && $this->status !== Status::ENDING) {
+			# Nobody is left: let the ENDING countdown tear the arena down.
+			if ($this->currentMicrogame instanceof Listener) {
+				HandlerListManager::global()->unregisterAll($this->currentMicrogame);
+			}
+			$this->setStatus(Status::ENDING);
+		}
 	}
 
 	public function sendMessage(string $message) : void {
@@ -355,7 +376,10 @@ final class Arena implements Listener {
 
 	public function deleteMap() : void {
 		$worldPath = $this->plugin->getServer()->getDataPath() . "worlds" . DIRECTORY_SEPARATOR . $this->world->getFolderName() . DIRECTORY_SEPARATOR;
-		$this->plugin->getServer()->getWorldManager()->unloadWorld($this->world, true);
+		if (!$this->plugin->getServer()->getWorldManager()->unloadWorld($this->world, true)) {
+			$this->plugin->getLogger()->warning("Could not unload the world of arena " . $this->id . ", it was not deleted");
+			return;
+		}
 		Utils::removeDir($worldPath);
 	}
 
@@ -403,7 +427,7 @@ final class Arena implements Listener {
 					}
 					$lines[] = "§1";
 					$lines[] = "§5" . $translator->translate($player, "text.microgame") . ":";
-					$lines[] = "§e" . ($this->status === Status::INBETWEEN ? "§fIn-between" : $this->getCurrentMicrogameNonNull()->getName());
+					$lines[] = "§e" . ($this->status === Status::INBETWEEN ? "§fIn-between" : ($this->currentMicrogame?->getName() ?? ""));
 					$lines[] = "§5(§f" . ($isBoss ? "Bossgame" : $this->nextMicrogameIndex . "§5/§f" . (count($this->microgamesQueue) - 1)) . "§5)";
 					$lines[] = "§2";
 					$lines[] = "§6" . DataManager::getInstance()->getServerIp();

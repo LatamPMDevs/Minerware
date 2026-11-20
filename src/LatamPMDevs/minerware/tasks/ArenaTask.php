@@ -91,11 +91,9 @@ final class ArenaTask extends Task {
 				}
 				$total = max(1, $arena->getCountdownTotal());
 				$countdown = $arena->getCountdown();
-				if ($countdown === max(1, $total - 2)) {
-					if ($arena->getNextMicrogame() === null) {
-						$arena->end();
-						return;
-					}
+				if ($countdown <= max(1, $total - 2) && $arena->getNextMicrogame() === null) {
+					$arena->end();
+					return;
 				}
 				if ($countdown > 0) {
 					if ($countdown === $total) {
@@ -136,7 +134,7 @@ final class ArenaTask extends Task {
 				break;
 
 			case Status::ENDING:
-				if ($arena->getCountdown() <= 0) {
+				if ($arena->getCountdown() <= 0 && !$arena->isBuildingStage()) {
 					foreach ($players as $player) {
 						ArenaManager::getInstance()->join($player);
 					}

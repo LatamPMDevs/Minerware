@@ -89,6 +89,10 @@ final class ArenaManager {
 				return;
 			}
 		}
+		if (!$arena->canJoin()) {
+			$player->sendMessage(Minerware::getInstance()->getTranslator()->translate($player, "game.noArenaAvaiable"));
+			return;
+		}
 		$arena->join($player);
 	}
 }
