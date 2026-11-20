@@ -302,12 +302,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/IvanCraft623/languages.git",
-                "reference": "b4c0fdf09da84c477aef9ac8b8b9ca76779cd0ce"
+                "reference": "c2c97bb48925b824c8b02d025d4e7ef41c6eb41c"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/IvanCraft623/languages/zipball/b4c0fdf09da84c477aef9ac8b8b9ca76779cd0ce",
-                "reference": "b4c0fdf09da84c477aef9ac8b8b9ca76779cd0ce",
+                "url": "https://api.github.com/repos/IvanCraft623/languages/zipball/c2c97bb48925b824c8b02d025d4e7ef41c6eb41c",
+                "reference": "c2c97bb48925b824c8b02d025d4e7ef41c6eb41c",
                 "shasum": ""
             },
             "require": {
@@ -340,7 +340,7 @@
                 "source": "https://github.com/IvanCraft623/languages/tree/main",
                 "issues": "https://github.com/IvanCraft623/languages/issues"
             },
-            "time": "2023-06-17T19:26:08+00:00"
+            "time": "2026-11-20T18:40:35+00:00"
         },
         {
             "name": "latampmdevs/formapi",

@@ -55,20 +55,8 @@ final class AsyncBlockManager {
 	}
 
 	/**
-	 * Applies a selection asynchronously. Operations on the same world are
-	 * serialized (one in flight at a time): each worker mutates a full copy of
-	 * the affected chunks, so two concurrent operations touching the same chunk
-	 * would overwrite each other wholesale when swapped back. Different worlds
-	 * (arenas) still run in parallel.
+	 * Applies a selection asynchronously.
 	 *
-	 * @param Selection $selection the change set to apply. An empty selection
-	 * is a no-op that settles immediately.
-	 * @param ?Closure $onComplete invoked on the main thread once the modified
-	 * chunks have been swapped into the world, receiving the inverse selection
-	 * (every applied cell's pre-change state) — or null when nothing was
-	 * applied (empty selection, world unloaded mid-queue, or swap failure);
-	 * submit it through this same method to undo the operation. May run
-	 * synchronously (empty selection) or later (one async step).
 	 * @phpstan-param ?Closure(?Selection $undo) : void $onComplete
 	 */
 	public function executeSet(Selection $selection, ?Closure $onComplete = null) : void {

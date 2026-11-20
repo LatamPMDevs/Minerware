@@ -39,41 +39,14 @@ use function igbinary_unserialize;
 use function is_callable;
 
 /**
- * Applies a {@see Selection} to a {@see World} on a worker thread.
- *
- * PocketMine-MP's world API is not thread-safe, so a block write cannot simply
- * run on a second thread. Instead this task:
- *
- * 1. On the main thread (constructor) it groups the requested cells by native
- *    {@see World::chunkHash} and serializes the **original terrain** of every
- *    affected chunk to igbinary strings. Only scalar + serialized-string
- *    properties cross the worker boundary — never live Block/World objects.
- *    Each cell's previous state id was already cached by the {@see Selection}
- *    itself as its cells were added.
- * 2. On a worker thread ({@see onRun}) it rebuilds each affected chunk inside a
- *    throwaway {@see SimpleChunkManager} (a detached copy), reads each cell's
- *    **pre-change** state id from that copy (the inverse change set, for free —
- *    the terrain is already in memory), applies the new block state ids, and
- *    re-serializes the modified terrain.
- * 3. Back on the main thread ({@see onCompletion}) it swaps the modified chunks
- *    back into the live world with {@see World::setChunk} (recreating tile
- *    entities for newly placed tile-blocks), wraps the inverse change set into
- *    a {@see Selection} and invokes the completion closure with it, so the
- *    handler can undo the whole operation by submitting that Selection to
- *    another {@see AsyncBlockOperation}.
- *
- * This moves the expensive per-block mutation off the main thread; the main
- * thread only serializes/introspects cheap state-id ints up front and performs a
- * cheap chunk swap per affected chunk on completion.
+ * Applies a Selection to a World on a worker thread.
  *
  * @phpstan-import-type BlockPosHash from World
  * @phpstan-import-type ChunkPosHash from World
  */
 final class AsyncBlockOperation extends AsyncTask {
 
-	/**
-	 * @var string igbinary-serialized chunkHash → [blockHash → newStateId, ...]
-	 */
+	/** @var string igbinary-serialized chunkHash → [blockHash → newStateId, ...] */
 	private string $statesByChunk;
 
 	/** @var string igbinary-serialized chunkHash → serialized original terrain */
@@ -92,13 +65,6 @@ final class AsyncBlockOperation extends AsyncTask {
 	private int $maxY;
 
 	/**
-	 * @param Selection $selection the change set to apply.
-	 * @param World $world the target world (main thread only).
-	 * @param ?Closure $onComplete invoked on the main thread once the chunks
-	 * have been swapped back in, receiving the inverse {@see Selection} (every
-	 * applied cell's pre-change state; null only if the world was unloaded
-	 * mid-flight). Submitting it through {@see AsyncBlockManager::executeSet}
-	 * undoes the whole operation.
 	 * @phpstan-param ?Closure(?Selection $undo) : void $onComplete
 	 */
 	public function __construct(Selection $selection, World $world, ?Closure $onComplete = null) {
@@ -111,9 +77,7 @@ final class AsyncBlockOperation extends AsyncTask {
 	}
 
 	/**
-	 * Groups the selection by chunk and serializes the original terrain of
-	 * every affected chunk — the copy the worker derives the inverse change
-	 * set from.
+	 * Groups the selection by chunk and serializes the original terrain of every affected chunk.
 	 */
 	private function setSelection(World $world, Selection $selection) : void {
 		$statesByChunk = $selection->getStatesByChunk();
@@ -162,8 +126,7 @@ final class AsyncBlockOperation extends AsyncTask {
 	}
 
 	/**
-	 * Runs on a worker thread: applies the changes to a detached chunk copy,
-	 * capturing each cell's pre-change state id for the inverse selection.
+	 * Runs on a worker thread.
 	 */
 	public function onRun() : void {
 		$manager = $this->makeChunkManager();
@@ -201,11 +164,7 @@ final class AsyncBlockOperation extends AsyncTask {
 	}
 
 	/**
-	 * Runs on the main thread: swaps the modified chunks into the live world,
-	 * recreates tile entities for newly placed tile-blocks (the raw state-id
-	 * write skips the tile creation {@see World::setBlock} would do), then
-	 * hands the inverse selection to the completion closure — which always
-	 * runs exactly once, even if the world work throws.
+	 * Runs on the main thread.
 	 */
 	public function onCompletion() : void {
 		$undo = null;
@@ -228,12 +187,7 @@ final class AsyncBlockOperation extends AsyncTask {
 	}
 
 	/**
-	 * Swaps the worker's modified chunks into the live world and recreates the
-	 * tiles for placed tile-blocks. Returns the inverse selection, or null if
-	 * the world is gone. A swap failure is logged, not thrown: the operation
-	 * is then (half-)unapplied, but the undo stays exact — pre-change writes
-	 * against chunks that never landed are no-ops on the live terrain — and
-	 * the completion callback still releases the caller's accounting.
+	 * Swaps the worker's modified chunks into the live world and recreates the tiles for placed tile-blocks.
 	 */
 	private function swapIntoWorld() : ?Selection {
 		$world = Server::getInstance()->getWorldManager()->getWorld($this->worldId);
@@ -262,9 +216,6 @@ final class AsyncBlockOperation extends AsyncTask {
 
 	/**
 	 * Recreates tile entities for cells whose new block state expects one.
-	 * Runs after the chunk swap, so it resolves tiles against the new terrain;
-	 * tiles that already exist at a cell (transferred in by
-	 * {@see World::setChunk}) are kept untouched.
 	 *
 	 * @param array<int, array<int, int>> $statesByChunk
 	 * @phpstan-param array<ChunkPosHash, array<BlockPosHash, int>> $statesByChunk

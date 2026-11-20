@@ -79,6 +79,13 @@ BODY,
 			],
 			"sort_algorithm" => "alpha"
 		],
+		"phpdoc_line_span" => [
+			"class" => "multi",
+			"function" => "multi",
+			"method" => "multi",
+			"property" => null,
+			"const" => null
+		],
 		"phpdoc_trim" => true,
 		"phpdoc_trim_consecutive_blank_line_separation" => true,
 		"single_import_per_statement" => true,
