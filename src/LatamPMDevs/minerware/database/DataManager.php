@@ -29,6 +29,7 @@ use LatamPMDevs\minerware\map\Map;
 use LatamPMDevs\minerware\map\MapManager;
 use LatamPMDevs\minerware\map\world\MapTemplates;
 use LatamPMDevs\minerware\Minerware;
+use pocketmine\player\Player;
 use pocketmine\utils\AssumptionFailedError;
 use pocketmine\utils\Config;
 use pocketmine\utils\SingletonTrait;
@@ -95,6 +96,7 @@ final class DataManager {
 		]);
 
 		$this->database->executeGeneric('table.players');
+		$this->database->executeGeneric('table.languages');
 	}
 
 	public function getPlayerData(string $name, callable $onSuccess, ?callable $onError = null, bool $nonNull = false) : void {
@@ -109,6 +111,25 @@ final class DataManager {
 			}
 			$onSuccess($playerdata);
 		}, $onError ?? $this->onError);
+	}
+
+	/**
+	 * @param callable(?string) : void $onSuccess
+	 */
+	public function getPlayerLanguage(Player $player, callable $onSuccess, ?callable $onError = null) : void {
+		$this->database->executeSelect('data.languages.get', [
+			"uuid" => $player->getUniqueId()->toString()
+		], function (array $rows) use ($onSuccess) : void {
+			$locale = $rows[0]["locale"] ?? null;
+			$onSuccess(is_string($locale) ? $locale : null);
+		}, $onError ?? $this->onError);
+	}
+
+	public function setPlayerLanguage(Player $player, string $locale, ?callable $onSuccess = null, ?callable $onError = null) : void {
+		$this->database->executeGeneric('data.languages.set', [
+			"uuid" => $player->getUniqueId()->toString(),
+			"locale" => $locale
+		], $onSuccess, $onError ?? $this->onError);
 	}
 
 	public function addPlayer(

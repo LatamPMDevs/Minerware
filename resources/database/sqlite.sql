@@ -13,6 +13,13 @@
 			timePlayed       NUMERIC     DEFAULT 0
 		);
 	-- #}
+	-- #{ languages
+		CREATE TABLE IF NOT EXISTS MinerwareLanguages
+		(
+			uuid   VARCHAR(36) PRIMARY KEY NOT NULL,
+			locale VARCHAR(8)  NOT NULL
+		);
+	-- #}
 -- #}
 
 -- #{ data
@@ -90,6 +97,18 @@
 		-- #{ delete
 			-- # :name string
 			DELETE FROM MinerwarePlayers WHERE name = :name;
+		-- #}
+	-- #}
+	-- #{ languages
+		-- #{ get
+			-- # :uuid string
+			SELECT locale FROM MinerwareLanguages WHERE uuid = :uuid;
+		-- #}
+		-- #{ set
+			-- # :uuid string
+			-- # :locale string
+			INSERT OR REPLACE INTO MinerwareLanguages(uuid, locale)
+			VALUES (:uuid, :locale);
 		-- #}
 	-- #}
 -- #}
