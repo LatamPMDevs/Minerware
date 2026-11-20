@@ -129,13 +129,13 @@ Steps:
 
 ### Arena joining
 
-Currently it is only possible to join the game using the command:
+Players can join with the command, a sign or an NPC. All of them route into a shared arena; the game starts automatically once enough players are in.
 
-```
-/minerware join
-```
+* **Command:** `/minerware join`
+* **Sign:** place a sign whose first line is `[Minerware]` (the second line may name a map). Needs `minerware.joinpoint.create`; the sign shows the state and joins on click.
+* **NPC:** `/minerware joinpoint npc [map]` spawns an NPC that joins whoever hits or clicks it. It is saved with the world. `/minerware joinpoint remove` then hit it to remove it; `/minerware joinpoint list` counts them.
 
-You will be routed into a shared arena; the game starts automatically once enough players are in.
+Operators can run `/minerware arenas admin` to start, pause, kick from or close arenas.
 
 ---
 
@@ -151,6 +151,10 @@ All runtime tunables live in `config.yml` (auto-updated between versions):
 | `minimum-starting-players` | `2` | Players required to start the countdown (4 ~ 6 recommended) |
 | `server-ip` | — | Server IP shown on the scoreboard |
 | `default-language` | `en_US` | Default locale (see the `languages` folder) |
+| `join-cooldown` | `2` | Seconds a player must wait between join attempts (command, signs, NPCs) |
+| `database.sqlite.file` | `database/Minerware.db` | SQLite file, when `database.type` is `sqlite` |
+| `database.mysql.*` | — | `host`, `username`, `password` and `schema`, when `database.type` is `mysql` |
+| `database.worker-limit` | `1` | Simultaneous SQL queries (1 for SQLite, 2 for MySQL) |
 
 ---
 

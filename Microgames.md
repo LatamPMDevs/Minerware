@@ -1,3 +1,5 @@
+> Design list and roadmap. `[x]` marks the games that are implemented.
+
 ### Microgames
 
 ## Normal Games
