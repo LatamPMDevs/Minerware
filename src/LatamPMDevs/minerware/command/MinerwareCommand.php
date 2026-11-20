@@ -25,6 +25,7 @@ namespace LatamPMDevs\minerware\command;
 use CortexPE\Commando\BaseCommand;
 use LatamPMDevs\minerware\command\subcommands\ArenasCommand;
 use LatamPMDevs\minerware\command\subcommands\CreditsCommand;
+use LatamPMDevs\minerware\command\subcommands\DefaultLanguageCommand;
 use LatamPMDevs\minerware\command\subcommands\HelpCommand;
 use LatamPMDevs\minerware\command\subcommands\JoinCommand;
 use LatamPMDevs\minerware\command\subcommands\JoinPointCommand;
@@ -44,6 +45,7 @@ final class MinerwareCommand extends BaseCommand {
 	protected function prepare() : void {
 		$this->registerSubCommand(new ArenasCommand($this->plugin));
 		$this->registerSubCommand(new CreditsCommand($this->plugin));
+		$this->registerSubcommand(new DefaultLanguageCommand($this->plugin));
 		$this->registerSubcommand(new HelpCommand());
 		$this->registerSubcommand(new JoinCommand($this->plugin));
 		$this->registerSubcommand(new JoinPointCommand($this->plugin));

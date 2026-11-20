@@ -29,11 +29,30 @@ use LatamPMDevs\minerware\event\arena\microgame\MicrogameEndEvent;
 use LatamPMDevs\minerware\event\arena\microgame\PlayerWinMicrogameEvent;
 use LatamPMDevs\minerware\event\arena\PlayerQuitArenaEvent;
 use pocketmine\event\Listener;
+use pocketmine\event\player\PlayerJoinEvent;
 use function time;
 
 final class EventListener implements Listener {
 
 	public function __construct(private DataManager $dataManager) {
+	}
+
+	/**
+	 * Restores the language the player chose in an earlier session.
+	 */
+	public function onPlayerJoin(PlayerJoinEvent $event) : void {
+		$player = $event->getPlayer();
+		Minerware::getInstance()->getLogger()->debug($player->getName() . " is " . $player->getUniqueId()->toString() . " (xuid '" . $player->getXuid() . "')");
+		$this->dataManager->getPlayerLanguage($player, function (?string $locale) use ($player) : void {
+			if ($locale === null || !$player->isConnected()) {
+				return;
+			}
+			$translator = Minerware::getInstance()->getTranslator();
+			$language = $translator->getLanguage($locale);
+			if ($language !== null) {
+				$translator->setPlayerLanguage($player, $language);
+			}
+		});
 	}
 
 	/**

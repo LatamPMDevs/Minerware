@@ -24,6 +24,9 @@ permissions:
     description: "Join a random arena"
     default: true
   minerware.command.language:
+    description: "Choose the language you see"
+    default: true
+  minerware.command.defaultlanguage:
     description: "Change the default language of the plugin"
     default: op
   minerware.command.statistics:

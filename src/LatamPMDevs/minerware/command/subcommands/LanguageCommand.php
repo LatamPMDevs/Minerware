@@ -24,24 +24,29 @@ namespace LatamPMDevs\minerware\command\subcommands;
 
 use CortexPE\Commando\BaseCommand;
 use CortexPE\Commando\BaseSubCommand;
+use CortexPE\Commando\constraint\InGameRequiredConstraint;
 use LatamPMDevs\minerware\command\args\LanguageArgument;
+use LatamPMDevs\minerware\database\DataManager;
 use LatamPMDevs\minerware\Minerware;
 use pocketmine\command\CommandSender;
+use pocketmine\player\Player;
 use function is_string;
 use function ucfirst;
 
 final class LanguageCommand extends BaseSubCommand {
 
 	public function __construct(private Minerware $plugin) {
-		parent::__construct("language", "Change the default language of the plugin.");
+		parent::__construct("language", "Choose the language you see.");
 		$this->setPermission("minerware.command.language");
 	}
 
 	protected function prepare() : void {
+		$this->addConstraint(new InGameRequiredConstraint($this));
 		$this->registerArgument(0, new LanguageArgument($this->plugin));
 	}
 
 	/**
+	 * @param Player $sender
 	 * @param array<string, mixed> $args
 	 */
 	public function onRun(CommandSender $sender, string $aliasUsed, array $args) : void {
@@ -64,13 +69,10 @@ final class LanguageCommand extends BaseSubCommand {
 			return;
 		}
 
-		if (!$this->plugin->getTranslator()->isLanguageRegistered($language->getLocale())) {
-			$sender->sendMessage($this->plugin->getTranslator()->translate($sender, "command.language.notFound"));
-			return;
-		}
-
-		$this->plugin->getTranslator()->setDefaultLanguage($language);
-		$sender->sendMessage($this->plugin->getTranslator()->translate(
+		$translator = $this->plugin->getTranslator();
+		$translator->setPlayerLanguage($sender, $language);
+		DataManager::getInstance()->setPlayerLanguage($sender, $language->getLocale());
+		$sender->sendMessage($translator->translate(
 			$sender, "command.language.changed", [
 				"{%language}" => $language->getName()
 			]

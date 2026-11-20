@@ -23,7 +23,7 @@
 * 🏟️ **Instanced Arenas:** Every game runs in its own disposable world copy, so multiple arenas can run at the same time.
 * 🏆 **Points & Podium:** Win microgames to earn points (boss rounds are worth more) and reach the top-3 podium.
 * 🗺️ **Custom Maps:** Use any world as long as its platform is exactly `24x24`, with a built-in interactive map editor.
-* 🌍 **Multi-Language:** Player-facing text is fully translatable via `.ini` language files.
+* 🌍 **Multi-Language:** Player-facing text is fully translatable via `.ini` language files. Players can pick any language, even one Minecraft clients never report (like `vi_VN`).
 * 💾 **Data Support:** Native support for **SQLite3** and **MySQL** providers.
 * 📊 **Statistics:** Tracks wins, microgames and bossgames won, games played and time played, viewable in-game.
 * 🧭 **Forms UI:** Statistics are shown through clean in-game forms — no command spam.
@@ -99,7 +99,8 @@ You can find some maps [here](https://github.com/LatamPMDevs/Minerware/tree/mast
 | `/minerware arenas start` | Force-start the arena you are currently in | `minerware.command.arenas` |
 | `/minerware join` | Join a random arena | `minerware.command.join` |
 | `/minerware statistics [user]` | View a player's statistics | `minerware.command.statistics` |
-| `/minerware language [locale]` | Change (or list) the plugin languages | `minerware.command.language` |
+| `/minerware language [locale]` | Choose (or list) the language you see; it is saved | `minerware.command.language` |
+| `/minerware defaultlanguage <locale>` | Change the default language | `minerware.command.defaultlanguage` |
 | `/minerware help` | Show the list of available commands | `minerware.command.help` |
 | `/minerware credits` | Show the plugin credits | `minerware.command.credits` |
 
