@@ -22,5 +22,18 @@ declare(strict_types=1);
 
 namespace LatamPMDevs\minerware\event\arena;
 
+use LatamPMDevs\minerware\arena\Arena;
+
 class ArenaEndEvent extends ArenaEvent {
+
+	public function __construct(Arena $arena, private bool $completed = true) {
+		parent::__construct($arena);
+	}
+
+	/**
+	 * Whether the game was played to the end, not cut short because the players left.
+	 */
+	public function isCompleted() : bool {
+		return $this->completed;
+	}
 }

@@ -284,6 +284,13 @@ final class Arena {
 				HandlerListManager::global()->unregisterAll($this->currentMicrogame);
 			}
 			$this->setPhase(EndingPhase::getInstance());
+		} elseif (count($this->players) === 1 && !$this->closed && !$this->phase->isLobby() && !$this->phase instanceof EndingPhase) {
+			# One player cannot play against nobody: finish the game now.
+			if ($this->currentMicrogame?->isRunning()) {
+				$this->endCurrentMicrogame();
+			}
+			$this->broadcast("game.arena.endedEarly");
+			$this->end(false);
 		}
 	}
 
@@ -475,7 +482,10 @@ final class Arena {
 		$this->startTime = time();
 	}
 
-	public function end() : void {
+	/**
+	 * @param bool $completed false when the game ends early because the players left
+	 */
+	public function end(bool $completed = true) : void {
 		$this->setPhase(EndingPhase::getInstance());
 		$this->podium->rank($this->players, $this->pointHolder);
 		foreach ($this->players as $player) {
@@ -493,7 +503,7 @@ final class Arena {
 				$player->sendMessage($this->plugin->getTranslator()->translate($player, "game.arena.youwin"));
 			}
 		}
-		(new ArenaEndEvent($this))->call();
+		(new ArenaEndEvent($this, $completed))->call();
 	}
 
 	public function getPodium() : Podium {

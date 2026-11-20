@@ -59,6 +59,9 @@ final class EventListener implements Listener {
 	 * @priority MONITOR
 	 */
 	public function onArenaEnd(ArenaEndEvent $event) : void {
+		if (!$event->isCompleted()) {
+			return;
+		}
 		$arena = $event->getArena();
 
 		foreach ($arena->getPlayers() as $player) {
