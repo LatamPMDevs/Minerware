@@ -82,6 +82,7 @@ final class AsyncBlockOperation extends AsyncTask {
 	private function setSelection(World $world, Selection $selection) : void {
 		$statesByChunk = $selection->getStatesByChunk();
 		$serializedChunks = [];
+		$skipped = 0;
 
 		foreach ($statesByChunk as $chunkHash => $states) {
 			World::getXZ($chunkHash, $chunkX, $chunkZ);
@@ -89,14 +90,19 @@ final class AsyncBlockOperation extends AsyncTask {
 			# mutated concurrently — don't snapshot or later stomp that terrain.
 			if ($world->isChunkLocked($chunkX, $chunkZ)) {
 				unset($statesByChunk[$chunkHash]);
+				$skipped++;
 				continue;
 			}
 			$chunk = $world->loadChunk($chunkX, $chunkZ);
 			if ($chunk === null) {
 				unset($statesByChunk[$chunkHash]);
+				$skipped++;
 			} else {
 				$serializedChunks[$chunkHash] = FastChunkSerializer::serializeTerrain($chunk);
 			}
+		}
+		if ($skipped > 0) {
+			Server::getInstance()->getLogger()->warning("AsyncBlockOperation: skipped $skipped chunk(s) (locked or unavailable) in world " . $world->getFolderName());
 		}
 
 		$this->statesByChunk = igbinary_serialize($statesByChunk);

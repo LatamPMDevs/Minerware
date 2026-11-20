@@ -28,14 +28,7 @@ use pocketmine\utils\SingletonTrait;
 use function array_shift;
 
 /**
- * Single entry point for applying {@see Selection}s without blocking the main
- * thread. Submits an {@see AsyncBlockOperation} to PocketMine's async task pool:
- * the per-block mutation runs on a worker thread and the chunks are swapped back
- * into the world on the main thread in the operation's completion pass.
- *
- * Callers that read or mutate the stage afterwards must coordinate through their
- * own build accounting (e.g. {@see LatamPMDevs\minerware\arena\Arena
- * ::isBuildingStage}); this manager is intentionally stateless and fire-and-forget.
+ * Single entry point for applying Selections without blocking the main thread.
  */
 final class AsyncBlockManager {
 
