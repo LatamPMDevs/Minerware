@@ -27,6 +27,7 @@ use CortexPE\Commando\BaseSubCommand;
 use LatamPMDevs\minerware\command\args\LanguageArgument;
 use LatamPMDevs\minerware\Minerware;
 use pocketmine\command\CommandSender;
+use function is_string;
 use function ucfirst;
 
 final class LanguageCommand extends BaseSubCommand {
@@ -46,7 +47,9 @@ final class LanguageCommand extends BaseSubCommand {
 	public function onRun(CommandSender $sender, string $aliasUsed, array $args) : void {
 		$language = null;
 		$languages = $this->plugin->getTranslator()->getLanguages();
-		if (isset($args["language"])) $language = $this->plugin->getTranslator()->getLanguage($args["language"]);
+		if (is_string($args["language"] ?? null)) {
+			$language = $this->plugin->getTranslator()->getLanguage($args["language"]);
+		}
 		if ($language === null) {
 			$list = "";
 			foreach ($languages as $lang) {

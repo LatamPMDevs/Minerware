@@ -35,6 +35,7 @@ use LatamPMDevs\minerware\Minerware;
 use pocketmine\command\CommandSender;
 use pocketmine\player\Player;
 use function count;
+use function is_string;
 
 final class ArenasCommand extends BaseSubCommand {
 
@@ -60,13 +61,14 @@ final class ArenasCommand extends BaseSubCommand {
 		}
 		switch ($args["action"]) {
 			case ArenaActionArgument::CREATE_ARENA:
-				if (!isset($args["world"]) ||
-					!$this->plugin->getServer()->getWorldManager()->loadWorld($args["world"], true) ||
-					($world = $this->plugin->getServer()->getWorldManager()->getWorldByName($args["world"])) === null
+				$worldName = $args["world"] ?? null;
+				if (!is_string($worldName) ||
+					!$this->plugin->getServer()->getWorldManager()->loadWorld($worldName, true) ||
+					($world = $this->plugin->getServer()->getWorldManager()->getWorldByName($worldName)) === null
 				) {
 					$sender->sendMessage($this->plugin->getTranslator()->translate(
 						$sender, "command.arguments.worldNotFound", [
-							"{%world}" => $args["world"] ?? "unknown"
+							"{%world}" => is_string($worldName) ? $worldName : "unknown"
 						]
 					));
 					return;

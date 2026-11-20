@@ -16,7 +16,7 @@ This is a **game-engine plugin**: the whole point is rotating quick-fire "microg
 ## Verification
 
 - Code style: `php-cs-fixer fix` (root `.php-cs-fixer.php`, covers `src/` and `tests/`), with the version `ci.yml` pins. Style: tabs, `declare(strict_types=1)`, imported native functions/classes, ordered imports.
-- Static analysis: `vendor/bin/phpstan.phar analyze --no-progress` (level 7; `phpstan.neon.dist` is picked up automatically).
+- Static analysis: `vendor/bin/phpstan.phar analyze --no-progress` (level 9; `phpstan.neon.dist` is picked up automatically).
 - Tests: `composer test` (PHPUnit, `tests/phpunit/`). Language files must keep the same keys as `en_US.ini`.
 - CI (`ci.yml`): code style, PHPStan, PHPUnit.
 - Release build: `vendor/bin/pharynx` compiles the virions into the plugin.
@@ -166,7 +166,7 @@ Simple optimizations/special-cases, all `NeverSavedWithChunkEntity` (never seria
 - Singletons via `SingletonTrait`: `Minerware`, `DataManager`, `ArenaManager`, `MicrogameManager`. Access with `X::getInstance()`.
 - Adding a microgame: extend abstract `Microgame` in `src/LatamPMDevs/minerware/arena/microgame/` (`normal/` or `boss/` subdir), implement `getName`, `getLevel`, `getGameDuration`, `tick`. Register it in `MicrogameManager::__construct` with a lowercase `saveName` key. Mark `[x]` in `Microgames.md` when complete. (Full guide in [Adding a microgame](#adding-a-microgame-step-by-step) above.)
 - `Microgame::addWinner`/`addLoser` fire events (`PlayerWinMicrogameEvent`/`PlayerLoseMicrogameEvent`); use those to attribute points rather than mutating winner/loser state directly.
-- `@phpstan-param` / `@phpstan-return` docblocks annotate `class-string<T>` templates (PHPStan level 7, paths = `src`).
+- `@phpstan-param` / `@phpstan-return` docblocks annotate `class-string<T>` templates (PHPStan level 9, paths = `src`).
 - Maps: the platform must be exactly `24x24` (`Utils::calculateSize` enforces this). Map JSON data is saved under the plugin data folder `database/maps/`; configured interactively via chat commands during `/minerware arenas create`.
 - `ArenaListener` is the only listener for players inside arenas (it finds the arena through `ArenaManager::getArenaOf()`, a player-id map kept by `Arena::join/quit`); `MapRegisterer` registers itself, don't duplicate registration. `Microgame` subclasses that `implements Listener` are auto-registered by `Microgame::start()` and auto-unregistered by `Microgame::end()`.
 - World/`chunk` mutation helper: `Utils::fill`/`fillCircle`/`buildCage` return the replaced `Block[]` so callers can restore them; stage builds go through `Microgame::getStageSelection()` + `commitStage()`, and `Microgame::end()` is the single async rollback point.

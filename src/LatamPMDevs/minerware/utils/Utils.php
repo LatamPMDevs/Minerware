@@ -33,6 +33,7 @@ use pocketmine\utils\AssumptionFailedError;
 use pocketmine\utils\TextFormat;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
+use SplFileInfo;
 use ZipArchive;
 use function abs;
 use function array_reverse;
@@ -62,7 +63,7 @@ final class Utils {
 			RecursiveIteratorIterator::LEAVES_ONLY
 		);
 		foreach ($files as $file) {
-			if ($file->isFile()) {
+			if ($file instanceof SplFileInfo && $file->isFile()) {
 				$filePath = $file->getRealPath();
 				$relativePath = substr($filePath, strlen($targetPath) + 1);
 				if (!$zip->addFile($filePath, $relativePath)) {

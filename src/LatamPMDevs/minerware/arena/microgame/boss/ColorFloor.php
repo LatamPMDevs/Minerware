@@ -275,6 +275,9 @@ class ColorFloor extends Microgame implements Listener {
 			$block = $event->getBlock();
 			if ($block instanceof StainedHardenedClay) {
 				$assignedColor = $this->getAssignedColor($player);
+				if ($assignedColor === null) {
+					return;
+				}
 				$blockColor = $block->getColor();
 				if ($blockColor !== DyeColor::WHITE && $blockColor !== $assignedColor) {
 					$player->sendMessage($this->plugin->getTranslator()->translate($player, "microgame.colorfloor.onlymissile"));

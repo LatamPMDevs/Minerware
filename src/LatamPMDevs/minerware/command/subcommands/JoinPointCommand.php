@@ -34,6 +34,7 @@ use pocketmine\command\CommandSender;
 use pocketmine\entity\Location;
 use pocketmine\player\Player;
 use function fmod;
+use function is_string;
 
 final class JoinPointCommand extends BaseSubCommand {
 
@@ -60,7 +61,7 @@ final class JoinPointCommand extends BaseSubCommand {
 					$sender->sendMessage($translator->translate($sender, "joinpoint.noPermission"));
 					return;
 				}
-				$mapName = $args["map"] ?? null;
+				$mapName = is_string($args["map"] ?? null) ? $args["map"] : null;
 				$map = $mapName === null ? null : MapManager::getInstance()->getByName($mapName);
 				if ($mapName !== null && $map === null) {
 					$sender->sendMessage($translator->translate($sender, "joinpoint.mapNotFound", ["{%map}" => $mapName]));

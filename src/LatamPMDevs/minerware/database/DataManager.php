@@ -39,6 +39,9 @@ use RuntimeException;
 use function array_map;
 use function basename;
 use function glob;
+use function is_float;
+use function is_int;
+use function is_string;
 use function max;
 use function mkdir;
 use function parse_ini_file;
@@ -202,7 +205,7 @@ final class DataManager {
 			$data = array_map(stripcslashes(...), $content);
 			$translator->registerLanguage(new Language($locale, $data));
 		}
-		$l = $this->config->get("default-language", "en_US");
+		$l = $this->configString("default-language", "en_US");
 		$lang = $translator->getLanguage($l);
 		if ($lang === null) {
 			$this->plugin->getLogger()->warning("Language $l not found, using en_US");
@@ -222,22 +225,32 @@ final class DataManager {
 	}
 
 	public function getServerIp() : string {
-		return $this->config->get("server-ip", "yourserverip.net");
+		return $this->configString("server-ip", "yourserverip.net");
 	}
 
 	public function getJoinCooldown() : float {
-		return max((float) $this->config->get("join-cooldown", 2), 0.0);
+		return max($this->configNumber("join-cooldown", 2), 0.0);
 	}
 
 	public function getMaxRuntimeArenas() : int {
-		return max((int) $this->config->get("max-runtime-arenas", 15), 1);
+		return max((int) $this->configNumber("max-runtime-arenas", 15), 1);
 	}
 
 	public function getArenaStartingTime() : int {
-		return max((int) $this->config->get("arena-starting-time", 120), 5);
+		return max((int) $this->configNumber("arena-starting-time", 120), 5);
 	}
 
 	public function getMinimumStartingPlayers() : int {
-		return max((int) $this->config->get("minimum-starting-players", 2), 2);
+		return max((int) $this->configNumber("minimum-starting-players", 2), 2);
+	}
+
+	private function configString(string $key, string $default) : string {
+		$value = $this->config->get($key, $default);
+		return is_string($value) ? $value : $default;
+	}
+
+	private function configNumber(string $key, int|float $default) : int|float {
+		$value = $this->config->get($key, $default);
+		return is_int($value) || is_float($value) ? $value : $default;
 	}
 }

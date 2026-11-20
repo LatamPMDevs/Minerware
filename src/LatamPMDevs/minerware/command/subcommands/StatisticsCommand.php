@@ -34,6 +34,8 @@ use pocketmine\command\CommandSender;
 use pocketmine\player\Player;
 use poggit\libasynql\SqlError;
 
+use function is_string;
+
 final class StatisticsCommand extends BaseSubCommand {
 
 	public function __construct(private Minerware $plugin) {
@@ -50,11 +52,11 @@ final class StatisticsCommand extends BaseSubCommand {
 	 */
 	public function onRun(CommandSender $sender, string $aliasUsed, array $args) : void {
 		$translator = $this->plugin->getTranslator();
-		if (!$sender instanceof Player && !isset($args["user"])) {
+		if (!$sender instanceof Player && !is_string($args["user"] ?? null)) {
 			$sender->sendMessage($translator->translate($sender, "command.statistics.noUserProvided"));
 			return;
 		}
-		$user = $args["user"] ?? $sender->getName();
+		$user = is_string($args["user"] ?? null) ? $args["user"] : $sender->getName();
 		# Someone who never played has no record; only show zeros for yourself.
 		$ownStats = $sender->getName() === $user;
 		DataManager::getInstance()->getPlayerData($user, function (?PlayerData $playerdata) use ($sender, $translator, $user) {

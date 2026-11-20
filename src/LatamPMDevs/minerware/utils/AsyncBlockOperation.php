@@ -28,6 +28,7 @@ use pocketmine\block\RuntimeBlockStateRegistry;
 use pocketmine\block\tile\Tile;
 use pocketmine\scheduler\AsyncTask;
 use pocketmine\Server;
+use pocketmine\utils\AssumptionFailedError;
 use pocketmine\world\format\Chunk;
 use pocketmine\world\format\io\FastChunkSerializer;
 use pocketmine\world\Position;
@@ -36,7 +37,10 @@ use pocketmine\world\World;
 use Throwable;
 use function igbinary_serialize;
 use function igbinary_unserialize;
+use function is_array;
 use function is_callable;
+use function is_int;
+use function is_string;
 
 /**
  * Applies a Selection to a World on a worker thread.
@@ -105,8 +109,8 @@ final class AsyncBlockOperation extends AsyncTask {
 			Server::getInstance()->getLogger()->warning("AsyncBlockOperation: skipped $skipped chunk(s) (locked or unavailable) in world " . $world->getFolderName());
 		}
 
-		$this->statesByChunk = igbinary_serialize($statesByChunk);
-		$this->serializedChunks = igbinary_serialize($serializedChunks);
+		$this->statesByChunk = self::pack($statesByChunk);
+		$this->serializedChunks = self::pack($serializedChunks);
 	}
 
 	private function setWorld(World $world) : void {
@@ -120,7 +124,14 @@ final class AsyncBlockOperation extends AsyncTask {
 	 * @phpstan-return array<ChunkPosHash, array<BlockPosHash, int>>
 	 */
 	public function getStatesByChunk() : array {
-		return igbinary_unserialize($this->statesByChunk);
+		$states = [];
+		foreach (self::unpack($this->statesByChunk) as $chunkHash => $cells) {
+			if (!is_int($chunkHash) || !is_array($cells)) {
+				throw new AssumptionFailedError("Corrupted block operation data");
+			}
+			$states[$chunkHash] = self::ints($cells);
+		}
+		return $states;
 	}
 
 	/**
@@ -128,7 +139,46 @@ final class AsyncBlockOperation extends AsyncTask {
 	 * @phpstan-return array<ChunkPosHash, string>
 	 */
 	public function getSerializedChunks() : array {
-		return igbinary_unserialize($this->serializedChunks);
+		$chunks = [];
+		foreach (self::unpack($this->serializedChunks) as $chunkHash => $serialized) {
+			if (!is_int($chunkHash) || !is_string($serialized)) {
+				throw new AssumptionFailedError("Corrupted block operation data");
+			}
+			$chunks[$chunkHash] = $serialized;
+		}
+		return $chunks;
+	}
+
+	/**
+	 * Everything the task keeps is packed into strings so it can cross threads.
+	 *
+	 * @param array<mixed> $data
+	 */
+	private static function pack(array $data) : string {
+		return igbinary_serialize($data) ?? throw new AssumptionFailedError("Could not serialize the block operation");
+	}
+
+	/**
+	 * @param array<mixed> $values
+	 * @return array<int, int>
+	 */
+	private static function ints(array $values) : array {
+		$ints = [];
+		foreach ($values as $key => $value) {
+			if (!is_int($key) || !is_int($value)) {
+				throw new AssumptionFailedError("Corrupted block operation data");
+			}
+			$ints[$key] = $value;
+		}
+		return $ints;
+	}
+
+	/**
+	 * @return array<mixed>
+	 */
+	private static function unpack(string $blob) : array {
+		$data = igbinary_unserialize($blob);
+		return is_array($data) ? $data : throw new AssumptionFailedError("Corrupted block operation data");
 	}
 
 	/**
@@ -164,8 +214,8 @@ final class AsyncBlockOperation extends AsyncTask {
 				}
 			}
 		}
-		$this->undoStates = igbinary_serialize($undoStates);
-		$this->tileCells = igbinary_serialize($tileCells);
+		$this->undoStates = self::pack($undoStates);
+		$this->tileCells = self::pack($tileCells);
 
 		$this->saveChunkManager($manager, $serialized);
 	}
@@ -204,7 +254,7 @@ final class AsyncBlockOperation extends AsyncTask {
 
 		# Wrapped before the swap: it reflects what the worker applied and
 		# stays valid whatever happens to the swap below.
-		$undo = Selection::fromRawStates($world, igbinary_unserialize($this->undoStates));
+		$undo = Selection::fromRawStates($world, self::ints(self::unpack($this->undoStates)));
 
 		try {
 			foreach ($this->getSerializedChunks() as $chunkHash => $serialized) {
@@ -228,7 +278,7 @@ final class AsyncBlockOperation extends AsyncTask {
 	 * @phpstan-param array<ChunkPosHash, array<BlockPosHash, int>> $statesByChunk
 	 */
 	private function recreateTiles(World $world, array $statesByChunk) : void {
-		foreach (igbinary_unserialize($this->tileCells) as $blockHash) {
+		foreach (self::ints(self::unpack($this->tileCells)) as $blockHash) {
 			World::getBlockXYZ($blockHash, $x, $y, $z);
 			$position = new Position($x, $y, $z, $world);
 			if ($world->getTile($position) !== null) {
@@ -274,6 +324,6 @@ final class AsyncBlockOperation extends AsyncTask {
 				$serializedChunks[$chunkHash] = FastChunkSerializer::serializeTerrain($chunk);
 			}
 		}
-		$this->serializedChunks = igbinary_serialize($serializedChunks);
+		$this->serializedChunks = self::pack($serializedChunks);
 	}
 }

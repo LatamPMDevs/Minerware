@@ -27,6 +27,8 @@ use CortexPE\Commando\BaseCommand;
 use CortexPE\Commando\BaseSubCommand;
 use pocketmine\command\CommandSender;
 
+use function is_string;
+
 final class HelpCommand extends BaseSubCommand {
 
 	public function __construct() {
@@ -42,10 +44,7 @@ final class HelpCommand extends BaseSubCommand {
 	 * @param array<string, mixed> $args
 	 */
 	public function onRun(CommandSender $sender, string $aliasUsed, array $args) : void {
-		$category = $args["category"] ?? null;
-		if ($category === null) {
-			$category = "";
-		}
+		$category = is_string($args["category"] ?? null) ? $args["category"] : "";
 
 		$sender->sendMessage("SOON. Category selected: " . $category);
 	}
