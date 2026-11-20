@@ -68,6 +68,9 @@ final class DataManager {
 		@mkdir($this->pluginPath . "database" . DIRECTORY_SEPARATOR . "maps" . DIRECTORY_SEPARATOR);
 		@mkdir($this->pluginPath . "database" . DIRECTORY_SEPARATOR . "backups" . DIRECTORY_SEPARATOR);
 
+		$this->onError = function (SqlError $result) : void {
+			$this->plugin->getLogger()->emergency($result->getQuery() . ' - ' . $result->getErrorMessage());
+		};
 		$this->createContext();
 		foreach ($this->plugin->getResources() as $path => $_) {
 			if (str_starts_with($path, "languages/") && str_ends_with($path, ".ini")) {
@@ -75,9 +78,6 @@ final class DataManager {
 			}
 		}
 
-		$this->onError = function (SqlError $result) : void {
-			$this->plugin->getLogger()->emergency($result->getQuery() . ' - ' . $result->getErrorMessage());
-		};
 	}
 
 	public function closeDatabase() : void {
@@ -193,7 +193,7 @@ final class DataManager {
 
 	public function loadLanguages() : void {
 		$translator = $this->plugin->getTranslator();
-		foreach (glob($this->pluginPath . "languages" . DIRECTORY_SEPARATOR . "*.ini") as $file) {
+		foreach (glob($this->pluginPath . "languages" . DIRECTORY_SEPARATOR . "*.ini") ?: [] as $file) {
 			$locale = basename($file, ".ini");
 			$content = parse_ini_file($file, false, INI_SCANNER_RAW);
 			if ($content === false) {
@@ -203,7 +203,11 @@ final class DataManager {
 			$translator->registerLanguage(new Language($locale, $data));
 		}
 		$l = $this->config->get("default-language", "en_US");
-		$lang = $translator->getLanguage($l) ?? throw new InvalidArgumentException("Language $l not found");
+		$lang = $translator->getLanguage($l);
+		if ($lang === null) {
+			$this->plugin->getLogger()->warning("Language $l not found, using en_US");
+			$lang = $translator->getLanguage("en_US") ?? throw new AssumptionFailedError("The en_US language is missing");
+		}
 		$translator->setDefaultLanguage($lang);
 	}
 
@@ -234,6 +238,6 @@ final class DataManager {
 	}
 
 	public function getMinimumStartingPlayers() : int {
-		return max((int) $this->config->get("minimum-starting-players", 4), 2);
+		return max((int) $this->config->get("minimum-starting-players", 2), 2);
 	}
 }
