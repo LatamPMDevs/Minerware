@@ -72,10 +72,6 @@ class StandOnColor extends Microgame implements Listener {
 		return 8.9;
 	}
 
-	public function getRecompensePoints() : int {
-		return self::DEFAULT_RECOMPENSE_POINTS;
-	}
-
 	public function start() : void {
 		$colors = self::getColors();
 		$this->color = $colors[array_rand($colors)];
@@ -194,9 +190,7 @@ class StandOnColor extends Microgame implements Listener {
 		}
 		$event->cancel();
 		if ($event->getCause() === EntityDamageEvent::CAUSE_VOID && !$this->isWinner($player)) {
-			$this->addLoser($player);
-			$this->arena->getLosersCage()->addPlayer($player);
-			$player->sendMessage($this->plugin->getTranslator()->translate($player, "microgame.felloffplatform"));
+			$this->eliminate($player, "microgame.felloffplatform");
 		}
 	}
 }

@@ -84,10 +84,6 @@ class NerdPole extends Microgame implements Listener {
 		return 30.9;
 	}
 
-	public function getRecompensePoints() : int {
-		return self::DEFAULT_RECOMPENSE_POINTS;
-	}
-
 	public function start() : void {
 		$map = $this->arena->getMap();
 		$minPos = $map->getPlatformMinPos();
@@ -170,12 +166,7 @@ class NerdPole extends Microgame implements Listener {
 	public function tick() : void {
 		$timeLeft = $this->getTimeLeft();
 		if ($timeLeft <= 0) {
-			foreach ($this->arena->getPlayers() as $player) {
-				if (!$this->isWinner($player) && !$this->isLoser($player)) {
-					$this->addLoser($player);
-				}
-			}
-			$this->arena->endCurrentMicrogame();
+			$this->endRound();
 			return;
 		}
 		$this->updateTimeBar($timeLeft);
@@ -188,11 +179,7 @@ class NerdPole extends Microgame implements Listener {
 		$this->textEntities = [];
 		$players = $this->arena->getPlayers();
 		foreach ($players as $player) {
-			if ($this->isWinner($player)) {
-				$player->sendMessage($this->plugin->getTranslator()->translate($player, "microgame.nerdpole.won"));
-			} elseif ($this->isLoser($player)) {
-				$player->sendMessage($this->plugin->getTranslator()->translate($player, "microgame.nerdpole.lose"));
-			}
+			$this->sendOutcome($player, "microgame.nerdpole.won", "microgame.nerdpole.lose");
 		}
 		parent::end();
 	}
@@ -247,9 +234,7 @@ class NerdPole extends Microgame implements Listener {
 		if (!($event instanceof EntityDamageByChildEntityEvent &&
 			$event->getChild() instanceof Snowball)) {
 			if ($event->getCause() === EntityDamageEvent::CAUSE_VOID && !$this->isWinner($player)) {
-				$this->addLoser($player);
-				$this->arena->getLosersCage()->addPlayer($player);
-				$player->sendMessage($this->plugin->getTranslator()->translate($player, "microgame.felloffplatform"));
+				$this->eliminate($player, "microgame.felloffplatform");
 			}
 			$event->cancel();
 		}
@@ -265,8 +250,7 @@ class NerdPole extends Microgame implements Listener {
 		if ($this->isLoser($player) || $this->isWinner($player)) return;
 
 		if ($this->platformBoundingBox->isVectorInside($player->getLocation()->subtract(0, 0.001, 0))) {
-			$this->addWinner($player);
-			$this->arena->getWinnersCage()->addPlayer($player);
+			$this->win($player);
 		}
 	}
 

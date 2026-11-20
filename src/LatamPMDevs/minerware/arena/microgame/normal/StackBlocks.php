@@ -61,10 +61,6 @@ class StackBlocks extends Microgame implements Listener {
 		return 12.9;
 	}
 
-	public function getRecompensePoints() : int {
-		return self::DEFAULT_RECOMPENSE_POINTS;
-	}
-
 	public function start() : void {
 		$dyeColors = DyeColor::getAll();
 		shuffle($dyeColors);
@@ -89,12 +85,7 @@ class StackBlocks extends Microgame implements Listener {
 	public function tick() : void {
 		$timeLeft = $this->getTimeLeft();
 		if ($timeLeft <= 0) {
-			foreach ($this->arena->getPlayers() as $player) {
-				if (!$this->isWinner($player) && !$this->isLoser($player)) {
-					$this->addLoser($player);
-				}
-			}
-			$this->arena->endCurrentMicrogame();
+			$this->endRound();
 			return;
 		}
 		$this->updateTimeBar($timeLeft);

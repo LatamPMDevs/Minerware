@@ -58,10 +58,6 @@ class BowSpleef extends Microgame implements Listener {
 		return 120.9;
 	}
 
-	public function getRecompensePoints() : int {
-		return self::BOSS_RECOMPENSE_POINTS;
-	}
-
 	public function start() : void {
 		$map = $this->arena->getMap();
 		$world = $this->arena->getWorld();
@@ -90,12 +86,7 @@ class BowSpleef extends Microgame implements Listener {
 		$timeLeft = $this->getTimeLeft();
 $players = $this->arena->getPlayers();
 		if ($timeLeft <= 0) {
-			foreach ($players as $player) {
-				if (!$this->isLoser($player) && !$this->isWinner($player)) {
-					$this->addWinner($player);
-				}
-			}
-			$this->arena->endCurrentMicrogame();
+			$this->endRound(true);
 			return;
 		}
 		$this->updateTimeBar($timeLeft);
@@ -123,8 +114,7 @@ $players = $this->arena->getPlayers();
 		$event->cancel();
 		$player->extinguish();
 		if ($event->getCause() === EntityDamageEvent::CAUSE_VOID && !$this->isWinner($player)) {
-			$this->addLoser($player);
-			$this->arena->getLosersCage()->addPlayer($player);
+			$this->lose($player);
 		}
 	}
 

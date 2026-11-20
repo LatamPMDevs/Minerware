@@ -58,10 +58,6 @@ class OneInTheChamber extends Microgame implements Listener {
 		return 20.9;
 	}
 
-	public function getRecompensePoints() : int {
-		return self::DEFAULT_RECOMPENSE_POINTS;
-	}
-
 	public function start() : void {
 		$map = $this->arena->getMap();
 		$minPos = $map->getPlatformMinPos();
@@ -87,12 +83,7 @@ class OneInTheChamber extends Microgame implements Listener {
 	public function tick() : void {
 		$timeLeft = $this->getTimeLeft();
 		if ($timeLeft <= 0) {
-			foreach ($this->arena->getPlayers() as $player) {
-				if (!$this->isWinner($player) && !$this->isLoser($player)) {
-					$this->addWinner($player);
-				}
-			}
-			$this->arena->endCurrentMicrogame();
+			$this->endRound(true);
 			return;
 		}
 		$this->updateTimeBar($timeLeft);
@@ -114,11 +105,7 @@ class OneInTheChamber extends Microgame implements Listener {
 					]
 				));
 			}
-			if ($this->isWinner($player)) {
-				$player->sendMessage($this->plugin->getTranslator()->translate($player, "microgame.oneinthechamber.won"));
-			} elseif ($this->isLoser($player)) {
-				$player->sendMessage($this->plugin->getTranslator()->translate($player, "microgame.failedtosurvive"));
-			}
+			$this->sendOutcome($player, "microgame.oneinthechamber.won", "microgame.failedtosurvive");
 		}
 		parent::end();
 	}
@@ -176,8 +163,7 @@ class OneInTheChamber extends Microgame implements Listener {
 				$player->sendMessage($this->plugin->getTranslator()->translate($player, "microgame.oneinthechamber.diedincombat"));
 			}
 			if ($fatal) {
-				$this->addLoser($player);
-				$this->arena->getLosersCage()->addPlayer($player);
+				$this->lose($player);
 				$event->cancel();
 			}
 		}

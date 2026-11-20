@@ -25,6 +25,7 @@ namespace LatamPMDevs\minerware\arena\microgame\normal;
 use InvalidArgumentException;
 use LatamPMDevs\minerware\arena\microgame\CancelsBuildEvents;
 use LatamPMDevs\minerware\arena\microgame\Level;
+use LatamPMDevs\minerware\arena\microgame\LosesInVoid;
 use LatamPMDevs\minerware\arena\microgame\Microgame;
 use LatamPMDevs\minerware\entity\object\FallingBlock;
 use LatamPMDevs\minerware\utils\Utils;
@@ -32,11 +33,9 @@ use LatamPMDevs\minerware\utils\Utils;
 use pocketmine\block\Block;
 use pocketmine\block\VanillaBlocks;
 use pocketmine\entity\Location;
-use pocketmine\event\entity\EntityDamageEvent;
 use pocketmine\event\Listener;
 use pocketmine\math\Vector2;
 use pocketmine\player\GameMode;
-use pocketmine\player\Player;
 use function array_rand;
 use function count;
 use function is_array;
@@ -46,6 +45,7 @@ use function morton2d_encode;
 class PlatformPlummet extends Microgame implements Listener {
 
 	use CancelsBuildEvents;
+	use LosesInVoid;
 
 	public static function platformHash(int $x, int $z) : int {
 		return morton2d_encode($x, $z);
@@ -112,10 +112,6 @@ class PlatformPlummet extends Microgame implements Listener {
 		return 20.9;
 	}
 
-	public function getRecompensePoints() : int {
-		return self::DEFAULT_RECOMPENSE_POINTS;
-	}
-
 	public function getPlatformSize() : int {
 		return self::NORMAL_PLATFORM_SIZE;
 	}
@@ -171,12 +167,7 @@ class PlatformPlummet extends Microgame implements Listener {
 	public function tick() : void {
 		$timeLeft = $this->getTimeLeft();
 		if ($timeLeft <= 0) {
-			foreach ($this->arena->getPlayers() as $player) {
-				if (!$this->isWinner($player) && !$this->isLoser($player)) {
-					$this->addWinner($player);
-				}
-			}
-			$this->arena->endCurrentMicrogame();
+			$this->endRound(true);
 			return;
 		}
 		$platformCount = count($this->breakablePlatforms);
@@ -229,11 +220,7 @@ class PlatformPlummet extends Microgame implements Listener {
 	public function end() : void {
 		$players = $this->arena->getPlayers();
 		foreach ($players as $player) {
-			if ($this->isWinner($player)) {
-				$player->sendMessage($this->plugin->getTranslator()->translate($player, "microgame.platformplummet.won"));
-			} elseif ($this->isLoser($player)) {
-				$player->sendMessage($this->plugin->getTranslator()->translate($player, "microgame.platformplummet.lose"));
-			}
+			$this->sendOutcome($player, "microgame.platformplummet.won", "microgame.platformplummet.lose");
 		}
 		parent::end();
 	}
@@ -265,15 +252,7 @@ class PlatformPlummet extends Microgame implements Listener {
 
 	# Listener
 
-	public function onDamage(EntityDamageEvent $event) : void {
-		$player = $event->getEntity();
-		if (!$player instanceof Player) return;
-		if (!$this->arena->inGame($player)) return;
-		$event->cancel();
-		if ($event->getCause() === EntityDamageEvent::CAUSE_VOID && !$this->isWinner($player)) {
-			$this->addLoser($player);
-			$this->arena->getLosersCage()->addPlayer($player);
-			$player->sendMessage($this->plugin->getTranslator()->translate($player, "microgame.platformplummet.crumble"));
-		}
+	protected function getFallMessageKey() : string {
+		return "microgame.platformplummet.crumble";
 	}
 }

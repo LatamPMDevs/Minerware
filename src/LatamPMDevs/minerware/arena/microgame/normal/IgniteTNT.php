@@ -24,13 +24,13 @@ namespace LatamPMDevs\minerware\arena\microgame\normal;
 
 use LatamPMDevs\minerware\arena\microgame\CancelsBuildEvents;
 use LatamPMDevs\minerware\arena\microgame\Level;
+use LatamPMDevs\minerware\arena\microgame\LosesInVoid;
 use LatamPMDevs\minerware\arena\microgame\Microgame;
 use LatamPMDevs\minerware\utils\Utils;
 
 use pocketmine\block\TNT;
 use pocketmine\block\VanillaBlocks;
 use pocketmine\entity\object\PrimedTNT;
-use pocketmine\event\entity\EntityDamageEvent;
 use pocketmine\event\entity\EntityPreExplodeEvent;
 use pocketmine\event\Listener;
 use pocketmine\event\player\PlayerInteractEvent;
@@ -43,6 +43,7 @@ use function array_rand;
 class IgniteTNT extends Microgame implements Listener {
 
 	use CancelsBuildEvents;
+	use LosesInVoid;
 
 	/** @var array<int, int> */
 	protected array $ignitedTNTs = [];
@@ -59,10 +60,6 @@ class IgniteTNT extends Microgame implements Listener {
 
 	public function getGameDuration() : float {
 		return 15.9;
-	}
-
-	public function getRecompensePoints() : int {
-		return self::DEFAULT_RECOMPENSE_POINTS;
 	}
 
 	public function start() : void {
@@ -95,12 +92,7 @@ class IgniteTNT extends Microgame implements Listener {
 public function tick() : void {
 		$timeLeft = $this->getTimeLeft();
 		if ($timeLeft <= 0) {
-			foreach ($this->arena->getPlayers() as $player) {
-				if (!$this->isLoser($player) && !$this->isWinner($player)) {
-					$this->addLoser($player);
-				}
-			}
-			$this->arena->endCurrentMicrogame();
+			$this->endRound();
 			return;
 		}
 		$this->updateTimeBar($timeLeft);
@@ -114,11 +106,7 @@ public function tick() : void {
 					"{%count}" => $this->totalIgnitedTNTs
 				]
 			));
-			if ($this->isWinner($player)) {
-				$player->sendMessage($this->plugin->getTranslator()->translate($player, "microgame.ignitetnt.won"));
-			} elseif ($this->isLoser($player)) {
-				$player->sendMessage($this->plugin->getTranslator()->translate($player, "microgame.ignitetnt.lose"));
-			}
+			$this->sendOutcome($player, "microgame.ignitetnt.won", "microgame.ignitetnt.lose");
 		}
 		parent::end();
 	}
@@ -139,18 +127,6 @@ public function tick() : void {
 	}
 
 	# Listener
-
-	public function onDamage(EntityDamageEvent $event) : void {
-		$player = $event->getEntity();
-		if (!$player instanceof Player) return;
-		if (!$this->arena->inGame($player)) return;
-		$event->cancel();
-		if ($event->getCause() === EntityDamageEvent::CAUSE_VOID && !$this->isWinner($player)) {
-			$this->addLoser($player);
-			$this->arena->getLosersCage()->addPlayer($player);
-			$player->sendMessage($this->plugin->getTranslator()->translate($player, "microgame.felloffplatform"));
-		}
-	}
 
 	/**
 	 * @ignoreCancelled

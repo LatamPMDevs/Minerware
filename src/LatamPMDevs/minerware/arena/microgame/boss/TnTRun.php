@@ -74,10 +74,6 @@ class TnTRun extends Microgame implements Listener {
 		return 100.9;
 	}
 
-	public function getRecompensePoints() : int {
-		return self::BOSS_RECOMPENSE_POINTS;
-	}
-
 	public function start() : void {
 		$map = $this->arena->getMap();
 		$world = $this->arena->getWorld();
@@ -156,12 +152,7 @@ class TnTRun extends Microgame implements Listener {
 		$timeLeft = $this->getTimeLeft();
 		$players = $this->arena->getPlayers();
 		if ($timeLeft <= 0 || (count($players) - count($this->getLosers()) <= 1)) {
-			foreach ($players as $player) {
-				if (!$this->isLoser($player) && !$this->isWinner($player)) {
-					$this->addWinner($player);
-				}
-			}
-			$this->arena->endCurrentMicrogame();
+			$this->endRound(true);
 			return;
 		}
 		$gameDuration = $this->getGameDuration();
@@ -247,8 +238,7 @@ class TnTRun extends Microgame implements Listener {
 		$event->cancel();
 		$player->extinguish();
 		if ($event->getCause() === EntityDamageEvent::CAUSE_VOID && !$this->isWinner($player)) {
-			$this->addLoser($player);
-			$this->arena->getLosersCage()->addPlayer($player);
+			$this->lose($player);
 		}
 	}
 }

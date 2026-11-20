@@ -82,10 +82,6 @@ class ColorFloor extends Microgame implements Listener {
 		return 60.9;
 	}
 
-	public function getRecompensePoints() : int {
-		return self::BOSS_RECOMPENSE_POINTS;
-	}
-
 	public function start() : void {
 		$map = $this->arena->getMap();
 		$world = $this->arena->getWorld();

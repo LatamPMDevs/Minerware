@@ -72,10 +72,6 @@ class StandOnDiamond extends Microgame implements Listener {
 		return 16.9;
 	}
 
-	public function getRecompensePoints() : int {
-		return self::DEFAULT_RECOMPENSE_POINTS;
-	}
-
 	public function start() : void {
 		$map = $this->arena->getMap();
 		$world = $this->arena->getWorld();
@@ -137,11 +133,7 @@ class StandOnDiamond extends Microgame implements Listener {
 					]
 				));
 			}
-			if ($this->isWinner($player)) {
-				$player->sendMessage($this->plugin->getTranslator()->translate($player, "microgame.standondiamond.won"));
-			} elseif ($this->isLoser($player)) {
-				$player->sendMessage($this->plugin->getTranslator()->translate($player, "microgame.threwoffstage"));
-			}
+			$this->sendOutcome($player, "microgame.standondiamond.won", "microgame.threwoffstage");
 		}
 		parent::end();
 	}
@@ -200,9 +192,7 @@ class StandOnDiamond extends Microgame implements Listener {
 		}
 		$event->cancel();
 		if ($event->getCause() === EntityDamageEvent::CAUSE_VOID && !$this->isWinner($player)) {
-			$this->addLoser($player);
-			$this->arena->getLosersCage()->addPlayer($player);
-			$player->sendMessage($this->plugin->getTranslator()->translate($player, "microgame.felloffplatform"));
+			$this->eliminate($player, "microgame.felloffplatform");
 		}
 	}
 }

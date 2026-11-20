@@ -24,20 +24,20 @@ namespace LatamPMDevs\minerware\arena\microgame\normal;
 
 use LatamPMDevs\minerware\arena\microgame\CancelsBuildEvents;
 use LatamPMDevs\minerware\arena\microgame\Level;
+use LatamPMDevs\minerware\arena\microgame\LosesInVoid;
 use LatamPMDevs\minerware\arena\microgame\Microgame;
 use LatamPMDevs\minerware\utils\Utils;
 
 use pocketmine\block\VanillaBlocks;
-use pocketmine\event\entity\EntityDamageEvent;
 use pocketmine\event\Listener;
 use pocketmine\event\player\PlayerMoveEvent;
 use pocketmine\event\player\PlayerToggleSneakEvent;
 use pocketmine\player\GameMode;
-use pocketmine\player\Player;
 
 class Sneaking extends Microgame implements Listener {
 
 	use CancelsBuildEvents;
+	use LosesInVoid;
 
 	protected float $totalSneakedDistance = 0;
 
@@ -51,10 +51,6 @@ class Sneaking extends Microgame implements Listener {
 
 	public function getGameDuration() : float {
 		return 12.9;
-	}
-
-	public function getRecompensePoints() : int {
-		return self::DEFAULT_RECOMPENSE_POINTS;
 	}
 
 	public function start() : void {
@@ -77,22 +73,16 @@ class Sneaking extends Microgame implements Listener {
 	public function tick() : void {
 		$timeLeft = $this->getTimeLeft();
 		if ($timeLeft <= 0) {
-			foreach ($this->arena->getPlayers() as $player) {
-				if (!$this->isWinner($player) && !$this->isLoser($player)) {
-					$this->addWinner($player);
-				}
-			}
-			$this->arena->endCurrentMicrogame();
+			$this->endRound(true);
 			return;
 		}
+		$this->updateTimeBar($timeLeft);
 		foreach ($this->arena->getPlayers() as $player) {
-			$player->getXpManager()->setXpAndProgress((int) $timeLeft, $timeLeft / $this->getGameDuration());
 			if (!$this->isLoser($player) &&
 				!$player->isSneaking() &&
 				($timeLeft <= ($this->getGameDuration() - 1)
 			)) {
-				$this->addLoser($player);
-				$this->arena->getLosersCage()->addPlayer($player);
+				$this->lose($player);
 			}
 		}
 	}
@@ -105,11 +95,7 @@ class Sneaking extends Microgame implements Listener {
 					"{%distance}" => (int) $this->totalSneakedDistance
 				]
 			));
-			if ($this->isWinner($player)) {
-				$player->sendMessage($this->plugin->getTranslator()->translate($player, "microgame.sneaking.won"));
-			} elseif ($this->isLoser($player)) {
-				$player->sendMessage($this->plugin->getTranslator()->translate($player, "microgame.sneaking.lose"));
-			}
+			$this->sendOutcome($player, "microgame.sneaking.won", "microgame.sneaking.lose");
 		}
 		parent::end();
 	}
@@ -120,18 +106,6 @@ class Sneaking extends Microgame implements Listener {
 
 	# Listener
 
-	public function onDamage(EntityDamageEvent $event) : void {
-		$player = $event->getEntity();
-		if (!$player instanceof Player) return;
-		if (!$this->arena->inGame($player)) return;
-		$event->cancel();
-		if ($event->getCause() === EntityDamageEvent::CAUSE_VOID && !$this->isWinner($player)) {
-			$this->addLoser($player);
-			$this->arena->getLosersCage()->addPlayer($player);
-			$player->sendMessage($this->plugin->getTranslator()->translate($player, "microgame.felloffplatform"));
-		}
-	}
-
 	/**
 	 * @ignoreCancelled
 	 * @priority HIGH
@@ -141,8 +115,7 @@ class Sneaking extends Microgame implements Listener {
 		if (!$this->arena->inGame($player)) return;
 		if ($this->isLoser($player) || $this->isWinner($player)) return;
 		if (!$event->isSneaking()) {
-			$this->addLoser($player);
-			$this->arena->getLosersCage()->addPlayer($player);
+			$this->lose($player);
 		}
 	}
 

@@ -26,6 +26,7 @@ use IvanCraft623\fakeblocks\FakeBlock;
 use IvanCraft623\fakeblocks\FakeBlockManager;
 use LatamPMDevs\minerware\arena\microgame\CancelsBuildEvents;
 use LatamPMDevs\minerware\arena\microgame\Level;
+use LatamPMDevs\minerware\arena\microgame\LosesInVoid;
 
 use LatamPMDevs\minerware\arena\microgame\Microgame;
 use LatamPMDevs\minerware\utils\Selection;
@@ -33,7 +34,6 @@ use LatamPMDevs\minerware\utils\Utils;
 
 use pocketmine\block\VanillaBlocks;
 use pocketmine\block\Water;
-use pocketmine\event\entity\EntityDamageEvent;
 use pocketmine\event\Listener;
 use pocketmine\event\player\PlayerInteractEvent;
 use pocketmine\item\LiquidBucket;
@@ -49,6 +49,7 @@ use function mt_rand;
 class FillTheTank extends Microgame implements Listener {
 
 	use CancelsBuildEvents;
+	use LosesInVoid;
 
 	/** Should this be configurable? */
 	public const TANK_WATER_Y_POS = 3;
@@ -79,10 +80,6 @@ class FillTheTank extends Microgame implements Listener {
 
 	public function getGameDuration() : float {
 		return 20.9;
-	}
-
-	public function getRecompensePoints() : int {
-		return self::DEFAULT_RECOMPENSE_POINTS;
 	}
 
 	public function addWinner(Player $player) : void {
@@ -202,12 +199,7 @@ class FillTheTank extends Microgame implements Listener {
 		$timeLeft = $this->getTimeLeft();
 		$players = $this->arena->getPlayers();
 		if ($timeLeft <= 0 || count($this->winners) >= count($players)) {
-			foreach ($players as $player) {
-				if (!$this->isWinner($player) && !$this->isLoser($player)) {
-					$this->addLoser($player);
-				}
-			}
-			$this->arena->endCurrentMicrogame();
+			$this->endRound();
 			return;
 		}
 		$this->updateTimeBar($timeLeft);
@@ -216,11 +208,7 @@ class FillTheTank extends Microgame implements Listener {
 	public function end() : void {
 		$players = $this->arena->getPlayers();
 		foreach ($players as $player) {
-			if ($this->isWinner($player)) {
-				$player->sendMessage($this->plugin->getTranslator()->translate($player, "microgame.fillthetank.won"));
-			} elseif ($this->isLoser($player)) {
-				$player->sendMessage($this->plugin->getTranslator()->translate($player, "microgame.fillthetank.lose"));
-			}
+			$this->sendOutcome($player, "microgame.fillthetank.won", "microgame.fillthetank.lose");
 		}
 		foreach ($this->tankFakeblocks as $fakeblock) {
 			$this->fakeblockManeger->destroy($fakeblock);
@@ -253,18 +241,6 @@ class FillTheTank extends Microgame implements Listener {
 
 	# Listener
 
-	public function onDamage(EntityDamageEvent $event) : void {
-		$player = $event->getEntity();
-		if (!$player instanceof Player) return;
-		if (!$this->arena->inGame($player)) return;
-		$event->cancel();
-		if ($event->getCause() === EntityDamageEvent::CAUSE_VOID && !$this->isWinner($player)) {
-			$this->addLoser($player);
-			$this->arena->getLosersCage()->addPlayer($player);
-			$player->sendMessage($this->plugin->getTranslator()->translate($player, "microgame.felloffplatform"));
-		}
-	}
-
 	/**
 	 * @ignoreCancelled
 	 * @priority HIGH
@@ -291,8 +267,7 @@ class FillTheTank extends Microgame implements Listener {
 					]
 				));
 				if ($filled >= self::TANK_DEPT) {
-					$this->addWinner($player);
-					$this->arena->getWinnersCage()->addPlayer($player);
+					$this->win($player);
 				}
 			}
 			$event->cancel();

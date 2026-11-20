@@ -80,7 +80,7 @@ Key points:
 - `getName(): string` — display name.
 - `getLevel(): Level` — `Level::NORMAL` or `Level::BOSS` (drives scoreboard + stat attribution).
 - `getGameDuration(): float` — **seconds** (fractional, e.g. `16.9`).
-- `getRecompensePoints(): int` — points awarded to winners on success (`DEFAULT_RECOMPENSE_POINTS = 1`, `BOSS_RECOMPENSE_POINTS = 3`).
+- Points awarded to winners come from `getLevel()` (`DEFAULT_RECOMPENSE_POINTS = 1`, `BOSS_RECOMPENSE_POINTS = 3`); override `getRecompensePoints()` only for something special.
 - `tick(): void` — called ~every 3 ticks (~150ms) while running.
 
 Lifecycle contract (from `Microgame.php`):
@@ -112,8 +112,8 @@ There are two paths for world mutation, by volume:
 ### Adding a microgame (step by step)
 
 1. Create `src/LatamPMDevs/minerware/arena/microgame/<normal|boss>/<Name>.php`, starting from an existing sibling for the header/layout. `class <Name> extends Microgame implements Listener`.
-2. Implement the 5 abstract methods + `start()` + `tick()` + `end()` (call `parent::end()` last). Register as a listener only via `implements Listener`; the base `Microgame::start()` does `registerEvents` — do **not** call `registerEvents` yourself unless matching an existing precedent.
-3. Give `getGameDuration()` a sensible **fractional** second count, and `getRecompensePoints()` `DEFAULT_RECOMPENSE_POINTS` (normal) or `BOSS_RECOMPENSE_POINTS` (boss).
+2. Implement the 4 abstract methods + `start()` + `tick()` + `end()` (call `parent::end()` last). Register as a listener only via `implements Listener`; the base `Microgame::start()` does `registerEvents` — do **not** call `registerEvents` yourself unless matching an existing precedent.
+3. Give `getGameDuration()` a sensible **fractional** second count, and `getLevel()` right (it sets the points). Helpers in `Microgame`: `endRound(bool $remainingWin)` to finish when time is up, `eliminate($player, $messageKey)` to send a loser to the cage, `sendOutcome($player, $wonKey, $loseKey)` for the end messages, `updateTimeBar($timeLeft)`. Traits: `CancelsBuildEvents` (cancel block break/place) and `LosesInVoid` (cancel damage, void makes a player lose; override `getFallMessageKey()` for another message).
 4. Register it in `MicrogameManager::__construct` — `register(FillTheTank::class, "fillthetank")` for normal, `registerBoss(BowSpleef::class, "bowspleef")` for boss. The lowercase `saveName` is the public id.
 5. Use `addWinner`/`addLoser` (never raw arrays), record every gameplay-changed block via `recordOriginalBlock()` (or a stage `Selection`), call `Utils::initPlayer` + set gamemode for every player at `start()`, and always handle `onBlockBreak`/`onBlockPlace` (cancel for in-game players) and `onDamage` (void → lose).
 6. Mark `[x]` in `Microgames.md` when done, and (matching repo convention) note the game in that file's catalog even if the implementation is complete.
@@ -158,7 +158,7 @@ Simple optimizations/special-cases, all `NeverSavedWithChunkEntity` (never seria
 
 - Every PHP source file opens with a large ASCII-art LGPL banner header — replicate it in any new file.
 - Singletons via `SingletonTrait`: `Minerware`, `DataManager`, `ArenaManager`, `MicrogameManager`. Access with `X::getInstance()`.
-- Adding a microgame: extend abstract `Microgame` in `src/LatamPMDevs/minerware/arena/microgame/` (`normal/` or `boss/` subdir), implement `getName`, `getLevel`, `getGameDuration`, `getRecompensePoints`, `tick`. Register it in `MicrogameManager::__construct` with a lowercase `saveName` key. Mark `[x]` in `Microgames.md` when complete. (Full guide in [Adding a microgame](#adding-a-microgame-step-by-step) above.)
+- Adding a microgame: extend abstract `Microgame` in `src/LatamPMDevs/minerware/arena/microgame/` (`normal/` or `boss/` subdir), implement `getName`, `getLevel`, `getGameDuration`, `tick`. Register it in `MicrogameManager::__construct` with a lowercase `saveName` key. Mark `[x]` in `Microgames.md` when complete. (Full guide in [Adding a microgame](#adding-a-microgame-step-by-step) above.)
 - `Microgame::addWinner`/`addLoser` fire events (`PlayerWinMicrogameEvent`/`PlayerLoseMicrogameEvent`); use those to attribute points rather than mutating winner/loser state directly.
 - `@phpstan-param` / `@phpstan-return` docblocks annotate `class-string<T>` templates (PHPStan level 6, paths = `src`).
 - Maps: the platform must be exactly `24x24` (`Utils::calculateSize` enforces this). Map JSON data is saved under the plugin data folder `database/maps/`; configured interactively via chat commands during `/minerware arenas create`.
@@ -168,7 +168,7 @@ Simple optimizations/special-cases, all `NeverSavedWithChunkEntity` (never seria
 - No `empty()` or `in_array()`; check explicitly (`count($x) !== 0`, `=== null`).
 - State the unit of quantities in the name or a trailing comment (`//ticks`, `//seconds`).
 - Broken invariants throw `AssumptionFailedError`; catch specific exceptions only.
-- Games that only cancel block break/place `use CancelsBuildEvents` instead of redeclaring the handlers.
+- Games that only cancel block break/place `use CancelsBuildEvents`, and ones where the void is the only danger `use LosesInVoid`, instead of redeclaring the handlers.
 - Leave a `TODO` instead of speculative code, and delete what a change orphans.
 
 ## Runtime / resources

@@ -58,10 +58,6 @@ class LastKnightStanding extends Microgame implements Listener {
 		return 22.9;
 	}
 
-	public function getRecompensePoints() : int {
-		return self::DEFAULT_RECOMPENSE_POINTS;
-	}
-
 	public function start() : void {
 		$helmet = VanillaItems::IRON_HELMET();
 		$chestplate = VanillaItems::IRON_CHESTPLATE();
@@ -88,12 +84,7 @@ class LastKnightStanding extends Microgame implements Listener {
 	public function tick() : void {
 		$timeLeft = $this->getTimeLeft();
 		if ($timeLeft <= 0) {
-			foreach ($this->arena->getPlayers() as $player) {
-				if (!$this->isWinner($player) && !$this->isLoser($player)) {
-					$this->addWinner($player);
-				}
-			}
-			$this->arena->endCurrentMicrogame();
+			$this->endRound(true);
 			return;
 		}
 		$this->updateTimeBar($timeLeft);
@@ -115,11 +106,7 @@ class LastKnightStanding extends Microgame implements Listener {
 					]
 				));
 			}
-			if ($this->isWinner($player)) {
-				$player->sendMessage($this->plugin->getTranslator()->translate($player, "microgame.lastknightstanding.won"));
-			} elseif ($this->isLoser($player)) {
-				$player->sendMessage($this->plugin->getTranslator()->translate($player, "microgame.failedtosurvive"));
-			}
+			$this->sendOutcome($player, "microgame.lastknightstanding.won", "microgame.failedtosurvive");
 		}
 		parent::end();
 	}
@@ -161,8 +148,7 @@ class LastKnightStanding extends Microgame implements Listener {
 					));
 				}
 			}
-			$this->addLoser($player);
-			$this->arena->getLosersCage()->addPlayer($player);
+			$this->lose($player);
 			$event->cancel();
 		}
 	}

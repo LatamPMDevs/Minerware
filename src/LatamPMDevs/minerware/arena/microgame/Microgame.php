@@ -116,6 +116,60 @@ abstract class Microgame {
 		return ($this->startTime + $this->getGameDuration()) - microtime(true);
 	}
 
+	/**
+	 * Ends the game: every player who has not won or lost yet wins or loses together.
+	 */
+	protected function endRound(bool $remainingWin = false) : void {
+		foreach ($this->arena->getPlayers() as $player) {
+			if ($this->isWinner($player) || $this->isLoser($player)) {
+				continue;
+			}
+			if ($remainingWin) {
+				$this->addWinner($player);
+			} else {
+				$this->addLoser($player);
+			}
+		}
+		$this->arena->endCurrentMicrogame();
+	}
+
+	/**
+	 * Makes the player win and sends them to the winners cage.
+	 */
+	protected function win(Player $player) : void {
+		$this->addWinner($player);
+		$this->arena->getWinnersCage()->addPlayer($player);
+	}
+
+	/**
+	 * Makes the player lose and sends them to the losers cage.
+	 */
+	protected function lose(Player $player) : void {
+		$this->addLoser($player);
+		$this->arena->getLosersCage()->addPlayer($player);
+	}
+
+	/**
+	 * Makes the player lose, sends them to the losers cage and says why.
+	 */
+	protected function eliminate(Player $player, string $messageKey) : void {
+		$this->lose($player);
+		$player->sendMessage($this->plugin->getTranslator()->translate($player, $messageKey));
+	}
+
+	/**
+	 * Tells a player the outcome of the game, if they have one.
+	 *
+	 * @param array<string, string|int> $replacements
+	 */
+	protected function sendOutcome(Player $player, string $wonKey, string $loseKey, array $replacements = []) : void {
+		if ($this->isWinner($player)) {
+			$player->sendMessage($this->plugin->getTranslator()->translate($player, $wonKey, $replacements));
+		} elseif ($this->isLoser($player)) {
+			$player->sendMessage($this->plugin->getTranslator()->translate($player, $loseKey, $replacements));
+		}
+	}
+
 	public function addWinner(Player $player) : void {
 		(new PlayerWinMicrogameEvent($player, $this))->call();
 		$this->winners[$player->getId()] = $player;
@@ -151,7 +205,9 @@ abstract class Microgame {
 	abstract public function getName() : string;
 	abstract public function getLevel() : Level;
 	abstract public function getGameDuration() : float; // in seconds
-	abstract public function getRecompensePoints() : int;
+	public function getRecompensePoints() : int {
+		return $this->getLevel() === Level::BOSS ? self::BOSS_RECOMPENSE_POINTS : self::DEFAULT_RECOMPENSE_POINTS;
+	}
 
 	public function start() : void {
 		if ($this instanceof Listener) {
