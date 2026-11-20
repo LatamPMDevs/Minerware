@@ -229,7 +229,7 @@ final class AsyncBlockOperation extends AsyncTask {
 			$undo = $this->swapIntoWorld();
 		} finally {
 			# The completion callback drives the caller's build accounting
-			# ({@see LatamPMDevs\minerware\arena\Arena::onStageBuildSettled}):
+			# ({@see LatamPMDevs\minerware\arena\StageGate::settled}):
 			# it must run even when the swap above throws, or the arena's
 			# stage gate would never release.
 			try {

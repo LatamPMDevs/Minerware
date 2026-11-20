@@ -42,7 +42,6 @@ use LatamPMDevs\minerware\map\Map;
 use LatamPMDevs\minerware\map\MapWorldGenerator;
 use LatamPMDevs\minerware\map\world\MapTemplates;
 use LatamPMDevs\minerware\Minerware;
-use LatamPMDevs\minerware\utils\AsyncBlockManager;
 use LatamPMDevs\minerware\utils\PointHolder;
 use LatamPMDevs\minerware\utils\Selection;
 use LatamPMDevs\minerware\utils\Utils;
@@ -145,8 +144,8 @@ final class Arena {
 			Position::fromObject($this->map->getLosersCage(), $this->world),
 			VanillaBlocks::STAINED_GLASS()->setColor(DyeColor::RED)
 		);
-		$this->winnersCage->setBuildCallbacks($this->onStageBuildStarted(...), $this->onStageBuildSettled(...));
-		$this->losersCage->setBuildCallbacks($this->onStageBuildStarted(...), $this->onStageBuildSettled(...));
+		$this->winnersCage->setBuildCallbacks($this->gate->started(...), $this->gate->settled(...));
+		$this->losersCage->setBuildCallbacks($this->gate->started(...), $this->gate->settled(...));
 
 		(new ArenaCreationEvent($this))->call();
 	}
@@ -159,7 +158,7 @@ final class Arena {
 			return;
 		}
 		$this->runGuarded(function () : void {
-			$this->settleStuckBuilds(self::BUILD_TIMEOUT);
+			$this->gate->settleStuck(self::BUILD_TIMEOUT);
 			$this->phase->tick($this);
 			if (!$this->closed) {
 				$this->scoreboard->update($this);
@@ -664,32 +663,15 @@ final class Arena {
 		return $this->areInvisibleBlocksSet;
 	}
 
-	/**
-	 * Returns true while one or more async block builds for this arena are still
-	 * draining. Callers that read or mutate the stage (e.g. a microgame tick)
-	 * must not proceed until this returns false.
-	 */
-	public function settleStuckBuilds(float $timeout) : void {
-		$this->gate->settleStuck($timeout);
+	public function getGate() : StageGate {
+		return $this->gate;
 	}
 
+	/**
+	 * Whether async block builds are still draining.
+	 */
 	public function isBuildingStage() : bool {
 		return $this->gate->isBuilding();
-	}
-
-	/**
-	 * Marks one async build as started. Each start must be paired with exactly
-	 * one {@see onStageBuildSettled}.
-	 */
-	public function onStageBuildStarted() : void {
-		$this->gate->started();
-	}
-
-	/**
-	 * Marks one async build as finished (its completion callback ran).
-	 */
-	public function onStageBuildSettled() : void {
-		$this->gate->settled();
 	}
 
 	public function buildInvisibleBlocks() : void {
@@ -700,13 +682,12 @@ final class Arena {
 		$pos3 = new Position($pos1->x, $min->y, $pos2->z, $this->world);
 		$pos4 = new Position($pos2->x, $min->y, $pos1->z, $this->world);
 
-		$this->onStageBuildStarted();
 		$selection = new Selection($this->world);
 		$selection->addFill($pos1, $pos3, VanillaBlocks::INVISIBLE_BEDROCK());
 		$selection->addFill($pos3, $pos2, VanillaBlocks::INVISIBLE_BEDROCK());
 		$selection->addFill($pos2, $pos4, VanillaBlocks::INVISIBLE_BEDROCK());
 		$selection->addFill($pos4, $pos1, VanillaBlocks::INVISIBLE_BEDROCK());
-		AsyncBlockManager::getInstance()->executeSet($selection, $this->onStageBuildSettled(...));
+		$this->gate->build($selection);
 		$this->areInvisibleBlocksSet = true;
 	}
 
@@ -718,13 +699,12 @@ final class Arena {
 		$pos3 = new Position($pos1->x, $min->y, $pos2->z, $this->world);
 		$pos4 = new Position($pos2->x, $min->y, $pos1->z, $this->world);
 
-		$this->onStageBuildStarted();
 		$selection = new Selection($this->world);
 		$selection->addFill($pos1, $pos3, VanillaBlocks::AIR());
 		$selection->addFill($pos3, $pos2, VanillaBlocks::AIR());
 		$selection->addFill($pos2, $pos4, VanillaBlocks::AIR());
 		$selection->addFill($pos4, $pos1, VanillaBlocks::AIR());
-		AsyncBlockManager::getInstance()->executeSet($selection, $this->onStageBuildSettled(...));
+		$this->gate->build($selection);
 		$this->areInvisibleBlocksSet = false;
 	}
 

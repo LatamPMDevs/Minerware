@@ -22,7 +22,10 @@ declare(strict_types=1);
 
 namespace LatamPMDevs\minerware\arena;
 
+use Closure;
 use LatamPMDevs\minerware\Minerware;
+use LatamPMDevs\minerware\utils\AsyncBlockManager;
+use LatamPMDevs\minerware\utils\Selection;
 use function microtime;
 
 /**
@@ -39,6 +42,21 @@ final class StageGate {
 
 	public function isBuilding() : bool {
 		return $this->pending > 0;
+	}
+
+	/**
+	 * Writes the selection asynchronously, holding the gate until it lands.
+	 *
+	 * @param Closure(?Selection) : void|null $onSettled
+	 */
+	public function build(Selection $selection, ?Closure $onSettled = null) : void {
+		$this->started();
+		AsyncBlockManager::getInstance()->executeSet($selection, function (?Selection $undo) use ($onSettled) : void {
+			$this->settled();
+			if ($onSettled !== null) {
+				$onSettled($undo);
+			}
+		});
 	}
 
 	public function started() : void {
