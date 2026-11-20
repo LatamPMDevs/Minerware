@@ -73,7 +73,9 @@ final class Utils {
 
 	public static function setZip(string $targetPath, string $zipPath) : bool {
 		$zip = new ZipArchive;
-		$zip->open($zipPath, ZipArchive::CREATE | ZipArchive::OVERWRITE);
+		if ($zip->open($zipPath, ZipArchive::CREATE | ZipArchive::OVERWRITE) !== true) {
+			return false;
+		}
 		$files = new RecursiveIteratorIterator(
 			new RecursiveDirectoryIterator($targetPath),
 			RecursiveIteratorIterator::LEAVES_ONLY
@@ -82,11 +84,13 @@ final class Utils {
 			if ($file->isFile()) {
 				$filePath = $file->getRealPath();
 				$relativePath = substr($filePath, strlen($targetPath) + 1);
-				$zip->addFile($filePath, $relativePath);
+				if (!$zip->addFile($filePath, $relativePath)) {
+					$zip->close();
+					return false;
+				}
 			}
 		}
-		$zip->close();
-		return true;
+		return $zip->close();
 	}
 
 	public static function playSound(Player $player, string $sound, float $volume = 1, float $pitch = 1) : void {

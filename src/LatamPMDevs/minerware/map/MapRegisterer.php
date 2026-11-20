@@ -155,10 +155,13 @@ final class MapRegisterer implements Listener {
 					$this->world->save(true);
 					$player->teleport($this->plugin->getServer()->getWorldManager()->getDefaultWorld()->getSafeSpawn());
 					$this->plugin->getServer()->getWorldManager()->unloadWorld($this->world);
-					Utils::setZip(
+					if (!Utils::setZip(
 						$this->plugin->getServer()->getDataPath() . "worlds" . DIRECTORY_SEPARATOR . $folderName,
 						DataManager::getInstance()->getMapBackupPath($map->getName())
-					);
+					)) {
+						$player->sendMessage($this->plugin->getTranslator()->translate($player, "configurator.mode.error.zip"));
+						break;
+					}
 					try {
 						DataManager::getInstance()->saveMap($map);
 					} catch (RuntimeException $e) {
