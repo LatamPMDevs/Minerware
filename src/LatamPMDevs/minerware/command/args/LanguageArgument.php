@@ -31,7 +31,8 @@ final class LanguageArgument extends StringEnumArgument {
 
 	protected const VALUES = [
 		"en_US" => "en_US",
-		"es_MX" => "es_MX"
+		"es_MX" => "es_MX",
+		"vi_VN" => "vi_VN"
 	];
 
 	public function __construct(private Minerware $plugin) {

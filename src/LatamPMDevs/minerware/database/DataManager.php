@@ -41,6 +41,8 @@ use function glob;
 use function max;
 use function mkdir;
 use function parse_ini_file;
+use function str_ends_with;
+use function str_starts_with;
 use function time;
 
 final class DataManager {
@@ -66,8 +68,11 @@ final class DataManager {
 		@mkdir($this->pluginPath . "database" . DIRECTORY_SEPARATOR . "backups" . DIRECTORY_SEPARATOR);
 
 		$this->createContext();
-		$this->plugin->saveResource("languages/en_US.ini", true);
-		$this->plugin->saveResource("languages/es_MX.ini", true);
+		foreach ($this->plugin->getResources() as $path => $_) {
+			if (str_starts_with($path, "languages/") && str_ends_with($path, ".ini")) {
+				$this->plugin->saveResource($path, true);
+			}
+		}
 
 		$this->onError = function (SqlError $result) : void {
 			$this->plugin->getLogger()->emergency($result->getQuery() . ' - ' . $result->getErrorMessage());
