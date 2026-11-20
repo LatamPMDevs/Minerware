@@ -65,10 +65,17 @@ final class ArenaManager {
 	}
 
 	public function getAvailable(?Map $map = null) : ?Arena {
+		$fullest = null;
 		foreach ($this->arenas as $arena) {
-			if ($arena->getPhase()->isLobby() && ($map === null || $arena->getMap() === $map) && count($arena->getPlayers()) < Arena::MAX_PLAYERS) {
-				return $arena;
+			if (!$arena->canJoin() || ($map !== null && $arena->getMap() !== $map)) {
+				continue;
 			}
+			if ($fullest === null || count($arena->getPlayers()) > count($fullest->getPlayers())) {
+				$fullest = $arena;
+			}
+		}
+		if ($fullest !== null) {
+			return $fullest;
 		}
 		if (count($this->arenas) >= DataManager::getInstance()->getMaxRuntimeArenas()) {
 			return null;
