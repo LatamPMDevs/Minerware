@@ -66,7 +66,7 @@ final class ArenaManager {
 
 	public function getAvailable(?Map $map = null) : ?Arena {
 		foreach ($this->arenas as $arena) {
-			if (($arena->getStatus() === Status::WAITING || $arena->getStatus() === Status::STARTING) && ($map === null || $arena->getMap() === $map) && count($arena->getPlayers()) < Arena::MAX_PLAYERS) {
+			if ($arena->getPhase()->isLobby() && ($map === null || $arena->getMap() === $map) && count($arena->getPlayers()) < Arena::MAX_PLAYERS) {
 				return $arena;
 			}
 		}
@@ -81,6 +81,24 @@ final class ArenaManager {
 			$id = chr(random_int(97, 122)) . chr(random_int(97, 122)) . random_int(10, 99);
 		} while (isset($this->arenas[$id]));
 		return $id;
+	}
+
+	/**
+	 * Runs one second of every arena.
+	 */
+	public function tick() : void {
+		foreach ($this->arenas as $arena) {
+			$arena->tick();
+		}
+	}
+
+	/**
+	 * Runs a few ticks of the microgame of every arena.
+	 */
+	public function tickMicrogames() : void {
+		foreach ($this->arenas as $arena) {
+			$arena->tickMicrogame();
+		}
 	}
 
 	public function getArenaOf(Player $player) : ?Arena {

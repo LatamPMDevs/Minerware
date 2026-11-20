@@ -28,8 +28,6 @@ use pocketmine\entity\NeverSavedWithChunkEntity;
 use pocketmine\entity\Skin;
 use pocketmine\event\entity\EntityDamageEvent;
 use pocketmine\nbt\tag\CompoundTag;
-use pocketmine\network\mcpe\protocol\types\entity\EntityMetadataProperties;
-use pocketmine\network\mcpe\protocol\types\entity\StringMetadataProperty;
 use pocketmine\player\Player;
 use function str_repeat;
 
@@ -69,19 +67,6 @@ class TextEntity extends Human implements NeverSavedWithChunkEntity {
 		$event->cancel();
 		parent::attack($event);
 	}
-
-	/* TODO: find another hack to do this! >:D
-	public function sendData(?array $targets, ?array $data = null) : void {
-		$targets = $targets ?? $this->hasSpawned;
-		$data = $data ?? $this->getAllNetworkData();
-
-		foreach ($targets as $p) {
-			if (isset($data[EntityMetadataProperties::NAMETAG])) {
-				$data[EntityMetadataProperties::NAMETAG] = new StringMetadataProperty($this->getNameTagToPlayer($p));
-			}
-			$p->getNetworkSession()->syncActorData($this, $data);
-		}
-	}*/
 
 	protected function move(float $dx, float $dy, float $dz) : void {}
 

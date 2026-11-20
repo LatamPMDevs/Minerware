@@ -22,10 +22,64 @@ declare(strict_types=1);
 
 namespace LatamPMDevs\minerware\arena;
 
-enum Status {
-	case WAITING;
-	case STARTING;
-	case INBETWEEN;
-	case INGAME;
-	case ENDING;
+use LatamPMDevs\minerware\arena\microgame\Microgame;
+use LatamPMDevs\minerware\arena\microgame\MicrogameManager;
+use pocketmine\utils\AssumptionFailedError;
+use function array_rand;
+use function count;
+use function shuffle;
+
+/**
+ * The microgames of one arena, in play order.
+ */
+final class MicrogameQueue {
+
+	/** @var list<Microgame> */
+	private array $games = [];
+
+	private int $position = 0;
+
+	/**
+	 * @throws AssumptionFailedError
+	 */
+	public static function create(Arena $arena) : self {
+		$queue = new self();
+		$manager = MicrogameManager::getInstance();
+		$normal = $manager->getMicrogames();
+		shuffle($normal);
+		foreach ($normal as $class) {
+			$queue->games[] = new $class($arena);
+		}
+		$boss = $manager->getBossgames();
+		if (count($boss) === 0) {
+			throw new AssumptionFailedError("No boss microgames are registered");
+		}
+		$queue->games[] = new $boss[array_rand($boss)]($arena);
+		return $queue;
+	}
+
+	/**
+	 * The microgame that comes next, null when all were played.
+	 */
+	public function peek() : ?Microgame {
+		return $this->games[$this->position] ?? null;
+	}
+
+	public function advance() : void {
+		$this->position++;
+	}
+
+	/**
+	 * How many microgames were started.
+	 */
+	public function getPosition() : int {
+		return $this->position;
+	}
+
+	/**
+	 * How many normal microgames the queue holds (the boss game is not counted).
+	 */
+	public function getNormalCount() : int {
+		return count($this->games) - 1;
+	}
 }

@@ -26,7 +26,7 @@ use CortexPE\Commando\BaseCommand;
 use CortexPE\Commando\BaseSubCommand;
 use CortexPE\Commando\constraint\InGameRequiredConstraint;
 use LatamPMDevs\minerware\arena\ArenaManager;
-use LatamPMDevs\minerware\arena\Status;
+use LatamPMDevs\minerware\arena\phase\StartingPhase;
 use LatamPMDevs\minerware\command\args\ArenaActionArgument;
 use LatamPMDevs\minerware\command\args\WorldArgument;
 use LatamPMDevs\minerware\map\MapRegisterer;
@@ -88,7 +88,7 @@ final class ArenasCommand extends BaseSubCommand {
 					return;
 				}
 
-				if ($arena->getStatus() !== Status::STARTING ||
+				if (!$arena->getPhase() instanceof StartingPhase ||
 					count($arena->getPlayers()) < $arena->getMinPlayers()
 				) {
 					$sender->sendMessage($this->plugin->getTranslator()->translate($sender, "game.arena.needMorePlayers"));

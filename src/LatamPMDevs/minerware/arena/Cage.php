@@ -152,7 +152,6 @@ final class Cage {
 
 	/**
 	 * Builds the 7x7x5 cage box (base + four walls) as an async selection,
-	 * mirroring {@see Utils::buildCage}.
 	 */
 	private function buildSelection(Block $block) : Selection {
 		$world = $this->position->getWorld();

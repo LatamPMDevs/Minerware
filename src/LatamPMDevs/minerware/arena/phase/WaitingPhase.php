@@ -20,46 +20,28 @@
 
 declare(strict_types=1);
 
-namespace LatamPMDevs\minerware\event\arena;
+namespace LatamPMDevs\minerware\arena\phase;
 
 use LatamPMDevs\minerware\arena\Arena;
-use LatamPMDevs\minerware\arena\Status;
+use pocketmine\utils\SingletonTrait;
+use function count;
 
-/**
- * Called when an arena changes its status
- */
-class ArenaChangeStatusEvent extends ArenaEvent {
+final class WaitingPhase extends LobbyPhase {
+	use SingletonTrait;
 
-	public function __construct(
-		protected Status $oldStatus,
-		protected Status $newStatus,
-		protected int $countdown,
-		Arena $arena
-	) {
-		parent::__construct($arena);
+	public function getName() : string {
+		return "waiting";
 	}
 
-	public function getOldStatus() : Status {
-		return $this->oldStatus;
-	}
-
-	public function getNewStatus() : Status {
-		return $this->newStatus;
-	}
-
-	public function setNewStatus(Status $status) : void {
-		$this->newStatus = $status;
-	}
-
-	/**
-	 * How long (in ticks) the new status is supposed to last before
-	 * transitioning again.
-	 */
-	public function getCountdown() : int {
-		return $this->countdown;
-	}
-
-	public function setCountdown(int $countdown) : void {
-		$this->countdown = $countdown;
+	public function tick(Arena $arena) : void {
+		$players = $arena->getPlayers();
+		if (count($players) >= $arena->getMinPlayers()) {
+			$arena->setPhase(StartingPhase::getInstance());
+			return;
+		}
+		$translator = $arena->getPlugin()->getTranslator();
+		foreach ($players as $player) {
+			$player->sendTip($translator->translate($player, "game.arena.needMorePlayers"));
+		}
 	}
 }

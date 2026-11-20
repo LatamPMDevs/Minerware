@@ -34,7 +34,7 @@ Minerware (PluginBase, singleton)
  └─ MicrogameManager (singleton)– registry of microgame CLASSES (normal + boss)
  └─ ArenaManager (singleton)    – creates/tracks live Arena instances
       └─ Arena  ×N              – one per live game; drives the whole lobby→game→end FSM
-           ├─ ArenaTask         – repeating scheduler task = the FSM tick (every 20 ticks / 1s)
+           ├─ ArenaPhase        – the stage the arena is in (arena/phase/), one shared stateless instance per kind; ticked by one plugin-wide task
            ├─ Microgame  ×1     – current microgame instance, ticked every 3 ticks
            ├─ Cage ×2           – winners / losers holding cages (stained glass)
            └─ PointHolder       – scoreboard points per player for this arena
@@ -51,26 +51,26 @@ A **map** is a fixed mid-air `/platform` (exactly 24×24) loaded once as a `MapT
 3. **Arena constructor** builds/registers everything:
    - Generates the world (`MapWorldGenerator::generate`), freezes time at noon, builds the two `Cage`s at the map's cage positions.
    - Shuffles the **normal** microgame classes into `microgamesQueue`, then appends **one random boss** game at the end (so every run ends with a boss round).
-   - Schedules two repeating tasks: `ArenaTask` every 20 ticks (the status FSM) and a 3-tick closure that calls the current `Microgame::tick()` while it's running.
+   - Builds the `MicrogameQueue`, a `StageGate` (async build count) and a `ScoreboardRenderer`. Nothing is scheduled per arena: two plugin-wide tasks (`ArenaManager::tick()` every 20 ticks, `tickMicrogames()` every 3) call `Arena::tick()` / `tickMicrogame()`, which run guarded (see `runGuarded`).
    - Registers itself as a `Listener`, fires `ArenaCreationEvent`.
-4. **Play** flows through `ArenaTask::onRun()` which switches on `Arena::getStatus()` (see below).
+4. **Play** flows through `Arena::tick()`, which runs the current `ArenaPhase` (see below), then redraws the scoreboard.
 5. **Arena end** — `Arena::end()` ranks players in the scoreboard into P1/P2/P3 winners (ties chunked), sends the podium, fires `ArenaEndEvent`. The `ENDING` countdown then re-queues every player into a fresh arena (`ArenaManager::join`) and tears the arena + its world down.
 
-### Arena status FSM (`src/LatamPMDevs/minerware/arena/Status.php`)
+### Arena phases (`src/LatamPMDevs/minerware/arena/phase/`)
 
-Driven entirely by `tasks/ArenaTask.php` on a 1-second repeating schedule (`ArenaTask`) plus `Arena::getCountdown()`:
+The arena is always in exactly one `ArenaPhase`; there is no separate status. A phase knows its `getName()`, its `getDuration()` (the countdown it starts with), whether it `isLobby()` (players can join, items are locked), what its `tick()` does each second and what its scoreboard shows (`createScoreboard()`). Phases are `SingletonTrait` instances; `Arena::setPhase()` moves between them. Use `$arena->getPhase() instanceof StartingPhase` to ask where an arena is.
 
-| Status      | Entered when | What happens |
+| Phase       | Entered when | What happens |
 |-------------|--------------|--------------|
-| `WAITING`   | arena starts | Ticks "need more players" tips until player count ≥ `minimum-starting-players` |
-| `STARTING`  | min players met | 120s countdown (config `arena-starting-time`); cancels back to WAITING if count drops below min; force-skipped to 15s at max capacity; `forceStart()` via `/minerware arenas start` sets countdown to 5 |
-| `INBETWEEN` | countdown hits 0 → `Arena::start()` | 5s inter-round pause showing the next microgame's name + "GO"; if the queue is empty at the end it calls `Arena::end()` instead |
-| `INGAME`    | inter-round ends | `Arena::startNextMicrogame()` instantiates + `start()`s the next queued microgame; handled by the microgame's own `tick()`; when the microgame finishes it nulls `currentMicrogame` |
-| `ENDING`    | `Arena::end()` | 10s podium, then requeue players, delete world, delete arena, cancel the task |
+| `WaitingPhase` | arena starts | Ticks "need more players" tips until player count ≥ `minimum-starting-players` |
+| `StartingPhase` | min players met | 120s countdown (config `arena-starting-time`); cancels back to WAITING if count drops below min; force-skipped to 15s at max capacity; `forceStart()` via `/minerware arenas start` sets countdown to 5 |
+| `InbetweenPhase` | countdown hits 0 → `Arena::start()` | 5s inter-round pause showing the next microgame's name + "GO"; if the queue is empty at the end it calls `Arena::end()` instead |
+| `IngamePhase` | inter-round ends | `Arena::startNextMicrogame()` instantiates + `start()`s the next queued microgame; handled by the microgame's own `tick()`; when the microgame finishes it nulls `currentMicrogame` |
+| `EndingPhase` | `Arena::end()` | 10s podium, then requeue players, delete world, delete arena, cancel the task |
 
 Key points:
-- `Arena::setStatus()` fires a cancellable `ArenaChangeStatusEvent`, sets the countdown, and clears scoreboard lines on entry.
-- The scoreboard is refreshed every task tick via `Arena::updateScoreboard()` (ScoreFactory side lines); it shows map/players in WAITING/STARTING, live sorted points + current/next microgame in INBETWEEN/INGAME, and is removed in ENDING.
+- `Arena::setPhase()` fires `ArenaChangePhaseEvent`, sets the countdown from the phase's duration, and clears scoreboard lines on entry.
+- The scoreboard is redrawn every tick by `ScoreboardRenderer`, using the lines the current phase builds: map and players in the lobby phases, sorted points and the microgame in the playing phases, none when ending.
 - `INBETWEEN` checks `count($players) < ... == null` on `getNextMicrogame()` to decide between starting the next microgame or ending the arena — i.e. the boss game is last.
 
 ### Microgame lifecycle (the core abstraction)

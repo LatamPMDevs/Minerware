@@ -41,6 +41,7 @@ use pocketmine\entity\EntityFactory;
 use pocketmine\entity\Human;
 use pocketmine\nbt\tag\CompoundTag;
 use pocketmine\plugin\PluginBase;
+use pocketmine\scheduler\ClosureTask;
 use pocketmine\utils\SingletonTrait;
 use pocketmine\world\World;
 
@@ -99,6 +100,9 @@ final class Minerware extends PluginBase {
 		$this->getServer()->getPluginManager()->registerEvents(new EventListener($dataManager), $this);
 		$this->getServer()->getPluginManager()->registerEvents(new ArenaListener(), $this);
 		$this->joinSigns->enable();
+		$arenaManager = ArenaManager::getInstance();
+		$this->getScheduler()->scheduleRepeatingTask(new ClosureTask($arenaManager->tick(...)), 20); //ticks
+		$this->getScheduler()->scheduleRepeatingTask(new ClosureTask($arenaManager->tickMicrogames(...)), 3); //ticks
 	}
 
 	protected function onDisable() : void {
