@@ -26,6 +26,7 @@ use CortexPE\Commando\PacketHooker;
 use IvanCraft623\fakeblocks\FakeBlockManager;
 use IvanCraft623\languages\Translator;
 use JackMD\ConfigUpdater\ConfigUpdater;
+use LatamPMDevs\minerware\arena\ArenaListener;
 use LatamPMDevs\minerware\arena\ArenaManager;
 use LatamPMDevs\minerware\command\MinerwareCommand;
 use LatamPMDevs\minerware\database\DataManager;
@@ -96,6 +97,7 @@ final class Minerware extends PluginBase {
 		$dataManager = DataManager::getInstance();
 		$dataManager->loadMaps();
 		$this->getServer()->getPluginManager()->registerEvents(new EventListener($dataManager), $this);
+		$this->getServer()->getPluginManager()->registerEvents(new ArenaListener(), $this);
 		$this->joinSigns->enable();
 	}
 

@@ -196,12 +196,7 @@ class TnTRun extends Microgame implements Listener {
 
 	public function end() : void {
 		foreach ($this->arena->getPlayers() as $player) {
-			if ($this->isWinner($player)) {
-				$player->sendMessage($this->plugin->getTranslator()->translate($player, "microgame.tntrun.won"));
-			} elseif ($this->isLoser($player)) {
-				$player->sendMessage($this->plugin->getTranslator()->translate($player, "microgame.threwoffstage"
-				));
-			}
+			$this->sendOutcome($player, "microgame.tntrun.won", "microgame.threwoffstage");
 		}
 		parent::end();
 	}

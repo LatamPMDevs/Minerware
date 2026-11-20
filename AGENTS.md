@@ -162,7 +162,7 @@ Simple optimizations/special-cases, all `NeverSavedWithChunkEntity` (never seria
 - `Microgame::addWinner`/`addLoser` fire events (`PlayerWinMicrogameEvent`/`PlayerLoseMicrogameEvent`); use those to attribute points rather than mutating winner/loser state directly.
 - `@phpstan-param` / `@phpstan-return` docblocks annotate `class-string<T>` templates (PHPStan level 6, paths = `src`).
 - Maps: the platform must be exactly `24x24` (`Utils::calculateSize` enforces this). Map JSON data is saved under the plugin data folder `database/maps/`; configured interactively via chat commands during `/minerware arenas create`.
-- `Arena` and `MapRegisterer` implement `Listener` and register events themselves; don't duplicate registration. `Microgame` subclasses that `implements Listener` are auto-registered by `Microgame::start()` and auto-unregistered by `Microgame::end()`.
+- `ArenaListener` is the only listener for players inside arenas (it finds the arena through `ArenaManager::getArenaOf()`, a player-id map kept by `Arena::join/quit`); `MapRegisterer` registers itself, don't duplicate registration. `Microgame` subclasses that `implements Listener` are auto-registered by `Microgame::start()` and auto-unregistered by `Microgame::end()`.
 - World/`chunk` mutation helper: `Utils::fill`/`fillCircle`/`buildCage` return the replaced `Block[]` so callers can restore them; stage builds go through `Microgame::getStageSelection()` + `commitStage()`, and `Microgame::end()` is the single async rollback point.
 
 - No `empty()` or `in_array()`; check explicitly (`count($x) !== 0`, `=== null`).

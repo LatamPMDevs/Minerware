@@ -26,7 +26,6 @@ use LatamPMDevs\minerware\database\DataManager;
 use LatamPMDevs\minerware\join\JoinResult;
 use LatamPMDevs\minerware\map\Map;
 use LatamPMDevs\minerware\map\MapManager;
-use pocketmine\event\HandlerListManager;
 use pocketmine\player\Player;
 use pocketmine\utils\SingletonTrait;
 use RuntimeException;
@@ -39,6 +38,9 @@ final class ArenaManager {
 
 	/** @var array<string, Arena> */
 	private array $arenas = [];
+
+	/** @var array<int, Arena> player id => the arena they are in */
+	private array $playerArenas = [];
 
 	/**
 	 * @return array<string, Arena>
@@ -59,7 +61,6 @@ final class ArenaManager {
 	}
 
 	public function deleteArena(Arena $arena) : void {
-		HandlerListManager::global()->unregisterAll($arena);
 		unset($this->arenas[$arena->getId()]);
 	}
 
@@ -83,12 +84,23 @@ final class ArenaManager {
 	}
 
 	public function getArenaOf(Player $player) : ?Arena {
-		foreach ($this->arenas as $arena) {
-			if ($arena->inGame($player)) {
-				return $arena;
-			}
+		return $this->playerArenas[$player->getId()] ?? null;
+	}
+
+	/**
+	 * Called by Arena when a player joins it.
+	 */
+	public function bindPlayer(Player $player, Arena $arena) : void {
+		$this->playerArenas[$player->getId()] = $arena;
+	}
+
+	/**
+	 * Called by Arena when a player leaves it.
+	 */
+	public function unbindPlayer(Player $player, Arena $arena) : void {
+		if (($this->playerArenas[$player->getId()] ?? null) === $arena) {
+			unset($this->playerArenas[$player->getId()]);
 		}
-		return null;
 	}
 
 	/**

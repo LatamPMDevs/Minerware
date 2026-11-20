@@ -47,12 +47,8 @@ use LatamPMDevs\minerware\utils\Utils;
 use pocketmine\block\utils\DyeColor;
 use pocketmine\block\VanillaBlocks;
 use pocketmine\event\entity\EntityDamageEvent;
-use pocketmine\event\entity\EntityTeleportEvent;
 use pocketmine\event\HandlerListManager;
 use pocketmine\event\Listener;
-use pocketmine\event\player\PlayerDropItemEvent;
-use pocketmine\event\player\PlayerExhaustEvent;
-use pocketmine\event\player\PlayerQuitEvent;
 use pocketmine\player\GameMode;
 use pocketmine\player\Player;
 use pocketmine\scheduler\CancelTaskException;
@@ -72,7 +68,7 @@ use function shuffle;
 use function str_repeat;
 use function time;
 
-final class Arena implements Listener {
+final class Arena {
 
 	public const MAX_PLAYERS = 12;
 
@@ -126,6 +122,9 @@ final class Arena implements Listener {
 
 	private bool $closed = false;
 
+	/** @var array<int, list<string>> player id => the lines last sent to them */
+	private array $scoreboardLines = [];
+
 	/** @var array<int, array<int, Player>> */
 	public array $winners = [];
 
@@ -143,7 +142,6 @@ final class Arena implements Listener {
 		$this->status = Status::WAITING;
 		$this->pointHolder = new PointHolder();
 		$this->plugin->getScheduler()->scheduleRepeatingTask(new ArenaTask($this), 20); //ticks
-		$this->plugin->getServer()->getPluginManager()->registerEvents($this, $this->plugin);
 		$this->world->setTime(World::TIME_NOON);
 		$this->world->stopTime();
 		$this->winnersCage = new Cage(
@@ -226,6 +224,7 @@ final class Arena implements Listener {
 		$ev->call();
 		$this->status = $ev->getNewStatus();
 		$this->countdown = $this->countdownTotal = $ev->getCountdown();
+		$this->scoreboardLines = [];
 		foreach ($this->players as $player) {
 			if (ScoreFactory::hasObjective($player)) {
 				ScoreFactory::removeScoreLines($player, true);
@@ -282,6 +281,7 @@ final class Arena implements Listener {
 			return false;
 		}
 		$this->players[$player->getId()] = $player;
+		ArenaManager::getInstance()->bindPlayer($player, $this);
 		foreach ($this->players as $pl) {
 			$pl->sendMessage($this->plugin->getTranslator()->translate(
 				$pl, "game.player.join", [
@@ -301,6 +301,8 @@ final class Arena implements Listener {
 
 	public function quit(Player $player) : void {
 		unset($this->players[$player->getId()]);
+		unset($this->scoreboardLines[$player->getId()]);
+		ArenaManager::getInstance()->unbindPlayer($player, $this);
 		$this->winnersCage->removePlayer($player);
 		$this->losersCage->removePlayer($player);
 		$this->pointHolder->removePlayer($player);
@@ -441,6 +443,8 @@ final class Arena implements Listener {
 	public function updateScoreboard() : void {
 		$translator = $this->plugin->getTranslator();
 		$isBoss = false;
+		$scores = $this->status === Status::INBETWEEN || $this->status === Status::INGAME ? $this->pointHolder->getOrderedByHigherScore() : [];
+		$serverIp = DataManager::getInstance()->getServerIp();
 		$currentMicrogame = $this->getCurrentMicrogame();
 		if ($currentMicrogame !== null && $currentMicrogame->getLevel() === Level::BOSS) {
 			$isBoss = true;
@@ -457,7 +461,7 @@ final class Arena implements Listener {
 					$lines[] = "§5" . $translator->translate($player, "text.players") . ":";
 					$lines[] = "§f" . count($this->players) . "/" . self::MAX_PLAYERS;
 					$lines[] = "§2";
-					$lines[] = "§6" . DataManager::getInstance()->getServerIp();
+					$lines[] = "§6" . $serverIp;
 					break;
 
 				case Status::INBETWEEN:
@@ -465,7 +469,7 @@ final class Arena implements Listener {
 					$isOnTop = false;
 					$i = 0;
 					$lines[] = "§5" . $translator->translate($player, "text.scores") . ":";
-					foreach ($this->pointHolder->getOrderedByHigherScore() as $playerId => $point) {
+					foreach ($scores as $playerId => $point) {
 						$i++;
 						$user = $this->players[$playerId]->getName();
 						if ($user === $player->getName()) {
@@ -485,7 +489,7 @@ final class Arena implements Listener {
 					$lines[] = "§e" . ($this->status === Status::INBETWEEN ? "§fIn-between" : ($this->currentMicrogame?->getName() ?? ""));
 					$lines[] = "§5(§f" . ($isBoss ? "Bossgame" : $this->nextMicrogameIndex . "§5/§f" . (count($this->microgamesQueue) - 1)) . "§5)";
 					$lines[] = "§2";
-					$lines[] = "§6" . DataManager::getInstance()->getServerIp();
+					$lines[] = "§6" . $serverIp;
 					break;
 
 				default:
@@ -493,8 +497,13 @@ final class Arena implements Listener {
 					break;
 			}
 			if ($remove) {
+				unset($this->scoreboardLines[$player->getId()]);
 				ScoreFactory::removeObjective($player, true);
 			} else {
+				if (($this->scoreboardLines[$player->getId()] ?? null) === $lines && ScoreFactory::hasObjective($player)) {
+					continue;
+				}
+				$this->scoreboardLines[$player->getId()] = $lines;
 				if (!ScoreFactory::hasObjective($player)) {
 					ScoreFactory::setObjective($player, '§l§eMinerWare');
 					ScoreFactory::sendObjective($player);
@@ -795,57 +804,17 @@ final class Arena implements Listener {
 		$this->areInvisibleBlocksSet = false;
 	}
 
-	#Listener
-
-	public function onQuit(PlayerQuitEvent $event) : void {
-		$player = $event->getPlayer();
-		if ($this->inGame($player)) {
-			$this->quit($player);
-		}
-	}
-
 	/**
-	 * @ignoreCancelled
-	 * @priority MONITOR
+	 * Called by ArenaListener for the damage a player of this arena takes.
 	 */
-	public function onWorldChange(EntityTeleportEvent $event) : void {
-		$player = $event->getEntity();
-		if (!$player instanceof Player) return;
-		if ($event->getTo()->getWorld() === $this->world) return;
-		if ($event->getFrom()->world === $event->getTo()->getWorld()) return;
-		if ($this->inGame($player)) {
-			$this->quit($player);
-		}
-	}
-
-	public function onDropItem(PlayerDropItemEvent $event) : void {
-		$player = $event->getPlayer();
-		if ($this->inGame($player)) {
-			$event->cancel();
-		}
-	}
-
-	public function onExhaust(PlayerExhaustEvent $event) : void {
-		$player = $event->getPlayer();
-		if ($player instanceof Player && $this->inGame($player)) {
-			$event->cancel();
-		}
-	}
-
-	public function onDamage(EntityDamageEvent $event) : void {
-		$player = $event->getEntity();
-		if (!$player instanceof Player) return;
-		if (!$this->inGame($player)) return;
+	public function handleDamage(EntityDamageEvent $event, Player $player) : void {
 		if ($this->currentMicrogame === null) {
 			if ($event->getCause() === EntityDamageEvent::CAUSE_VOID) {
 				$player->teleport($this->getRandomSpawn());
 			}
 			$event->cancel();
-		} else {
-			if ($this->currentMicrogame->isLoser($player) ||
-				$this->currentMicrogame->isWinner($player)) {
-				$event->cancel(); //Winners and losers cannot be damaged
-			}
+		} elseif ($this->currentMicrogame->isLoser($player) || $this->currentMicrogame->isWinner($player)) {
+			$event->cancel(); //Winners and losers cannot be damaged
 		}
 	}
 }
