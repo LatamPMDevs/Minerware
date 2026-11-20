@@ -40,10 +40,7 @@ use function file_exists;
 use function glob;
 use function max;
 use function mkdir;
-use function opendir;
 use function parse_ini_file;
-use function readdir;
-use function str_replace;
 use function time;
 
 final class DataManager {
@@ -170,19 +167,24 @@ final class DataManager {
 		], $onSuccess, $onError ?? $this->onError);
 	}
 
-	public function loadMaps() : bool {
-		if ($handle = opendir($this->pluginPath . "database" . DIRECTORY_SEPARATOR . 'maps' . DIRECTORY_SEPARATOR)) {
-			while (false !== ($entry = readdir($handle))) {
-				if ($entry !== '.' && $entry !== '..') {
-					$map = str_replace('.json', '', $entry);
-					MapManager::getInstance()->add(new Map($this->getMapData($map)));
+	public function loadMaps() : void {
+		$logger = $this->plugin->getLogger();
+		$mapsPath = $this->pluginPath . "database" . DIRECTORY_SEPARATOR . "maps" . DIRECTORY_SEPARATOR;
+		foreach (glob($mapsPath . "*.json") ?: [] as $file) {
+			try {
+				$map = Map::fromArray((new Config($file, Config::JSON))->getAll());
+				if (!file_exists($this->getMapBackupPath($map->getName()))) {
+					throw new InvalidArgumentException("Missing world backup");
 				}
+				MapManager::getInstance()->add($map);
+			} catch (InvalidArgumentException $e) {
+				$logger->warning("Skipping map '" . basename($file) . "': " . $e->getMessage());
 			}
-
-			return true;
 		}
+	}
 
-		return false;
+	public function getMapBackupPath(string $map) : string {
+		return $this->pluginPath . "database" . DIRECTORY_SEPARATOR . "backups" . DIRECTORY_SEPARATOR . $map . ".zip";
 	}
 
 	public function loadLanguages() : void {
@@ -201,21 +203,10 @@ final class DataManager {
 		$translator->setDefaultLanguage($lang);
 	}
 
-	public function getMapData(string $map) : ?DataHolder {
-		$filePath = "maps" . DIRECTORY_SEPARATOR . $map . ".json";
-		$path = $this->pluginPath . "database" . DIRECTORY_SEPARATOR . $filePath;
-		if (file_exists($path)) {
-			return new DataHolder((new Config($path, Config::JSON))->getAll());
-		}
-
-		return null;
-	}
-
-	public function saveMapData(DataHolder $dataHolder) : void {
-		$filePath = "maps" . DIRECTORY_SEPARATOR . $dataHolder->getString("name") . ".json";
-		$path = $this->pluginPath . "database" . DIRECTORY_SEPARATOR . $filePath;
-		(new Config($path, Config::JSON, $dataHolder->getAll()))->save();
-		MapManager::getInstance()->add(new Map($dataHolder));
+	public function saveMap(Map $map) : void {
+		$path = $this->pluginPath . "database" . DIRECTORY_SEPARATOR . "maps" . DIRECTORY_SEPARATOR . $map->getName() . ".json";
+		(new Config($path, Config::JSON, $map->toArray()))->save();
+		MapManager::getInstance()->add($map);
 	}
 
 	public function getServerIp() : string {

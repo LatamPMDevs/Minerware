@@ -119,7 +119,7 @@ There are two paths for world mutation, by volume (see `docs/async-block-system.
 
 ### Maps (`src/LatamPMDevs/minerware/map/`)
 
-- `Map` parses a map JSON (from `database/maps/*.json`) into: name, platform min/max (must be exactly 24×24 — `Utils::calculateSize` enforces during registration), computed center, spawns[], winners/losers cage positions. It lazily generates the 9 **mini-platforms** (a 3×3 grid of 2×2 elevated tiles with 3-tile margins) used by most microgames (`getMiniPlatforms()` returns relative [x, y, z] offsets).
+- `Map::fromArray` validates and parses a map JSON (from `database/maps/*.json`; bad maps are skipped with a warning) into: name, platform min/max (must be exactly 24×24 — `Utils::calculateSize` enforces during registration), computed center, spawns[], winners/losers cage positions. It lazily generates the 9 **mini-platforms** (a 3×3 grid of 2×2 elevated tiles with 3-tile margins) used by most microgames (`getMiniPlatforms()` returns relative [x, y, z] offsets).
 - `MapManager` is the in-memory `name → Map` registry (`add`/`remove`/`getByName`/`getRandom`/`getAll`/`getCount`).
 - `MapWorldGenerator::generate(Map, uniqueId)` extracts the map's world `.zip` (from `database/backups/*.zip`) into `worlds/<name>-<id>` and loads it as the arena's disposable `World`.
 - `MapRegisterer` is the **interactive map editor**: while active it listens on chat (`help`, `setplatform`, `setcages`, `setspawn`, `done`) and block-break events (blaze rod = pick corners/blocks). The platform must resolve to `24x24` or it errors. `done` saves the JSON via `DataManager::saveMapData`, zips the world backup, and unregisters. It also implements `Listener` and registers itself — don't register it twice.
@@ -128,7 +128,6 @@ There are two paths for world mutation, by volume (see `docs/async-block-system.
 
 - libasynql (`DataManager::createContext`) with schemas in `resources/database/sqlite.sql` and `mysql.sql`; config block `database` in `resources/config.yml`.
 - `PlayerData` is a JSON-serializable value object (name, generationTime, wins, bossgamesWon, microgamesWon, gamesPlayed, microgamesPlayed, timePlayed). Stats persist via `EventListener` (`MONITOR`-priority listeners for ArenaEnd, MicrogameEnd, PlayerWinMicrogame, PlayerQuitArena) calling `DataManager::add*` methods — so most stat writing is automatic from events, not hand-wired into gameplay code.
-- `DataHolder` is a typed read wrapper over a map JSON / config array.
 - Tunables read from config via `DataManager`: `getServerIp`, `getMaxRuntimeArenas`, `getArenaStartingTime`, `getMinimumStartingPlayers`.
 
 ### Localization (`resources/languages/*.ini`)

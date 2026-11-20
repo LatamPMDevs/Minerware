@@ -22,7 +22,7 @@ declare(strict_types=1);
 
 namespace LatamPMDevs\minerware\map;
 
-use LatamPMDevs\minerware\database\DataHolder;
+use InvalidArgumentException;
 use LatamPMDevs\minerware\database\DataManager;
 use LatamPMDevs\minerware\Minerware;
 use LatamPMDevs\minerware\utils\Utils;
@@ -30,6 +30,7 @@ use pocketmine\event\block\BlockBreakEvent;
 use pocketmine\event\HandlerListManager;
 use pocketmine\event\Listener;
 use pocketmine\event\player\PlayerChatEvent;
+use pocketmine\event\player\PlayerQuitEvent;
 use pocketmine\item\ItemTypeIds;
 use pocketmine\item\VanillaItems;
 use pocketmine\math\Vector3;
@@ -41,9 +42,10 @@ use function strtolower;
 final class MapRegisterer implements Listener {
 
 	/** @var array<string, self> */
-	private static array $mapRegisterer;
+	private static array $mapRegisterer = [];
 
 	public static function createRegisterer(Player $player, World $world) : self {
+		(self::$mapRegisterer[strtolower($player->getName())] ?? null)?->close();
 		return (self::$mapRegisterer[strtolower($player->getName())] = new self($player, $world));
 	}
 
@@ -97,9 +99,15 @@ final class MapRegisterer implements Listener {
 			"Z" => $spawn->getZ()];
 	}
 
-	private function save() : void {
-		DataManager::getInstance()->saveMapData(new DataHolder($this->data));
+	private function close() : void {
 		unset(self::$mapRegisterer[strtolower($this->player->getName())]);
+		HandlerListManager::global()->unregisterAll($this);
+	}
+
+	public function onQuit(PlayerQuitEvent $event) : void {
+		if ($event->getPlayer() === $this->player) {
+			$this->close();
+		}
 	}
 
 	public function chatCommand(PlayerChatEvent $event) : void {
@@ -135,18 +143,24 @@ final class MapRegisterer implements Listener {
 				break;
 
 				case "done":
-					$this->save();
-					$player->sendMessage($this->plugin->getTranslator()->translate($player, "configurator.mode.registered.successfully"));
-					$player->teleport($this->plugin->getServer()->getWorldManager()->getDefaultWorld()->getSafeSpawn());
+					try {
+						$map = Map::fromArray($this->data);
+					} catch (InvalidArgumentException $e) {
+						$player->sendMessage("§c" . $e->getMessage());
+						break;
+					}
 					# Save World
 					$folderName = $this->world->getFolderName();
+					$this->world->save(true);
+					$player->teleport($this->plugin->getServer()->getWorldManager()->getDefaultWorld()->getSafeSpawn());
 					$this->plugin->getServer()->getWorldManager()->unloadWorld($this->world);
 					Utils::setZip(
 						$this->plugin->getServer()->getDataPath() . "worlds" . DIRECTORY_SEPARATOR . $folderName,
-						$this->plugin->getDataFolder() . "database" . DIRECTORY_SEPARATOR . "backups" . DIRECTORY_SEPARATOR . $this->data["name"] . ".zip"
+						DataManager::getInstance()->getMapBackupPath($map->getName())
 					);
-					# Unregiter Listener
-					HandlerListManager::global()->unregisterAll($this);
+					DataManager::getInstance()->saveMap($map);
+					$this->close();
+					$player->sendMessage($this->plugin->getTranslator()->translate($player, "configurator.mode.registered.successfully"));
 				break;
 
 				default:
