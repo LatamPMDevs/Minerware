@@ -41,15 +41,17 @@ abstract class LeaderboardEntity extends PerPlayerTagHuman {
 
 	private const CHECK_INTERVAL = 20; //ticks
 
+	private const INVISIBLE_GEOMETRY = '{"format_version":"1.12.0","minecraft:geometry":[{"description":{"identifier":"geometry.minerware_invisible","texture_width":64,"texture_height":64,"visible_bounds_width":2,"visible_bounds_height":1,"visible_bounds_offset":[0,1,0]},"bones":[]}]}';
+
 	private int $ticksSinceCheck = 0;
 
 	private int $seenVersion = -1;
 
 	/**
-	 * A skin with no visible body, so only the name tag shows.
+	 * A skin with no body at all, its geometry has no bones, so only the name tag shows.
 	 */
 	public static function invisibleSkin() : Skin {
-		return new Skin("Standard_Custom", str_repeat("\x00", 8192));
+		return new Skin("minerware_invisible", str_repeat("\x00", 64 * 64 * 4), "", "geometry.minerware_invisible", self::INVISIBLE_GEOMETRY);
 	}
 
 	protected function initEntity(CompoundTag $nbt) : void {

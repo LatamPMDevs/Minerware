@@ -23,7 +23,9 @@ declare(strict_types=1);
 namespace LatamPMDevs\minerware\entity\object;
 
 use LatamPMDevs\minerware\Minerware;
+use pocketmine\nbt\tag\CompoundTag;
 use pocketmine\player\Player;
+use function count;
 use function implode;
 
 /**
@@ -33,11 +35,17 @@ final class LeaderboardText extends LeaderboardEntity {
 
 	public const SAVE_ID = "minerware:leaderboard_text";
 
+	protected function initEntity(CompoundTag $nbt) : void {
+		parent::initEntity($nbt);
+		# Saved ones may have an older skin.
+		$this->setSkin(self::invisibleSkin());
+	}
+
 	protected function buildNameTag(?Player $viewer) : string {
 		$translator = Minerware::getInstance()->getTranslator();
 		$lines = [$translator->translate($viewer, "leaderboard.title")];
 		$entries = Minerware::getInstance()->getLeaderboard()->getEntries();
-		if ($entries === []) {
+		if (count($entries) === 0) {
 			$lines[] = $translator->translate($viewer, "leaderboard.empty");
 		}
 		foreach ($entries as $index => $entry) {
