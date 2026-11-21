@@ -209,12 +209,6 @@ final class Arena {
 		$ev->call();
 		$this->phase = $ev->getNewPhase();
 		$this->countdown->reset($ev->getCountdown());
-		$this->scoreboard->reset();
-		foreach ($this->players as $player) {
-			if (ScoreFactory::hasObjective($player)) {
-				ScoreFactory::removeScoreLines($player, true);
-			}
-		}
 	}
 
 	public function getCountdown() : Countdown {
@@ -265,7 +259,6 @@ final class Arena {
 
 	public function quit(Player $player) : void {
 		unset($this->players[$player->getId()]);
-		$this->scoreboard->forget($player);
 		ArenaManager::getInstance()->unbindPlayer($player, $this);
 		$this->winnersCage->removePlayer($player);
 		$this->losersCage->removePlayer($player);

@@ -23,53 +23,27 @@ declare(strict_types=1);
 namespace LatamPMDevs\minerware\arena;
 
 use jackmd\scorefactory\ScoreFactory;
-use pocketmine\player\Player;
+use function array_slice;
 
 /**
- * Draws the scoreboard of an arena's players, sending a player's lines only when they changed.
+ * Draws the scoreboard of an arena's players, ScoreFactory only sends the lines that changed.
  */
 final class ScoreboardRenderer {
 
 	private const MAX_LINES = 15;
 
-	/** @var array<int, list<string>> player id => the lines last sent to them */
-	private array $sent = [];
-
-	/**
-	 * Forgets what was sent (the lines were cleared on the clients).
-	 */
-	public function reset() : void {
-		$this->sent = [];
-	}
-
-	public function forget(Player $player) : void {
-		unset($this->sent[$player->getId()]);
-	}
-
 	public function update(Arena $arena) : void {
 		$linesOf = $arena->getPhase()->createScoreboard($arena);
 		foreach ($arena->getPlayers() as $player) {
 			if ($linesOf === null) {
-				unset($this->sent[$player->getId()]);
 				ScoreFactory::removeObjective($player, true);
 				continue;
 			}
-			$lines = $linesOf($player);
-			if (($this->sent[$player->getId()] ?? null) === $lines && ScoreFactory::hasObjective($player)) {
-				continue;
-			}
-			$this->sent[$player->getId()] = $lines;
 			if (!ScoreFactory::hasObjective($player)) {
 				ScoreFactory::setObjective($player, '§l§eMinerWare');
 				ScoreFactory::sendObjective($player);
 			}
-			$from = 0;
-			foreach ($lines as $line) {
-				if ($from < self::MAX_LINES) {
-					$from++;
-					ScoreFactory::setScoreLine($player, $from, $line);
-				}
-			}
+			ScoreFactory::setScoreLines($player, array_slice($linesOf($player), 0, self::MAX_LINES));
 			ScoreFactory::sendLines($player);
 		}
 	}
