@@ -39,6 +39,8 @@ final class TopPlayerNpc extends LeaderboardEntity {
 
 	public const RANKS = 3;
 
+	private const SCALE = 0.6;
+
 	private const TAG_RANK = "Rank"; //TAG_Int
 	private const TAG_HOLDER = "Holder"; //TAG_String, UUID of the player the skin belongs to, only when set
 
@@ -48,6 +50,8 @@ final class TopPlayerNpc extends LeaderboardEntity {
 
 	protected function initEntity(CompoundTag $nbt) : void {
 		parent::initEntity($nbt);
+		# The scale is not saved with the entity.
+		$this->setScale(self::SCALE);
 		$this->rank = $nbt->getInt(self::TAG_RANK, 1);
 		$holder = $nbt->getString(self::TAG_HOLDER, "");
 		$this->holder = $holder === "" ? null : $holder;
