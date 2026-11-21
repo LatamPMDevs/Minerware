@@ -2,9 +2,9 @@
   <h1>⛏️ Minerware 🎮</h1>
   <p>⚡ Multiple classic microgames in a single chunk — inspired by CubeCraft, built for PocketMine-MP</p>
 
-  <img src="https://www.cubecraft.net/attachments/1611402324248-png.184772/" alt="Minerware map banner" width="720">
+  <img src="https://www.cubecraft.net/attachments/1611046386481-png.184587/" alt="Minerware map banner" width="720">
 
-  [![CI](https://img.shields.io/github/actions/workflow/status/LatamPMDevs/Minerware/phpstan.yml?label=CI&style=flat&logo=github)](https://github.com/LatamPMDevs/Minerware/actions/workflows/phpstan.yml)
+  [![CI](https://img.shields.io/github/actions/workflow/status/LatamPMDevs/Minerware/ci.yml?label=CI&style=flat&logo=github)](https://github.com/LatamPMDevs/Minerware/actions/workflows/ci.yml)
   [![GitHub Downloads](https://img.shields.io/github/downloads/LatamPMDevs/Minerware/total?style=flat&label=github+downloads&logo=github&logoColor=white)](https://github.com/LatamPMDevs/Minerware/releases)
   [![License](https://img.shields.io/github/license/LatamPMDevs/Minerware?style=flat&logo=opensourceinitiative&logoColor=white)](LICENSE)
 </div>
