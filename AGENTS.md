@@ -17,7 +17,7 @@ PocketMine-MP 5 plugin (PHP 8.1+, API 5.0.0): **Minerware**, a CubeCraft-style m
 - Broken invariants throw `AssumptionFailedError`. Catch specific exceptions; the one broad `catch` is `Arena::runGuarded()`.
 - Leave a `TODO` instead of speculative code; delete what a change orphans.
 - Docs stay short.
-- Singletons (`SingletonTrait`): `Minerware`, `DataManager`, `ArenaManager`, `MicrogameManager`, `MapManager`, `MapTemplates`, `FormManager`.
+- Singletons (`SingletonTrait`): `Minerware`, `DataManager`, `ArenaManager`, `MicrogameManager`, `MapManager`, `MapTemplates`.
 
 ## How it runs
 

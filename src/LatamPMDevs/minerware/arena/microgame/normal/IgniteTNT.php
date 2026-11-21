@@ -115,13 +115,6 @@ public function tick() : void {
 		return $this->ignitedTNTs[$player->getId()] ?? 0;
 	}
 
-	/**
-	 * @return array<int, int>
-	 */
-	public function getIgnitedTNTsOrderedByHigherScore() : array {
-		return Utils::sortScoresDescending($this->ignitedTNTs);
-	}
-
 	public function getTotalIgnitedTNTs() : int {
 		return $this->totalIgnitedTNTs;
 	}

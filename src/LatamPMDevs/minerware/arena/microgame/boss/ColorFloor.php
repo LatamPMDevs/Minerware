@@ -117,7 +117,7 @@ class ColorFloor extends Microgame implements Listener {
 	public function tick() : void {
 		$timeLeft = $this->getTimeLeft();
 		if ($timeLeft <= 0 || $this->totalColoredBlocks >= $this->blocksCount) {
-			foreach ($this->getColoredBlocksOrderedByHigherScore() as $colorId => $count) {
+			foreach (Utils::sortScoresDescending($this->coloredBlocksCount) as $colorId => $count) {
 				if (count($this->winners) < 3) {
 					$player = $this->assignedPlayer[$colorId] ?? null;
 					if ($player !== null) {
@@ -211,13 +211,6 @@ class ColorFloor extends Microgame implements Listener {
 		}
 		$this->arena->getWorld()->setBlock($block->getPosition(), VanillaBlocks::STAINED_CLAY()->setColor($color), false);
 		$this->coloredBlocksCount[$color->id()] = $this->getBlocksOfColor($color) + 1;
-	}
-
-	/**
-	 * @return array<int, int>
-	 */
-	public function getColoredBlocksOrderedByHigherScore() : array {
-		return Utils::sortScoresDescending($this->coloredBlocksCount);
 	}
 
 	public function getTotalColoredBlocks() : int {

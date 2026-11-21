@@ -92,7 +92,7 @@ class StackBlocks extends Microgame implements Listener {
 	public function end() : void {
 		$players = $this->arena->getPlayers();
 		$stacker = null;
-		$stackedBlocks = $this->getStackedBlocksOrderedByHigherScore();
+		$stackedBlocks = Utils::sortScoresDescending($this->stackedBlocks);
 		if ($stackedBlocks !== []) {
 			$stacker = $players[array_key_first($stackedBlocks)] ?? null;
 		}
@@ -132,13 +132,6 @@ class StackBlocks extends Microgame implements Listener {
 
 	public function getStackedBlocks(Player $player) : int {
 		return $this->stackedBlocks[$player->getId()] ?? 0;
-	}
-
-	/**
-	 * @return array<int, int>
-	 */
-	public function getStackedBlocksOrderedByHigherScore() : array {
-		return Utils::sortScoresDescending($this->stackedBlocks);
 	}
 
 	# Listener

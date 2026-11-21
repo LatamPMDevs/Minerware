@@ -118,7 +118,7 @@ class MineOre extends Microgame implements Listener {
 		$players = $this->arena->getPlayers();
 		$this->commitStage(function () use ($players) : void {
 			foreach ($players as $player) {
-				$this->arena->tpSafePosition($player);
+				$player->teleport($this->arena->getSafePosition($player));
 			}
 		});
 		$this->arena->getWinnersCage()->set();

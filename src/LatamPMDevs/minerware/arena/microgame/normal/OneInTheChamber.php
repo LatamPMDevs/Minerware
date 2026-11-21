@@ -90,7 +90,7 @@ class OneInTheChamber extends Microgame implements Listener {
 	public function end() : void {
 		$players = $this->arena->getPlayers();
 		$killer = null;
-		$kills = $this->getKillsOrderedByHigherScore();
+		$kills = Utils::sortScoresDescending($this->kills);
 		if ($kills !== []) {
 			$killer = $players[array_key_first($kills)] ?? null;
 		}
@@ -110,13 +110,6 @@ class OneInTheChamber extends Microgame implements Listener {
 
 	public function getKills(Player $player) : int {
 		return $this->kills[$player->getId()] ?? 0;
-	}
-
-	/**
-	 * @return array<int, int>
-	 */
-	public function getKillsOrderedByHigherScore() : array {
-		return Utils::sortScoresDescending($this->kills);
 	}
 
 	# Listener

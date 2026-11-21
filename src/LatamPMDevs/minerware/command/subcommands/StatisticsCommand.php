@@ -27,7 +27,7 @@ use CortexPE\Commando\BaseCommand;
 use CortexPE\Commando\BaseSubCommand;
 use LatamPMDevs\minerware\database\DataManager;
 use LatamPMDevs\minerware\database\PlayerData;
-use LatamPMDevs\minerware\form\FormManager;
+use LatamPMDevs\minerware\form\StatisticsForm;
 use LatamPMDevs\minerware\Minerware;
 use LatamPMDevs\minerware\utils\Utils;
 use pocketmine\command\CommandSender;
@@ -67,7 +67,7 @@ final class StatisticsCommand extends BaseSubCommand {
 				if (!$sender->isConnected()) {
 					return;
 				}
-				FormManager::getInstance()->sendStatistics($sender, $playerdata);
+				(new StatisticsForm())->send($sender, $playerdata);
 			} else {
 				$sender->sendMessage(
 					"§b=== §e" . $translator->translate($sender, "text.statistics.user",

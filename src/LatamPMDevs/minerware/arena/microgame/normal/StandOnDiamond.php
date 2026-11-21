@@ -114,7 +114,7 @@ class StandOnDiamond extends Microgame implements Listener {
 
 	public function end() : void {
 		$players = $this->arena->getPlayers();
-		$hits = $this->getPlayersHitsOrderedByHigherScore();
+		$hits = Utils::sortScoresDescending($this->hitsCount);
 		$hitter = null;
 		if ($hits !== []) {
 			$hitter = $players[array_key_first($hits)] ?? null;
@@ -162,13 +162,6 @@ class StandOnDiamond extends Microgame implements Listener {
 
 	public function getHits(Player $player) : int {
 		return $this->hitsCount[$player->getId()] ?? 0;
-	}
-
-	/**
-	 * @return array<int, int>
-	 */
-	public function getPlayersHitsOrderedByHigherScore() : array {
-		return Utils::sortScoresDescending($this->hitsCount);
 	}
 
 	# Listener

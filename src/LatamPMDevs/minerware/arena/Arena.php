@@ -346,10 +346,6 @@ final class Arena {
 		return $this->queue;
 	}
 
-	public function getNextMicrogame() : ?Microgame {
-		return $this->queue->peek();
-	}
-
 	public function getNextMicrogameNonNull() : Microgame {
 		return $this->queue->peek() ?? throw new AssumptionFailedError("Next Microgame is null");
 	}
@@ -362,7 +358,7 @@ final class Arena {
 		if ($this->isBuildingStage()) {
 			return null;
 		}
-		$microgame = $this->getNextMicrogame();
+		$microgame = $this->queue->peek();
 		if ($microgame !== null) {
 			$this->setCurrentMicrogame($microgame);
 			$microgame->start();
@@ -423,10 +419,6 @@ final class Arena {
 			HandlerListManager::global()->unregisterAll($this->currentMicrogame);
 		}
 		ArenaManager::getInstance()->deleteArena($this);
-		$this->deleteMap();
-	}
-
-	public function deleteMap() : void {
 		MapTemplates::getInstance()->removeInstance($this->world);
 	}
 
@@ -455,7 +447,7 @@ final class Arena {
 				}
 				$player->sendMessage("\n");
 				if ($this->winnersCage->isInCage($player) || $this->losersCage->isInCage($player)) {
-					$this->tpSafePosition($player);
+					$player->teleport($this->getSafePosition($player));
 				}
 			}
 			foreach ($this->world->getEntities() as $entity) {
@@ -547,10 +539,6 @@ final class Arena {
 		$safe = $this->world->getSafeSpawn($pos);
 		$safe->y = $safe->y + 2;
 		return $safe;
-	}
-
-	public function tpSafePosition(Player $player) : void {
-		$player->teleport($this->getSafePosition($player));
 	}
 
 	public function getRandomSpawn() : Position {

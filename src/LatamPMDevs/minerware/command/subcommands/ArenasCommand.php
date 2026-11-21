@@ -29,7 +29,7 @@ use LatamPMDevs\minerware\arena\ArenaManager;
 use LatamPMDevs\minerware\arena\phase\StartingPhase;
 use LatamPMDevs\minerware\command\args\ArenaActionArgument;
 use LatamPMDevs\minerware\command\args\WorldArgument;
-use LatamPMDevs\minerware\form\FormManager;
+use LatamPMDevs\minerware\form\ArenaAdminForm;
 use LatamPMDevs\minerware\map\MapRegisterer;
 use LatamPMDevs\minerware\Minerware;
 use pocketmine\command\CommandSender;
@@ -78,7 +78,7 @@ final class ArenasCommand extends BaseSubCommand {
 			break;
 
 			case ArenaActionArgument::ADMIN_ARENAS:
-				FormManager::getInstance()->sendArenaAdmin($sender);
+				(new ArenaAdminForm())->sendList($sender);
 			break;
 
 			case ArenaActionArgument::START_ARENA:
