@@ -22,6 +22,7 @@ declare(strict_types=1);
 
 namespace LatamPMDevs\minerware\arena\microgame;
 
+use InvalidArgumentException;
 use LatamPMDevs\minerware\arena\microgame\boss\BowSpleef;
 use LatamPMDevs\minerware\arena\microgame\boss\ColorFloor;
 use LatamPMDevs\minerware\arena\microgame\boss\TnTRun;
@@ -38,7 +39,6 @@ use LatamPMDevs\minerware\arena\microgame\normal\StandOnColor;
 use LatamPMDevs\minerware\arena\microgame\normal\StandOnDiamond;
 use pocketmine\utils\SingletonTrait;
 use pocketmine\utils\Utils;
-use RuntimeException;
 
 final class MicrogameManager {
 	use SingletonTrait;
@@ -78,7 +78,7 @@ final class MicrogameManager {
 	 * @param string $saveName Name which this microgame will be identified.
 	 * @phpstan-param class-string<Microgame> $className
 	 *
-	 * @throws RuntimeException if something attempted to override an
+	 * @throws InvalidArgumentException if something attempted to override an
 	 * already-registered microgame without specifying the $override parameter.
 	 */
 	public function register(string $className, string $saveName, bool $override = false) : void {
@@ -92,7 +92,7 @@ final class MicrogameManager {
 	 * @param string $saveName Name which this microgame will be identified.
 	 * @phpstan-param class-string<Microgame> $className
 	 *
-	 * @throws RuntimeException if something attempted to override an
+	 * @throws InvalidArgumentException if something attempted to override an
 	 * already-registered microgame without specifying the $override parameter.
 	 */
 	public function registerBoss(string $className, string $saveName, bool $override = false) : void {
@@ -103,13 +103,13 @@ final class MicrogameManager {
 	 * @phpstan-param class-string<Microgame> $className
 	 * @param array<string, class-string<Microgame>> $registry
 	 *
-	 * @throws RuntimeException if something attempted to override an
+	 * @throws InvalidArgumentException if something attempted to override an
 	 * already-registered microgame without specifying the $override parameter.
 	 */
 	private function registerTo(string $className, string $saveName, array &$registry, bool $override) : void {
 		Utils::testValidInstance($className, Microgame::class);
 		if (!$override && $this->isRegistered($saveName)) {
-			throw new RuntimeException("Trying to overwrite an already registered microgame");
+			throw new InvalidArgumentException("Trying to overwrite an already registered microgame");
 		}
 		$registry[$saveName] = $className;
 	}

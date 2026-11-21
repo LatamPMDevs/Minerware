@@ -44,6 +44,7 @@ use LatamPMDevs\minerware\Minerware;
 use LatamPMDevs\minerware\Settings;
 use LatamPMDevs\minerware\utils\PointHolder;
 use LatamPMDevs\minerware\utils\Utils;
+use LogicException;
 
 use pocketmine\block\utils\DyeColor;
 use pocketmine\block\VanillaBlocks;
@@ -56,7 +57,6 @@ use pocketmine\scheduler\CancelTaskException;
 use pocketmine\utils\AssumptionFailedError;
 use pocketmine\world\Position;
 use pocketmine\world\World;
-use RuntimeException;
 use Throwable;
 use function array_rand;
 use function count;
@@ -467,7 +467,7 @@ final class Arena {
 
 	public function start() : void {
 		if (!$this->phase instanceof StartingPhase) {
-			throw new RuntimeException("Arena can only start during the starting status");
+			throw new LogicException("Arena can only start during the starting status");
 		}
 		$this->setPhase(InbetweenPhase::getInstance());
 		$this->getPointHolder()->clear();

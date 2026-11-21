@@ -25,10 +25,10 @@ namespace LatamPMDevs\minerware\arena;
 use LatamPMDevs\minerware\join\JoinResult;
 use LatamPMDevs\minerware\map\Map;
 use LatamPMDevs\minerware\map\MapManager;
+use LatamPMDevs\minerware\map\world\MapWorldException;
 use LatamPMDevs\minerware\Settings;
 use pocketmine\player\Player;
 use pocketmine\utils\SingletonTrait;
-use RuntimeException;
 use function chr;
 use function count;
 use function random_int;
@@ -53,9 +53,17 @@ final class ArenaManager {
 		return $this->arenas[$id] ?? null;
 	}
 
+	/**
+	 * @throws ArenaCreationException
+	 */
 	public function createArena(?Map $map = null) : Arena {
 		$id = $this->generateId();
-		$arena = new Arena($id, $map ?? MapManager::getInstance()->getRandom() ?? throw new RuntimeException("No maps available to create an arena"));
+		$map ??= MapManager::getInstance()->getRandom() ?? throw new ArenaCreationException("No maps available to create an arena");
+		try {
+			$arena = new Arena($id, $map);
+		} catch (MapWorldException $e) {
+			throw new ArenaCreationException("Could not create the world of arena '$id': " . $e->getMessage(), 0, $e);
+		}
 		$this->arenas[$id] = $arena;
 		return $arena;
 	}
@@ -131,7 +139,7 @@ final class ArenaManager {
 	/**
 	 * Puts the player in the given arena, or in an available one (on the given map, if any).
 	 *
-	 * @throws RuntimeException
+	 * @throws ArenaCreationException
 	 */
 	public function place(Player $player, ?Arena $arena = null, ?Map $map = null) : JoinResult {
 		if ($arena === null) {

@@ -24,6 +24,7 @@ namespace LatamPMDevs\minerware\map;
 
 use InvalidArgumentException;
 use LatamPMDevs\minerware\item\SpecialItems;
+use LatamPMDevs\minerware\map\world\MapWorldException;
 use LatamPMDevs\minerware\Minerware;
 use LatamPMDevs\minerware\utils\Utils;
 use pocketmine\event\block\BlockBreakEvent;
@@ -34,7 +35,6 @@ use pocketmine\event\player\PlayerQuitEvent;
 use pocketmine\math\Vector3;
 use pocketmine\player\Player;
 use pocketmine\world\World;
-use RuntimeException;
 use function array_map;
 use function explode;
 use function strtolower;
@@ -202,7 +202,7 @@ final class MapEditor implements Listener {
 		}
 		try {
 			MapStorage::getInstance()->save($map);
-		} catch (RuntimeException $e) {
+		} catch (MapWorldException $e) {
 			$this->player->sendMessage("§c" . $e->getMessage());
 			return;
 		}

@@ -26,12 +26,12 @@ use Closure;
 use LatamPMDevs\minerware\utils\AsyncBlockManager;
 use LatamPMDevs\minerware\utils\Selection;
 use LatamPMDevs\minerware\utils\Utils;
+use LogicException;
 use pocketmine\block\Block;
 use pocketmine\block\VanillaBlocks;
 use pocketmine\player\GameMode;
 use pocketmine\player\Player;
 use pocketmine\world\Position;
-use RuntimeException;
 
 final class Cage {
 
@@ -73,7 +73,7 @@ final class Cage {
 
 	public function setPosition(Position $position) : void {
 		if ($this->isSet) {
-			throw new RuntimeException("Cannot set position while cage is set");
+			throw new LogicException("Cannot set position while cage is set");
 		}
 		$this->position = clone $position;
 		$this->reloadOffsetPosition();
@@ -89,7 +89,7 @@ final class Cage {
 
 	public function setMaterial(Block $material) : void {
 		if ($this->isSet) {
-			throw new RuntimeException("Cannot set material while cage is set");
+			throw new LogicException("Cannot set material while cage is set");
 		}
 		$this->material = clone $material;
 	}

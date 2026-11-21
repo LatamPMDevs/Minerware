@@ -22,12 +22,12 @@ declare(strict_types=1);
 
 namespace LatamPMDevs\minerware\join;
 
+use LatamPMDevs\minerware\arena\ArenaCreationException;
 use LatamPMDevs\minerware\arena\ArenaManager;
 use LatamPMDevs\minerware\map\MapManager;
 use LatamPMDevs\minerware\Minerware;
 use LatamPMDevs\minerware\Settings;
 use pocketmine\player\Player;
-use RuntimeException;
 use function ceil;
 use function count;
 use function max;
@@ -60,7 +60,7 @@ final class Joiner {
 	public function requeue(Player $player) : JoinResult {
 		try {
 			$result = ArenaManager::getInstance()->place($player);
-		} catch (RuntimeException $e) {
+		} catch (ArenaCreationException $e) {
 			$this->plugin->getLogger()->error("Could not create an arena: " . $e->getMessage());
 			$result = JoinResult::ERROR;
 		}
@@ -90,7 +90,7 @@ final class Joiner {
 		}
 		try {
 			return $arenaManager->place($player, null, $map);
-		} catch (RuntimeException $e) {
+		} catch (ArenaCreationException $e) {
 			$this->plugin->getLogger()->error("Could not create an arena: " . $e->getMessage());
 			return JoinResult::ERROR;
 		}

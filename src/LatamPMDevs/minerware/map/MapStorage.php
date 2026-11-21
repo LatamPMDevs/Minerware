@@ -24,10 +24,10 @@ namespace LatamPMDevs\minerware\map;
 
 use InvalidArgumentException;
 use LatamPMDevs\minerware\map\world\MapTemplates;
+use LatamPMDevs\minerware\map\world\MapWorldException;
 use LatamPMDevs\minerware\Minerware;
 use pocketmine\utils\Config;
 use pocketmine\utils\SingletonTrait;
-use RuntimeException;
 use function basename;
 use function copy;
 use function file_exists;
@@ -86,14 +86,14 @@ final class MapStorage {
 				$map = Map::fromArray((new Config($file, Config::JSON))->getAll());
 				MapTemplates::getInstance()->load($map);
 				MapManager::getInstance()->add($map);
-			} catch (InvalidArgumentException | RuntimeException $e) {
+			} catch (InvalidArgumentException | MapWorldException $e) {
 				$logger->warning("Skipping map '" . basename($file) . "': " . $e->getMessage());
 			}
 		}
 	}
 
 	/**
-	 * @throws RuntimeException
+	 * @throws MapWorldException
 	 */
 	public function save(Map $map) : void {
 		MapTemplates::getInstance()->load($map);

@@ -29,7 +29,7 @@ use pocketmine\utils\SingletonTrait;
 use pocketmine\world\format\io\exception\CorruptedWorldException;
 use pocketmine\world\format\io\exception\UnsupportedWorldFormatException;
 use pocketmine\world\World;
-use RuntimeException;
+use pocketmine\world\WorldException;
 use ZipArchive;
 use function array_values;
 use function basename;
@@ -66,7 +66,7 @@ final class MapTemplates {
 	/**
 	 * Extracts the map backup (only when it changed) and opens it as the template of the map.
 	 *
-	 * @throws RuntimeException
+	 * @throws MapWorldException
 	 */
 	public function load(Map $map) : void {
 		$plugin = Minerware::getInstance();
@@ -78,12 +78,12 @@ final class MapTemplates {
 		$worldManager = $plugin->getServer()->getWorldManager();
 		$providers = $worldManager->getProviderManager()->getMatchingProviders($root);
 		if (count($providers) !== 1) {
-			throw new RuntimeException("Unknown or ambiguous world format");
+			throw new MapWorldException("Unknown or ambiguous world format");
 		}
 		try {
 			$provider = array_values($providers)[0]->fromPath($root, $plugin->getLogger());
 		} catch (CorruptedWorldException | UnsupportedWorldFormatException $e) {
-			throw new RuntimeException($e->getMessage(), 0, $e);
+			throw new MapWorldException($e->getMessage(), 0, $e);
 		}
 
 		$previous = $this->templates[$map->getName()] ?? null;
@@ -103,7 +103,7 @@ final class MapTemplates {
 	}
 
 	/**
-	 * @throws RuntimeException
+	 * @throws MapWorldException
 	 */
 	public function createInstance(Map $map, string $uniqueId) : World {
 		$plugin = Minerware::getInstance();
@@ -112,17 +112,19 @@ final class MapTemplates {
 		$path = $this->getWorldsPath() . $folder;
 
 		if (!is_dir($path) && !mkdir($path)) {
-			throw new RuntimeException("Could not create the folder of world '$folder'");
+			throw new MapWorldException("Could not create the folder of world '$folder'");
 		}
 		file_put_contents($path . DIRECTORY_SEPARATOR . self::INSTANCE_MARKER, $map->getName());
 
-		$world = null;
-		if ($worldManager->loadWorld($folder, true)) {
-			$world = $worldManager->getWorldByName($folder);
+		try {
+			$world = $worldManager->loadWorld($folder, true) ? $worldManager->getWorldByName($folder) : null;
+		} catch (WorldException $e) {
+			self::deleteInstanceFolder($path);
+			throw new MapWorldException("Could not load world '$folder': " . $e->getMessage(), 0, $e);
 		}
 		if ($world === null) {
 			self::deleteInstanceFolder($path);
-			throw new RuntimeException("Could not load world '$folder'");
+			throw new MapWorldException("Could not load world '$folder'");
 		}
 		$world->setAutoSave(false);
 		return $world;
@@ -176,11 +178,11 @@ final class MapTemplates {
 	}
 
 	/**
-	 * @throws RuntimeException
+	 * @throws MapWorldException
 	 */
 	private function extractIfStale(string $zipPath, string $dir) : void {
 		if (!is_file($zipPath)) {
-			throw new RuntimeException("Missing world backup");
+			throw new MapWorldException("Missing world backup");
 		}
 		$stamp = filesize($zipPath) . ":" . filemtime($zipPath);
 		$stampFile = $dir . DIRECTORY_SEPARATOR . self::STAMP_FILE;
@@ -190,25 +192,25 @@ final class MapTemplates {
 
 		$zip = new ZipArchive();
 		if ($zip->open($zipPath) !== true) {
-			throw new RuntimeException("Could not open the world backup");
+			throw new MapWorldException("Could not open the world backup");
 		}
 		$names = [];
 		for ($i = 0; $i < $zip->numFiles; $i++) {
 			$name = (string) $zip->getNameIndex($i);
 			if (str_starts_with($name, "/") || str_contains($name, "..") || str_contains($name, ":")) {
 				$zip->close();
-				throw new RuntimeException("The world backup has an unsafe entry '$name'");
+				throw new MapWorldException("The world backup has an unsafe entry '$name'");
 			}
 			$names[] = $name;
 		}
 		if (!is_dir($dir) && !mkdir($dir, 0777, true)) {
 			$zip->close();
-			throw new RuntimeException("Could not create the template folder");
+			throw new MapWorldException("Could not create the template folder");
 		}
 		$extracted = $zip->extractTo($dir, $names);
 		$zip->close();
 		if (!$extracted) {
-			throw new RuntimeException("Could not extract the world backup");
+			throw new MapWorldException("Could not extract the world backup");
 		}
 		file_put_contents($stampFile, $stamp);
 	}
