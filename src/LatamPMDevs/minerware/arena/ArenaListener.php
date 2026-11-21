@@ -29,7 +29,6 @@ use pocketmine\event\inventory\InventoryTransactionEvent;
 use pocketmine\event\Listener;
 use pocketmine\event\player\PlayerDropItemEvent;
 use pocketmine\event\player\PlayerExhaustEvent;
-use pocketmine\event\player\PlayerInteractEvent;
 use pocketmine\event\player\PlayerItemUseEvent;
 use pocketmine\event\player\PlayerQuitEvent;
 use pocketmine\item\Item;
@@ -77,11 +76,11 @@ final class ArenaListener implements Listener {
 		}
 	}
 
+	/**
+	 * The client repeats its interact packets while an item is held down, so items are used from this event
+	 * only: it is fired once per use, and what an item opens would otherwise be stacked.
+	 */
 	public function onItemUse(PlayerItemUseEvent $event) : void {
-		$this->useSpecialItem($event->getPlayer(), $event->getItem(), $event);
-	}
-
-	public function onInteract(PlayerInteractEvent $event) : void {
 		$this->useSpecialItem($event->getPlayer(), $event->getItem(), $event);
 	}
 
@@ -95,7 +94,7 @@ final class ArenaListener implements Listener {
 		}
 	}
 
-	private function useSpecialItem(Player $player, Item $item, PlayerItemUseEvent|PlayerInteractEvent $event) : void {
+	private function useSpecialItem(Player $player, Item $item, PlayerItemUseEvent $event) : void {
 		if (ArenaManager::getInstance()->getArenaOf($player) === null) {
 			return;
 		}
