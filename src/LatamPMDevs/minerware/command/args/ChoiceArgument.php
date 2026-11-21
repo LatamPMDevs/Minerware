@@ -24,21 +24,31 @@ namespace LatamPMDevs\minerware\command\args;
 
 use CortexPE\Commando\args\StringEnumArgument;
 use pocketmine\command\CommandSender;
+use function array_values;
+use function strtolower;
 
-final class LeaderboardActionArgument extends StringEnumArgument {
+/**
+ * One of a fixed list of words, such as the action of a command.
+ */
+final class ChoiceArgument extends StringEnumArgument {
 
-	public const TEXT = "text";
-	public const NPC = "npc";
-	public const REMOVE = "remove";
+	/** @var list<string> */
+	private array $choices;
 
-	protected const VALUES = [
-		"text" => self::TEXT,
-		"npc" => self::NPC,
-		"remove" => self::REMOVE
-	];
-
-	public function __construct(string $name) {
+	public function __construct(string $name, string ...$choices) {
+		$this->choices = array_values($choices);
 		parent::__construct($name, true);
+	}
+
+	/**
+	 * @return list<string>
+	 */
+	public function getEnumValues() : array {
+		return $this->choices;
+	}
+
+	public function getValue(string $string) : string {
+		return strtolower($string);
 	}
 
 	public function parse(string $argument, CommandSender $sender) : string {

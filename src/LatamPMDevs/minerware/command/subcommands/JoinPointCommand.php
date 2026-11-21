@@ -22,11 +22,11 @@ declare(strict_types=1);
 
 namespace LatamPMDevs\minerware\command\subcommands;
 
+use CortexPE\Commando\args\RawStringArgument;
 use CortexPE\Commando\BaseCommand;
 use CortexPE\Commando\BaseSubCommand;
 use CortexPE\Commando\constraint\InGameRequiredConstraint;
-use LatamPMDevs\minerware\command\args\JoinPointActionArgument;
-use LatamPMDevs\minerware\command\args\MapNameArgument;
+use LatamPMDevs\minerware\command\args\ChoiceArgument;
 use LatamPMDevs\minerware\entity\object\LobbyNpc;
 use LatamPMDevs\minerware\map\MapManager;
 use LatamPMDevs\minerware\Minerware;
@@ -38,6 +38,10 @@ use function is_string;
 
 final class JoinPointCommand extends BaseSubCommand {
 
+	private const NPC = "npc";
+	private const REMOVE = "remove";
+	private const LIST = "list";
+
 	public function __construct(private Minerware $plugin) {
 		parent::__construct("joinpoint", "Manage the NPCs and signs that join players.");
 		$this->setPermission("minerware.command.joinpoint");
@@ -45,8 +49,8 @@ final class JoinPointCommand extends BaseSubCommand {
 
 	protected function prepare() : void {
 		$this->addConstraint(new InGameRequiredConstraint($this));
-		$this->registerArgument(0, new JoinPointActionArgument("action"));
-		$this->registerArgument(1, new MapNameArgument());
+		$this->registerArgument(0, new ChoiceArgument("action", self::NPC, self::REMOVE, self::LIST));
+		$this->registerArgument(1, new RawStringArgument("map", true));
 	}
 
 	/**
@@ -56,7 +60,7 @@ final class JoinPointCommand extends BaseSubCommand {
 	public function onRun(CommandSender $sender, string $aliasUsed, array $args) : void {
 		$translator = $this->plugin->getTranslator();
 		switch ($args["action"] ?? null) {
-			case JoinPointActionArgument::NPC:
+			case self::NPC:
 				if (!$sender->hasPermission("minerware.joinpoint.create")) {
 					$sender->sendMessage($translator->translate($sender, "joinpoint.noPermission"));
 					return;
@@ -76,7 +80,7 @@ final class JoinPointCommand extends BaseSubCommand {
 				$sender->sendMessage($translator->translate($sender, "joinpoint.npc.created"));
 				break;
 
-			case JoinPointActionArgument::REMOVE:
+			case self::REMOVE:
 				if (!$sender->hasPermission("minerware.joinpoint.remove")) {
 					$sender->sendMessage($translator->translate($sender, "joinpoint.noPermission"));
 					return;
@@ -85,7 +89,7 @@ final class JoinPointCommand extends BaseSubCommand {
 				$sender->sendMessage($translator->translate($sender, "joinpoint.remove.armed"));
 				break;
 
-			case JoinPointActionArgument::LIST:
+			case self::LIST:
 				$npcs = 0;
 				foreach ($this->plugin->getServer()->getWorldManager()->getWorlds() as $world) {
 					foreach ($world->getEntities() as $entity) {

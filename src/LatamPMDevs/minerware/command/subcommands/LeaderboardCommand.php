@@ -26,7 +26,7 @@ use CortexPE\Commando\args\IntegerArgument;
 use CortexPE\Commando\BaseCommand;
 use CortexPE\Commando\BaseSubCommand;
 use CortexPE\Commando\constraint\InGameRequiredConstraint;
-use LatamPMDevs\minerware\command\args\LeaderboardActionArgument;
+use LatamPMDevs\minerware\command\args\ChoiceArgument;
 use LatamPMDevs\minerware\entity\object\LeaderboardEntity;
 use LatamPMDevs\minerware\entity\object\LeaderboardText;
 use LatamPMDevs\minerware\entity\object\TopPlayerNpc;
@@ -39,6 +39,10 @@ use function is_int;
 
 final class LeaderboardCommand extends BaseSubCommand {
 
+	private const TEXT = "text";
+	private const NPC = "npc";
+	private const REMOVE = "remove";
+
 	public function __construct(private Minerware $plugin) {
 		parent::__construct("leaderboard", "Manage the wins leaderboard and the top player NPCs.");
 		$this->setPermission("minerware.command.leaderboard");
@@ -46,7 +50,7 @@ final class LeaderboardCommand extends BaseSubCommand {
 
 	protected function prepare() : void {
 		$this->addConstraint(new InGameRequiredConstraint($this));
-		$this->registerArgument(0, new LeaderboardActionArgument("action"));
+		$this->registerArgument(0, new ChoiceArgument("action", self::TEXT, self::NPC, self::REMOVE));
 		$this->registerArgument(1, new IntegerArgument("rank", true));
 	}
 
@@ -59,12 +63,12 @@ final class LeaderboardCommand extends BaseSubCommand {
 		$location = $sender->getLocation();
 		$facing = Location::fromObject($location, $location->getWorld(), fmod($location->getYaw() + 180, 360), 0);
 		switch ($args["action"] ?? null) {
-			case LeaderboardActionArgument::TEXT:
+			case self::TEXT:
 				(new LeaderboardText($facing, LeaderboardEntity::invisibleSkin()))->spawnToAll();
 				$sender->sendMessage($translator->translate($sender, "leaderboard.created"));
 				break;
 
-			case LeaderboardActionArgument::NPC:
+			case self::NPC:
 				$rank = $args["rank"] ?? null;
 				if (!is_int($rank) || $rank < 1 || $rank > TopPlayerNpc::RANKS) {
 					$sender->sendMessage($translator->translate($sender, "leaderboard.rankInvalid", ["{%max}" => TopPlayerNpc::RANKS]));
@@ -74,7 +78,7 @@ final class LeaderboardCommand extends BaseSubCommand {
 				$sender->sendMessage($translator->translate($sender, "leaderboard.created"));
 				break;
 
-			case LeaderboardActionArgument::REMOVE:
+			case self::REMOVE:
 				$this->plugin->getJoinPointRemovals()->arm($sender);
 				$sender->sendMessage($translator->translate($sender, "leaderboard.remove.armed"));
 				break;

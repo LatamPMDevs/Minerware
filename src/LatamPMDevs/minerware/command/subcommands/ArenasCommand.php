@@ -22,13 +22,13 @@ declare(strict_types=1);
 
 namespace LatamPMDevs\minerware\command\subcommands;
 
+use CortexPE\Commando\args\RawStringArgument;
 use CortexPE\Commando\BaseCommand;
 use CortexPE\Commando\BaseSubCommand;
 use CortexPE\Commando\constraint\InGameRequiredConstraint;
 use LatamPMDevs\minerware\arena\ArenaManager;
 use LatamPMDevs\minerware\arena\phase\StartingPhase;
-use LatamPMDevs\minerware\command\args\ArenaActionArgument;
-use LatamPMDevs\minerware\command\args\WorldArgument;
+use LatamPMDevs\minerware\command\args\ChoiceArgument;
 use LatamPMDevs\minerware\form\ArenaAdminForm;
 use LatamPMDevs\minerware\map\MapRegisterer;
 use LatamPMDevs\minerware\Minerware;
@@ -39,6 +39,10 @@ use function is_string;
 
 final class ArenasCommand extends BaseSubCommand {
 
+	private const CREATE = "create";
+	private const START = "start";
+	private const ADMIN = "admin";
+
 	public function __construct(private Minerware $plugin) {
 		parent::__construct("arenas", "Manage all the minigame arenas.");
 		$this->setPermission("minerware.command.arenas");
@@ -46,8 +50,8 @@ final class ArenasCommand extends BaseSubCommand {
 
 	protected function prepare() : void {
 		$this->addConstraint(new InGameRequiredConstraint($this));
-		$this->registerArgument(0, new ArenaActionArgument("action"));
-		$this->registerArgument(1, new WorldArgument());
+		$this->registerArgument(0, new ChoiceArgument("action", self::CREATE, self::START, self::ADMIN));
+		$this->registerArgument(1, new RawStringArgument("world", true));
 	}
 
 	/**
@@ -60,7 +64,7 @@ final class ArenasCommand extends BaseSubCommand {
 			return;
 		}
 		switch ($args["action"]) {
-			case ArenaActionArgument::CREATE_ARENA:
+			case self::CREATE:
 				$worldName = $args["world"] ?? null;
 				if (!is_string($worldName) ||
 					!$this->plugin->getServer()->getWorldManager()->loadWorld($worldName, true) ||
@@ -77,11 +81,11 @@ final class ArenasCommand extends BaseSubCommand {
 				MapRegisterer::createRegisterer($sender, $world);
 			break;
 
-			case ArenaActionArgument::ADMIN_ARENAS:
+			case self::ADMIN:
 				(new ArenaAdminForm())->sendList($sender);
 			break;
 
-			case ArenaActionArgument::START_ARENA:
+			case self::START:
 				$arena = null;
 				foreach (ArenaManager::getInstance()->getArenas() as $a) {
 					if ($a->inGame($sender)) {
