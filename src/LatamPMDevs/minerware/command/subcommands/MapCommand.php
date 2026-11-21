@@ -27,7 +27,7 @@ use CortexPE\Commando\BaseCommand;
 use CortexPE\Commando\BaseSubCommand;
 use CortexPE\Commando\constraint\InGameRequiredConstraint;
 use LatamPMDevs\minerware\command\args\ChoiceArgument;
-use LatamPMDevs\minerware\map\MapRegisterer;
+use LatamPMDevs\minerware\map\MapEditor;
 use LatamPMDevs\minerware\Minerware;
 use pocketmine\command\CommandSender;
 use pocketmine\player\Player;
@@ -65,7 +65,7 @@ final class MapCommand extends BaseSubCommand {
 			]));
 			return;
 		}
-		MapRegisterer::createRegisterer($sender, $world);
+		MapEditor::start($sender, $world);
 	}
 
 	public function getParent() : BaseCommand {

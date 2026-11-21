@@ -22,7 +22,7 @@ declare(strict_types=1);
 
 namespace LatamPMDevs\minerware\entity\object;
 
-use LatamPMDevs\minerware\join\JoinStats;
+use LatamPMDevs\minerware\join\ArenaAvailability;
 use LatamPMDevs\minerware\Minerware;
 use pocketmine\event\entity\EntityDamageByEntityEvent;
 use pocketmine\event\entity\EntityDamageEvent;
@@ -33,9 +33,9 @@ use pocketmine\player\Player;
 /**
  * An NPC that joins whoever hits or clicks it.
  */
-final class LobbyNpc extends PerPlayerTagHuman {
+final class JoinNpc extends PerPlayerTagHuman {
 
-	public const SAVE_ID = "minerware:lobby_npc";
+	public const SAVE_ID = "minerware:join_npc";
 
 	private const TAG_MAP = "Map"; //TAG_String, only when set
 
@@ -45,7 +45,7 @@ final class LobbyNpc extends PerPlayerTagHuman {
 
 	private int $ticksSinceRefresh = 0;
 
-	private ?JoinStats $stats = null;
+	private ?ArenaAvailability $stats = null;
 
 	protected function initEntity(CompoundTag $nbt) : void {
 		parent::initEntity($nbt);
@@ -102,7 +102,7 @@ final class LobbyNpc extends PerPlayerTagHuman {
 
 	private function use(Player $player) : void {
 		$plugin = Minerware::getInstance();
-		if ($plugin->getJoinPointRemovals()->consume($player)) {
+		if ($plugin->getPendingRemovals()->consume($player)) {
 			$this->flagForDespawn();
 			$player->sendMessage($plugin->getTranslator()->translate($player, "npc.removed"));
 			return;
@@ -111,7 +111,7 @@ final class LobbyNpc extends PerPlayerTagHuman {
 	}
 
 	private function refreshNameTag() : void {
-		$this->stats = JoinStats::forMap($this->mapFilter);
+		$this->stats = ArenaAvailability::forMap($this->mapFilter);
 		$tag = $this->buildNameTag(null);
 		if ($tag !== $this->getNameTag()) {
 			$this->setNameTag($tag);
@@ -125,7 +125,7 @@ final class LobbyNpc extends PerPlayerTagHuman {
 
 	private function buildNameTag(?Player $viewer) : string {
 		$translator = Minerware::getInstance()->getTranslator();
-		$stats = $this->stats ??= JoinStats::forMap($this->mapFilter);
+		$stats = $this->stats ??= ArenaAvailability::forMap($this->mapFilter);
 		return $translator->translate($viewer, "npc.join.title") . "\n" .
 			$translator->translate($viewer, "status.playing", ["{%players}" => (string) $stats->players]) . "\n" .
 			$translator->translate($viewer, $stats->joinable ? "npc.join.joinable" : "status.full");

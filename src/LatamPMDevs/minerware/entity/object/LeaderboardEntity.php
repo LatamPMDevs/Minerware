@@ -101,7 +101,7 @@ abstract class LeaderboardEntity extends PerPlayerTagHuman {
 	private function use(Player $player) : void {
 		$plugin = Minerware::getInstance();
 		$translator = $plugin->getTranslator();
-		if ($plugin->getJoinPointRemovals()->consume($player)) {
+		if ($plugin->getPendingRemovals()->consume($player)) {
 			$this->flagForDespawn();
 			$player->sendMessage($translator->translate($player, "npc.removed"));
 			return;

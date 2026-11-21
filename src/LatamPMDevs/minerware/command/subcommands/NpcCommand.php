@@ -27,9 +27,9 @@ use CortexPE\Commando\BaseCommand;
 use CortexPE\Commando\BaseSubCommand;
 use CortexPE\Commando\constraint\InGameRequiredConstraint;
 use LatamPMDevs\minerware\command\args\ChoiceArgument;
+use LatamPMDevs\minerware\entity\object\JoinNpc;
 use LatamPMDevs\minerware\entity\object\LeaderboardEntity;
 use LatamPMDevs\minerware\entity\object\LeaderboardText;
-use LatamPMDevs\minerware\entity\object\LobbyNpc;
 use LatamPMDevs\minerware\entity\object\TopPlayerNpc;
 use LatamPMDevs\minerware\map\MapManager;
 use LatamPMDevs\minerware\Minerware;
@@ -75,7 +75,7 @@ final class NpcCommand extends BaseSubCommand {
 					$sender->sendMessage($translator->translate($sender, "join.mapNotFound"));
 					return;
 				}
-				(new LobbyNpc($facing, $sender->getSkin()))->setMapFilter($map?->getName())->spawnToAll();
+				(new JoinNpc($facing, $sender->getSkin()))->setMapFilter($map?->getName())->spawnToAll();
 				$sender->sendMessage($translator->translate($sender, "npc.join.created"));
 				break;
 
@@ -95,12 +95,12 @@ final class NpcCommand extends BaseSubCommand {
 				break;
 
 			case self::REMOVE:
-				$this->plugin->getJoinPointRemovals()->arm($sender);
+				$this->plugin->getPendingRemovals()->arm($sender);
 				$sender->sendMessage($translator->translate($sender, "npc.remove.armed"));
 				break;
 
 			case self::LIST:
-				$counts = [LobbyNpc::class => 0, TopPlayerNpc::class => 0, LeaderboardText::class => 0];
+				$counts = [JoinNpc::class => 0, TopPlayerNpc::class => 0, LeaderboardText::class => 0];
 				foreach ($this->plugin->getServer()->getWorldManager()->getWorlds() as $world) {
 					foreach ($world->getEntities() as $entity) {
 						if (isset($counts[$entity::class])) {
@@ -110,7 +110,7 @@ final class NpcCommand extends BaseSubCommand {
 				}
 				$sender->sendMessage($translator->translate($sender, "npc.list", [
 					"{%signs}" => $this->plugin->getJoinSigns()->count(),
-					"{%join}" => $counts[LobbyNpc::class],
+					"{%join}" => $counts[JoinNpc::class],
 					"{%top}" => $counts[TopPlayerNpc::class],
 					"{%boards}" => $counts[LeaderboardText::class]
 				]));

@@ -32,7 +32,7 @@ use pocketmine\event\Listener;
 use pocketmine\event\player\PlayerJoinEvent;
 use function time;
 
-final class EventListener implements Listener {
+final class PlayerDataListener implements Listener {
 
 	public function __construct(private DataManager $dataManager) {
 	}

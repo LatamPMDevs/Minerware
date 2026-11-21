@@ -20,15 +20,15 @@
 
 declare(strict_types=1);
 
-namespace LatamPMDevs\minerware\join;
+namespace LatamPMDevs\minerware\entity;
 
 use pocketmine\player\Player;
 use function microtime;
 
 /**
- * Players who asked to remove a join point or leaderboard: their next hit or click on one removes it.
+ * Players who asked to remove an NPC or the leaderboard: their next hit or click on one removes it.
  */
-final class JoinPointRemovals {
+final class PendingRemovals {
 
 	private const WINDOW = 10.0; //seconds
 

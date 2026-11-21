@@ -172,7 +172,7 @@ final class JoinSigns implements Listener {
 			}
 			$text = $sign->getFaceText(true);
 			$filter = JoinSignFormat::getMapFilter($text);
-			$stats[$filter ?? ""] ??= JoinStats::forMap($filter);
+			$stats[$filter ?? ""] ??= ArenaAvailability::forMap($filter);
 			$new = JoinSignFormat::withState(
 				$text,
 				$translator->translate(null, $stats[$filter ?? ""]->joinable ? "sign.joinable" : "status.full"),

@@ -43,7 +43,7 @@ use function strtolower;
 /**
  * The interactive map editor: one per player, driven by chat and a blaze rod.
  */
-final class MapRegisterer implements Listener {
+final class MapEditor implements Listener {
 
 	private const MODE_PLATFORM = "platform";
 	private const MODE_CAGES = "cages";
@@ -51,7 +51,7 @@ final class MapRegisterer implements Listener {
 	/** @var array<int, self> player id => their editor */
 	private static array $editors = [];
 
-	public static function createRegisterer(Player $player, World $world) : self {
+	public static function start(Player $player, World $world) : self {
 		(self::$editors[$player->getId()] ?? null)?->close();
 		return (self::$editors[$player->getId()] = new self($player, $world));
 	}

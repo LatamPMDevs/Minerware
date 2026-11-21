@@ -29,9 +29,9 @@ use function count;
 use function strtolower;
 
 /**
- * What a join point shows: how many are playing and whether a player could get in.
+ * How many are playing and whether a player could get in, as shown by a join sign or NPC.
  */
-final class JoinStats {
+final class ArenaAvailability {
 
 	public function __construct(
 		public readonly int $players,

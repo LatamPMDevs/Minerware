@@ -31,11 +31,11 @@ use LatamPMDevs\minerware\arena\ArenaListener;
 use LatamPMDevs\minerware\arena\ArenaManager;
 use LatamPMDevs\minerware\command\MinerwareCommand;
 use LatamPMDevs\minerware\database\DataManager;
+use LatamPMDevs\minerware\entity\object\JoinNpc;
 use LatamPMDevs\minerware\entity\object\LeaderboardText;
-use LatamPMDevs\minerware\entity\object\LobbyNpc;
 use LatamPMDevs\minerware\entity\object\TopPlayerNpc;
+use LatamPMDevs\minerware\entity\PendingRemovals;
 use LatamPMDevs\minerware\join\Joiner;
-use LatamPMDevs\minerware\join\JoinPointRemovals;
 use LatamPMDevs\minerware\join\JoinSigns;
 use LatamPMDevs\minerware\leaderboard\Leaderboard;
 use LatamPMDevs\minerware\leaderboard\LeaderboardListener;
@@ -64,7 +64,7 @@ final class Minerware extends PluginBase {
 
 	private Joiner $joiner;
 
-	private JoinPointRemovals $joinPointRemovals;
+	private PendingRemovals $pendingRemovals;
 
 	private JoinSigns $joinSigns;
 
@@ -81,15 +81,15 @@ final class Minerware extends PluginBase {
 		ArenaManager::getInstance();
 		$this->translator = new Translator($this);
 		$this->joiner = new Joiner($this);
-		$this->joinPointRemovals = new JoinPointRemovals();
+		$this->pendingRemovals = new PendingRemovals();
 		$this->joinSigns = new JoinSigns($this, $this->joiner);
 		$dataManager = DataManager::getInstance();
 		$this->leaderboard = new Leaderboard(static fn (Closure $onSuccess, Closure $onError) => $dataManager->getTopWins(Leaderboard::SIZE, $onSuccess, $onError));
 		# Saved with the world, so registered before any world loads.
 		EntityFactory::getInstance()->register(
-			LobbyNpc::class,
-			static fn (World $world, CompoundTag $nbt) : LobbyNpc => new LobbyNpc(EntityDataHelper::parseLocation($nbt, $world), Human::parseSkinNBT($nbt), $nbt),
-			[LobbyNpc::SAVE_ID]
+			JoinNpc::class,
+			static fn (World $world, CompoundTag $nbt) : JoinNpc => new JoinNpc(EntityDataHelper::parseLocation($nbt, $world), Human::parseSkinNBT($nbt), $nbt),
+			[JoinNpc::SAVE_ID]
 		);
 		EntityFactory::getInstance()->register(
 			LeaderboardText::class,
@@ -118,7 +118,7 @@ final class Minerware extends PluginBase {
 
 		$dataManager = DataManager::getInstance();
 		$dataManager->loadMaps();
-		$this->getServer()->getPluginManager()->registerEvents(new EventListener($dataManager), $this);
+		$this->getServer()->getPluginManager()->registerEvents(new PlayerDataListener($dataManager), $this);
 		$this->getServer()->getPluginManager()->registerEvents(new ArenaListener(), $this);
 		$this->getServer()->getPluginManager()->registerEvents(new LeaderboardListener($this), $this);
 		$this->joinSigns->enable();
@@ -147,8 +147,8 @@ final class Minerware extends PluginBase {
 		return $this->joiner;
 	}
 
-	public function getJoinPointRemovals() : JoinPointRemovals {
-		return $this->joinPointRemovals;
+	public function getPendingRemovals() : PendingRemovals {
+		return $this->pendingRemovals;
 	}
 
 	public function getJoinSigns() : JoinSigns {
