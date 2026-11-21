@@ -26,7 +26,7 @@ use CortexPE\Commando\BaseCommand;
 use CortexPE\Commando\BaseSubCommand;
 use CortexPE\Commando\constraint\InGameRequiredConstraint;
 use LatamPMDevs\minerware\command\args\LanguageArgument;
-use LatamPMDevs\minerware\database\DataManager;
+use LatamPMDevs\minerware\database\PlayerStorage;
 use LatamPMDevs\minerware\Minerware;
 use pocketmine\command\CommandSender;
 use pocketmine\player\Player;
@@ -71,7 +71,7 @@ final class LanguageCommand extends BaseSubCommand {
 
 		$translator = $this->plugin->getTranslator();
 		$translator->setPlayerLanguage($sender, $language);
-		DataManager::getInstance()->setPlayerLanguage($sender, $language->getLocale());
+		PlayerStorage::getInstance()->setPlayerLanguage($sender, $language->getLocale());
 		$sender->sendMessage($translator->translate(
 			$sender, "command.language.changed", [
 				"{%language}" => $language->getName()

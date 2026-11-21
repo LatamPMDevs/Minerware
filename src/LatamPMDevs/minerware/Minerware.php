@@ -30,15 +30,17 @@ use JackMD\ConfigUpdater\ConfigUpdater;
 use LatamPMDevs\minerware\arena\ArenaListener;
 use LatamPMDevs\minerware\arena\ArenaManager;
 use LatamPMDevs\minerware\command\MinerwareCommand;
-use LatamPMDevs\minerware\database\DataManager;
+use LatamPMDevs\minerware\database\PlayerStorage;
 use LatamPMDevs\minerware\entity\object\JoinNpc;
 use LatamPMDevs\minerware\entity\object\LeaderboardText;
 use LatamPMDevs\minerware\entity\object\TopPlayerNpc;
 use LatamPMDevs\minerware\entity\PendingRemovals;
 use LatamPMDevs\minerware\join\Joiner;
 use LatamPMDevs\minerware\join\JoinSigns;
+use LatamPMDevs\minerware\language\LanguageStore;
 use LatamPMDevs\minerware\leaderboard\Leaderboard;
 use LatamPMDevs\minerware\leaderboard\LeaderboardListener;
+use LatamPMDevs\minerware\map\MapStorage;
 use LatamPMDevs\minerware\map\world\MapTemplates;
 use LatamPMDevs\minerware\map\world\MapWorldProviderEntry;
 use pocketmine\entity\EntityDataHelper;
@@ -77,14 +79,16 @@ final class Minerware extends PluginBase {
 			$this->reloadConfig();
 		}
 
-		DataManager::getInstance();
+		$playerStorage = PlayerStorage::getInstance();
+		MapStorage::getInstance()->install();
+		$languageStore = new LanguageStore($this);
+		$languageStore->saveDefaults();
 		ArenaManager::getInstance();
 		$this->translator = new Translator($this);
 		$this->joiner = new Joiner($this);
 		$this->pendingRemovals = new PendingRemovals();
 		$this->joinSigns = new JoinSigns($this, $this->joiner);
-		$dataManager = DataManager::getInstance();
-		$this->leaderboard = new Leaderboard(static fn (Closure $onSuccess, Closure $onError) => $dataManager->getTopWins(Leaderboard::SIZE, $onSuccess, $onError));
+		$this->leaderboard = new Leaderboard(static fn (Closure $onSuccess, Closure $onError) => $playerStorage->getTopWins(Leaderboard::SIZE, $onSuccess, $onError));
 		# Saved with the world, so registered before any world loads.
 		EntityFactory::getInstance()->register(
 			JoinNpc::class,
@@ -101,7 +105,7 @@ final class Minerware extends PluginBase {
 			static fn (World $world, CompoundTag $nbt) : TopPlayerNpc => new TopPlayerNpc(EntityDataHelper::parseLocation($nbt, $world), Human::parseSkinNBT($nbt), $nbt),
 			[TopPlayerNpc::SAVE_ID]
 		);
-		DataManager::getInstance()->loadLanguages();
+		$languageStore->load($this->translator);
 		$this->getServer()->getCommandMap()->register("minerware", new MinerwareCommand($this));
 	}
 
@@ -116,9 +120,8 @@ final class Minerware extends PluginBase {
 		$this->getServer()->getWorldManager()->getProviderManager()->addProvider(new MapWorldProviderEntry(), "minerware");
 		MapTemplates::getInstance()->cleanupStaleInstances();
 
-		$dataManager = DataManager::getInstance();
-		$dataManager->loadMaps();
-		$this->getServer()->getPluginManager()->registerEvents(new PlayerDataListener($dataManager), $this);
+		MapStorage::getInstance()->loadAll();
+		$this->getServer()->getPluginManager()->registerEvents(new PlayerDataListener(PlayerStorage::getInstance()), $this);
 		$this->getServer()->getPluginManager()->registerEvents(new ArenaListener(), $this);
 		$this->getServer()->getPluginManager()->registerEvents(new LeaderboardListener($this), $this);
 		$this->joinSigns->enable();
@@ -136,7 +139,7 @@ final class Minerware extends PluginBase {
 		$this->getConfig()->set("default-language", $this->translator->getDefaultLanguage()->getLocale());
 		$this->saveConfig();
 		MapTemplates::getInstance()->closeAll();
-		DataManager::getInstance()->closeDatabase();
+		PlayerStorage::getInstance()->close();
 	}
 
 	public function getPrefix() : string {

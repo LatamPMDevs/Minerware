@@ -23,7 +23,6 @@ declare(strict_types=1);
 namespace LatamPMDevs\minerware\map;
 
 use InvalidArgumentException;
-use LatamPMDevs\minerware\database\DataManager;
 use LatamPMDevs\minerware\item\SpecialItems;
 use LatamPMDevs\minerware\Minerware;
 use LatamPMDevs\minerware\utils\Utils;
@@ -196,13 +195,13 @@ final class MapEditor implements Listener {
 		$this->plugin->getServer()->getWorldManager()->unloadWorld($this->world);
 		if (!Utils::setZip(
 			$this->plugin->getServer()->getDataPath() . "worlds" . DIRECTORY_SEPARATOR . $folderName,
-			DataManager::getInstance()->getMapBackupPath($map->getName())
+			MapStorage::getInstance()->getBackupPath($map->getName())
 		)) {
 			$this->tell("configurator.mode.error.zip");
 			return;
 		}
 		try {
-			DataManager::getInstance()->saveMap($map);
+			MapStorage::getInstance()->save($map);
 		} catch (RuntimeException $e) {
 			$this->player->sendMessage("§c" . $e->getMessage());
 			return;

@@ -23,7 +23,7 @@ declare(strict_types=1);
 namespace LatamPMDevs\minerware;
 
 use LatamPMDevs\minerware\arena\microgame\Level;
-use LatamPMDevs\minerware\database\DataManager;
+use LatamPMDevs\minerware\database\PlayerStorage;
 use LatamPMDevs\minerware\event\arena\ArenaEndEvent;
 use LatamPMDevs\minerware\event\arena\microgame\MicrogameEndEvent;
 use LatamPMDevs\minerware\event\arena\microgame\PlayerWinMicrogameEvent;
@@ -34,7 +34,7 @@ use function time;
 
 final class PlayerDataListener implements Listener {
 
-	public function __construct(private DataManager $dataManager) {
+	public function __construct(private PlayerStorage $storage) {
 	}
 
 	/**
@@ -43,7 +43,7 @@ final class PlayerDataListener implements Listener {
 	public function onPlayerJoin(PlayerJoinEvent $event) : void {
 		$player = $event->getPlayer();
 		Minerware::getInstance()->getLogger()->debug($player->getName() . " is " . $player->getUniqueId()->toString() . " (xuid '" . $player->getXuid() . "')");
-		$this->dataManager->getPlayerLanguage($player, function (?string $locale) use ($player) : void {
+		$this->storage->getPlayerLanguage($player, function (?string $locale) use ($player) : void {
 			if ($locale === null || !$player->isConnected()) {
 				return;
 			}
@@ -65,9 +65,9 @@ final class PlayerDataListener implements Listener {
 		$arena = $event->getArena();
 
 		foreach ($arena->getPlayers() as $player) {
-			$this->dataManager->addGamesPlayed($player, 1);
+			$this->storage->addGamesPlayed($player, 1);
 			if ($arena->getPodium()->isWinner($player)) {
-				$this->dataManager->addWins($player, 1, Minerware::getInstance()->getLeaderboard()->refresh(...));
+				$this->storage->addWins($player, 1, Minerware::getInstance()->getLeaderboard()->refresh(...));
 			}
 		}
 	}
@@ -77,7 +77,7 @@ final class PlayerDataListener implements Listener {
 	 */
 	public function onMicrogameEnd(MicrogameEndEvent $event) : void {
 		foreach ($event->getArena()->getPlayers() as $player) {
-			$this->dataManager->addMicrogamesPlayed($player, 1);
+			$this->storage->addMicrogamesPlayed($player, 1);
 		}
 	}
 
@@ -86,9 +86,9 @@ final class PlayerDataListener implements Listener {
 	 */
 	public function onPlayerWinMicrogame(PlayerWinMicrogameEvent $event) : void {
 		if ($event->getMicrogame()->getLevel() === Level::BOSS) {
-			$this->dataManager->addBossgamesWon($event->getPlayer(), 1);
+			$this->storage->addBossgamesWon($event->getPlayer(), 1);
 		} else {
-			$this->dataManager->addMicrogamesWon($event->getPlayer(), 1);
+			$this->storage->addMicrogamesWon($event->getPlayer(), 1);
 		}
 	}
 
@@ -98,7 +98,7 @@ final class PlayerDataListener implements Listener {
 	public function onPlayerQuitArena(PlayerQuitArenaEvent $event) : void {
 		$startTime = $event->getArena()->getStartTime();
 		if ($startTime !== null) {
-			$this->dataManager->addTimePlayed($event->getPlayer(), time() - $startTime);
+			$this->storage->addTimePlayed($event->getPlayer(), time() - $startTime);
 		}
 	}
 }

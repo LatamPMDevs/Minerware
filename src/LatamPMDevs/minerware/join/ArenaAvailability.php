@@ -23,8 +23,8 @@ declare(strict_types=1);
 namespace LatamPMDevs\minerware\join;
 
 use LatamPMDevs\minerware\arena\ArenaManager;
-use LatamPMDevs\minerware\database\DataManager;
 use LatamPMDevs\minerware\map\MapManager;
+use LatamPMDevs\minerware\Settings;
 use function count;
 use function strtolower;
 
@@ -57,7 +57,7 @@ final class ArenaAvailability {
 				$room = true;
 			}
 		}
-		$canCreate = count($arenaManager->getArenas()) < DataManager::getInstance()->getMaxRuntimeArenas();
+		$canCreate = count($arenaManager->getArenas()) < Settings::getInstance()->getMaxRuntimeArenas();
 		return new self($players, $room || $canCreate);
 	}
 }

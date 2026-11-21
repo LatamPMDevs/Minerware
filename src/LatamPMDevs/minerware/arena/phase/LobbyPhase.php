@@ -24,7 +24,7 @@ namespace LatamPMDevs\minerware\arena\phase;
 
 use Closure;
 use LatamPMDevs\minerware\arena\Arena;
-use LatamPMDevs\minerware\database\DataManager;
+use LatamPMDevs\minerware\Settings;
 use pocketmine\player\Player;
 use function count;
 
@@ -41,7 +41,7 @@ abstract class LobbyPhase extends ArenaPhase {
 		$translator = $arena->getPlugin()->getTranslator();
 		$map = $arena->getMap()->getName();
 		$players = count($arena->getPlayers());
-		$serverIp = DataManager::getInstance()->getServerIp();
+		$serverIp = Settings::getInstance()->getServerIp();
 		return static fn (Player $player) : array => [
 			"§5" . $translator->translate($player, "text.map") . ":",
 			"§f" . $map,

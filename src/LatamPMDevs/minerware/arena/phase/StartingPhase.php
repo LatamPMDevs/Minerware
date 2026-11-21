@@ -23,7 +23,7 @@ declare(strict_types=1);
 namespace LatamPMDevs\minerware\arena\phase;
 
 use LatamPMDevs\minerware\arena\Arena;
-use LatamPMDevs\minerware\database\DataManager;
+use LatamPMDevs\minerware\Settings;
 use pocketmine\utils\SingletonTrait;
 use function count;
 
@@ -37,7 +37,7 @@ final class StartingPhase extends LobbyPhase {
 	}
 
 	public function getDuration() : int {
-		return DataManager::getInstance()->getArenaStartingTime();
+		return Settings::getInstance()->getArenaStartingTime();
 	}
 
 	public function tick(Arena $arena) : void {

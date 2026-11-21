@@ -23,9 +23,9 @@ declare(strict_types=1);
 namespace LatamPMDevs\minerware\join;
 
 use LatamPMDevs\minerware\arena\ArenaManager;
-use LatamPMDevs\minerware\database\DataManager;
 use LatamPMDevs\minerware\map\MapManager;
 use LatamPMDevs\minerware\Minerware;
+use LatamPMDevs\minerware\Settings;
 use pocketmine\player\Player;
 use RuntimeException;
 use function ceil;
@@ -99,7 +99,7 @@ final class Joiner {
 	}
 
 	private function getCooldownLeft(Player $player) : float {
-		$cooldown = DataManager::getInstance()->getJoinCooldown();
+		$cooldown = Settings::getInstance()->getJoinCooldown();
 		$now = microtime(true);
 		if (count($this->lastAttempts) > self::PRUNE_THRESHOLD) {
 			foreach ($this->lastAttempts as $id => $time) {

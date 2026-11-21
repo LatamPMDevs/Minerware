@@ -17,7 +17,7 @@ PocketMine-MP 5 plugin (PHP 8.1+, API 5.0.0): **Minerware**, a CubeCraft-style m
 - Broken invariants throw `AssumptionFailedError`. Catch specific exceptions; the one broad `catch` is `Arena::runGuarded()`.
 - Leave a `TODO` instead of speculative code; delete what a change orphans.
 - Docs stay short.
-- Singletons (`SingletonTrait`): `Minerware`, `DataManager`, `ArenaManager`, `MicrogameManager`, `MapManager`, `MapTemplates`.
+- Singletons (`SingletonTrait`): `Minerware`, `PlayerStorage`, `MapStorage`, `Settings`, `ArenaManager`, `MicrogameManager`, `MapManager`, `MapTemplates`.
 
 ## How it runs
 
@@ -54,5 +54,5 @@ All entries go through `Joiner::join()` (permission, already in arena, `join-coo
 - `MapEditor`: per-player map editor (chat `setplatform`, `setcages`, `setspawn`, `done`, driven by the `SpecialItems` rod). Maps live in `database/maps/*.json` (`MapData` models, strict JsonMapper) with their zip in `database/backups/`. `resources/maps/<Name>.json` + `.zip` are installed on the first run, never over existing files.
 - Leaderboard: `Leaderboard` caches the top wins from an async query (on start, every minute, and after each win); `LeaderboardText` and `TopPlayerNpc` (a `Human`, so its skin is saved with it) only read the cache. `LeaderboardListener` gives an NPC the skin of its player when they join or change it.
 - Stats: libasynql (`resources/database/*.sql`), keyed by the player's UUID (their name is only stored for display and `/minerware stats <name>`), written from `PlayerDataListener` on arena and microgame events. There are no migrations: delete a database made by an older build.
-- Text: `resources/languages/*.ini` through `Translator`. Locales Minecraft lacks (`vi_VN`) are skipped with a warning.
-- Config: `resources/config.yml`, versioned by ConfigUpdater (`CONFIG_VERSION = 2`).
+- Text: `resources/languages/*.ini` through `Translator`; each player's choice (`/minerware language`) is saved in the database.
+- Config: `resources/config.yml`, versioned by ConfigUpdater (`CONFIG_VERSION = 2`), read through `Settings`. `LanguageStore` loads the language files, `MapStorage` the maps, `PlayerStorage` the database.

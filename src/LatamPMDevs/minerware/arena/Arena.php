@@ -31,7 +31,6 @@ use LatamPMDevs\minerware\arena\phase\EndingPhase;
 use LatamPMDevs\minerware\arena\phase\InbetweenPhase;
 use LatamPMDevs\minerware\arena\phase\StartingPhase;
 use LatamPMDevs\minerware\arena\phase\WaitingPhase;
-use LatamPMDevs\minerware\database\DataManager;
 use LatamPMDevs\minerware\event\arena\ArenaChangePhaseEvent;
 use LatamPMDevs\minerware\event\arena\ArenaCreationEvent;
 use LatamPMDevs\minerware\event\arena\ArenaEndEvent;
@@ -42,6 +41,7 @@ use LatamPMDevs\minerware\map\Map;
 use LatamPMDevs\minerware\map\MapWorldGenerator;
 use LatamPMDevs\minerware\map\world\MapTemplates;
 use LatamPMDevs\minerware\Minerware;
+use LatamPMDevs\minerware\Settings;
 use LatamPMDevs\minerware\utils\PointHolder;
 use LatamPMDevs\minerware\utils\Utils;
 
@@ -123,7 +123,7 @@ final class Arena {
 		$this->podium = new Podium();
 		$this->scoreboard = new ScoreboardRenderer();
 		$this->world = MapWorldGenerator::generate($this->map, $this->id);
-		$this->minPlayers = DataManager::getInstance()->getMinimumStartingPlayers();
+		$this->minPlayers = Settings::getInstance()->getMinimumStartingPlayers();
 		$this->phase = WaitingPhase::getInstance();
 		$this->pointHolder = new PointHolder();
 		$this->walls = new ArenaWalls($this->map, $this->world, $this->gate);

@@ -25,7 +25,7 @@ namespace LatamPMDevs\minerware\arena\phase;
 use Closure;
 use LatamPMDevs\minerware\arena\Arena;
 use LatamPMDevs\minerware\arena\microgame\Level;
-use LatamPMDevs\minerware\database\DataManager;
+use LatamPMDevs\minerware\Settings;
 use pocketmine\player\Player;
 
 /**
@@ -45,7 +45,7 @@ abstract class PlayingPhase extends ArenaPhase {
 		$pointHolder = $arena->getPointHolder();
 		$scores = $pointHolder->getOrderedByHigherScore();
 		$players = $arena->getPlayers();
-		$serverIp = DataManager::getInstance()->getServerIp();
+		$serverIp = Settings::getInstance()->getServerIp();
 		$queue = $arena->getQueue();
 		$isBoss = $arena->getCurrentMicrogame()?->getLevel() === Level::BOSS;
 		$microgameLine = $this->getMicrogameLine($arena);

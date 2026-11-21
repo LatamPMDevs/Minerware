@@ -22,8 +22,8 @@ declare(strict_types=1);
 
 namespace LatamPMDevs\minerware\map\world;
 
-use LatamPMDevs\minerware\database\DataManager;
 use LatamPMDevs\minerware\map\Map;
+use LatamPMDevs\minerware\map\MapStorage;
 use LatamPMDevs\minerware\Minerware;
 use pocketmine\utils\SingletonTrait;
 use pocketmine\world\format\io\exception\CorruptedWorldException;
@@ -70,7 +70,7 @@ final class MapTemplates {
 	 */
 	public function load(Map $map) : void {
 		$plugin = Minerware::getInstance();
-		$zip = DataManager::getInstance()->getMapBackupPath($map->getName());
+		$zip = MapStorage::getInstance()->getBackupPath($map->getName());
 		$dir = $plugin->getDataFolder() . "database" . DIRECTORY_SEPARATOR . "templates" . DIRECTORY_SEPARATOR . $map->getName();
 		$this->extractIfStale($zip, $dir);
 		$root = self::findWorldRoot($dir);

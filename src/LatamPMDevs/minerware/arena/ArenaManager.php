@@ -22,10 +22,10 @@ declare(strict_types=1);
 
 namespace LatamPMDevs\minerware\arena;
 
-use LatamPMDevs\minerware\database\DataManager;
 use LatamPMDevs\minerware\join\JoinResult;
 use LatamPMDevs\minerware\map\Map;
 use LatamPMDevs\minerware\map\MapManager;
+use LatamPMDevs\minerware\Settings;
 use pocketmine\player\Player;
 use pocketmine\utils\SingletonTrait;
 use RuntimeException;
@@ -77,7 +77,7 @@ final class ArenaManager {
 		if ($fullest !== null) {
 			return $fullest;
 		}
-		if (count($this->arenas) >= DataManager::getInstance()->getMaxRuntimeArenas()) {
+		if (count($this->arenas) >= Settings::getInstance()->getMaxRuntimeArenas()) {
 			return null;
 		}
 		return $this->createArena($map);

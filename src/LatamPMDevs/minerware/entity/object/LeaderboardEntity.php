@@ -22,8 +22,8 @@ declare(strict_types=1);
 
 namespace LatamPMDevs\minerware\entity\object;
 
-use LatamPMDevs\minerware\database\DataManager;
 use LatamPMDevs\minerware\database\PlayerData;
+use LatamPMDevs\minerware\database\PlayerStorage;
 use LatamPMDevs\minerware\leaderboard\Leaderboard;
 use LatamPMDevs\minerware\Minerware;
 use pocketmine\entity\Skin;
@@ -106,7 +106,7 @@ abstract class LeaderboardEntity extends PerPlayerTagHuman {
 			$player->sendMessage($translator->translate($player, "npc.removed"));
 			return;
 		}
-		DataManager::getInstance()->getPlayerData($player, static function (?PlayerData $data) use ($player, $translator) : void {
+		PlayerStorage::getInstance()->getPlayerData($player, static function (?PlayerData $data) use ($player, $translator) : void {
 			if ($player->isConnected()) {
 				$player->sendMessage($translator->translate($player, "leaderboard.yourWins", ["{%wins}" => $data?->getWins() ?? 0]));
 			}

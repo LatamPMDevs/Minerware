@@ -25,8 +25,8 @@ namespace LatamPMDevs\minerware\command\subcommands;
 use CortexPE\Commando\args\RawStringArgument;
 use CortexPE\Commando\BaseCommand;
 use CortexPE\Commando\BaseSubCommand;
-use LatamPMDevs\minerware\database\DataManager;
 use LatamPMDevs\minerware\database\PlayerData;
+use LatamPMDevs\minerware\database\PlayerStorage;
 use LatamPMDevs\minerware\form\StatisticsView;
 use LatamPMDevs\minerware\Minerware;
 use pocketmine\command\CommandSender;
@@ -68,14 +68,14 @@ final class StatisticsCommand extends BaseSubCommand {
 			(new StatisticsView())->show($sender, $playerdata);
 		};
 		$onError = function (SqlError $error) use ($sender, $translator) : void {
-			DataManager::getInstance()->onError->__invoke($error);
+			PlayerStorage::getInstance()->onError->__invoke($error);
 			$sender->sendMessage($translator->translate($sender, "command.statistics.error"));
 		};
 		# Someone who never played has no record; only show zeros for yourself.
 		if ($sender instanceof Player && strcasecmp($sender->getName(), $user) === 0) {
-			DataManager::getInstance()->getPlayerData($sender, $onSuccess, $onError, true);
+			PlayerStorage::getInstance()->getPlayerData($sender, $onSuccess, $onError, true);
 		} else {
-			DataManager::getInstance()->getPlayerDataByName($user, $onSuccess, $onError);
+			PlayerStorage::getInstance()->getPlayerDataByName($user, $onSuccess, $onError);
 		}
 	}
 
