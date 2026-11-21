@@ -257,12 +257,20 @@ final class Arena {
 		return true;
 	}
 
-	public function quit(Player $player) : void {
+	/**
+	 * Lets the player go without moving or telling anyone: they already are in another arena.
+	 */
+	public function release(Player $player) : void {
 		unset($this->players[$player->getId()]);
 		ArenaManager::getInstance()->unbindPlayer($player, $this);
 		$this->winnersCage->removePlayer($player);
 		$this->losersCage->removePlayer($player);
 		$this->pointHolder->removePlayer($player);
+		(new PlayerQuitArenaEvent($player, $this))->call();
+	}
+
+	public function quit(Player $player) : void {
+		$this->release($player);
 		if ($player->isConnected()) {
 			ScoreFactory::removeObjective($player, true);
 		}
@@ -274,7 +282,6 @@ final class Arena {
 				]
 			));
 		}
-		(new PlayerQuitArenaEvent($player, $this))->call();
 		if (count($this->players) === 0 && !$this->phase instanceof EndingPhase) {
 			# Nobody is left: let the ENDING countdown tear the arena down.
 			if ($this->currentMicrogame instanceof Listener) {

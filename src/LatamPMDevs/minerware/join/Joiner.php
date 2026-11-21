@@ -57,8 +57,15 @@ final class Joiner {
 	/**
 	 * Puts the players of a game that ended in a new arena. They already asked to play, so there is no permission or cooldown.
 	 */
-	public function requeue(Player $player) : void {
-		$this->notify($player, ArenaManager::getInstance()->place($player));
+	public function requeue(Player $player) : JoinResult {
+		try {
+			$result = ArenaManager::getInstance()->place($player);
+		} catch (RuntimeException $e) {
+			$this->plugin->getLogger()->error("Could not create an arena: " . $e->getMessage());
+			$result = JoinResult::ERROR;
+		}
+		$this->notify($player, $result);
+		return $result;
 	}
 
 	private function attempt(Player $player, ?string $mapName) : JoinResult {

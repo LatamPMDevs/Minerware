@@ -23,6 +23,7 @@ declare(strict_types=1);
 namespace LatamPMDevs\minerware\arena\phase;
 
 use LatamPMDevs\minerware\arena\Arena;
+use LatamPMDevs\minerware\join\JoinResult;
 use pocketmine\utils\SingletonTrait;
 
 final class EndingPhase extends ArenaPhase {
@@ -45,7 +46,11 @@ final class EndingPhase extends ArenaPhase {
 		}
 		$plugin = $arena->getPlugin();
 		foreach ($arena->getPlayers() as $player) {
-			$plugin->getJoiner()->requeue($player);
+			if ($plugin->getJoiner()->requeue($player) === JoinResult::JOINED) {
+				$arena->release($player);
+			} else {
+				$arena->kick($player);
+			}
 		}
 		$arena->close();
 	}
