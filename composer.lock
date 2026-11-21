@@ -71,12 +71,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/axolotl-plugin-orphanage/ScoreFactory.git",
-                "reference": "64258030736496364dfca8554e13183d62644057"
+                "reference": "4238c7c4b36e4a1743d4c88d275229b7534d1ff0"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/axolotl-plugin-orphanage/ScoreFactory/zipball/64258030736496364dfca8554e13183d62644057",
-                "reference": "64258030736496364dfca8554e13183d62644057",
+                "url": "https://api.github.com/repos/axolotl-plugin-orphanage/ScoreFactory/zipball/4238c7c4b36e4a1743d4c88d275229b7534d1ff0",
+                "reference": "4238c7c4b36e4a1743d4c88d275229b7534d1ff0",
                 "shasum": ""
             },
             "require": {
@@ -112,9 +112,9 @@
             ],
             "description": "Simple library for making scoreboards in PocketMine-MP",
             "support": {
-                "source": "https://github.com/axolotl-plugin-orphanage/ScoreFactory/tree/master"
+                "source": "https://github.com/axolotl-plugin-orphanage/ScoreFactory/tree/3.3.1"
             },
-            "time": "2026-08-23T22:52:26+00:00"
+            "time": "2026-11-21T06:15:07+00:00"
         },
         {
             "name": "brick/math",
