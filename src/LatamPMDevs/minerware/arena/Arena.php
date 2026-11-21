@@ -22,7 +22,6 @@ declare(strict_types=1);
 
 namespace LatamPMDevs\minerware\arena;
 
-use Closure;
 use InvalidArgumentException;
 use jackmd\scorefactory\ScoreFactory;
 use LatamPMDevs\minerware\arena\microgame\Microgame;
@@ -53,11 +52,9 @@ use pocketmine\event\HandlerListManager;
 use pocketmine\event\Listener;
 use pocketmine\player\GameMode;
 use pocketmine\player\Player;
-use pocketmine\scheduler\CancelTaskException;
 use pocketmine\utils\AssumptionFailedError;
 use pocketmine\world\Position;
 use pocketmine\world\World;
-use Throwable;
 use function array_rand;
 use function count;
 use function implode;
@@ -150,13 +147,11 @@ final class Arena {
 		if ($this->closed) {
 			return;
 		}
-		$this->runGuarded(function () : void {
-			$this->gate->settleStuck(self::BUILD_TIMEOUT);
-			$this->phase->tick($this);
-			if (!$this->closed) {
-				$this->scoreboard->update($this);
-			}
-		});
+		$this->gate->settleStuck(self::BUILD_TIMEOUT);
+		$this->phase->tick($this);
+		if (!$this->closed) {
+			$this->scoreboard->update($this);
+		}
 	}
 
 	/**
@@ -167,7 +162,7 @@ final class Arena {
 		if ($this->closed || $microgame === null || !$microgame->isRunning() || $this->isBuildingStage()) {
 			return;
 		}
-		$this->runGuarded($microgame->tick(...));
+		$microgame->tick();
 	}
 
 	public function getId() : string {
@@ -373,23 +368,6 @@ final class Arena {
 
 	public function isClosed() : bool {
 		return $this->closed;
-	}
-
-	/**
-	 * Runs one step of the arena (a tick).
-	 */
-	public function runGuarded(Closure $step) : bool {
-		try {
-			$step();
-			return true;
-		} catch (CancelTaskException $e) {
-			throw $e;
-		} catch (Throwable $e) {
-			$this->plugin->getLogger()->logException($e);
-			$this->sendMessage($this->plugin->getTranslator()->translate(null, "game.arena.crashed"));
-			$this->close();
-			return false;
-		}
 	}
 
 	/**

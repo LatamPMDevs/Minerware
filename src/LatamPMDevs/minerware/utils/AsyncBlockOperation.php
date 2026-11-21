@@ -29,12 +29,12 @@ use pocketmine\block\tile\Tile;
 use pocketmine\scheduler\AsyncTask;
 use pocketmine\Server;
 use pocketmine\utils\AssumptionFailedError;
+use pocketmine\utils\BinaryDataException;
 use pocketmine\world\format\Chunk;
 use pocketmine\world\format\io\FastChunkSerializer;
 use pocketmine\world\Position;
 use pocketmine\world\SimpleChunkManager;
 use pocketmine\world\World;
-use Throwable;
 use function igbinary_serialize;
 use function igbinary_unserialize;
 use function is_array;
@@ -226,7 +226,15 @@ final class AsyncBlockOperation extends AsyncTask {
 	public function onCompletion() : void {
 		$undo = null;
 		try {
-			$undo = $this->swapIntoWorld();
+			$world = Server::getInstance()->getWorldManager()->getWorld($this->worldId);
+			if ($world !== null) {
+				# Wrapped before the swap: it reflects what the worker applied and
+				# stays valid whatever happens to the swap below.
+				$undo = Selection::fromRawStates($world, self::ints(self::unpack($this->undoStates)));
+				$this->swapIntoWorld($world);
+			}
+		} catch (BlockSwapException $exception) {
+			Server::getInstance()->getLogger()->critical("AsyncBlockOperation: " . $exception->getMessage());
 		} finally {
 			# The completion callback drives the caller's build accounting
 			# ({@see LatamPMDevs\minerware\arena\StageGate::settled}):
@@ -245,30 +253,23 @@ final class AsyncBlockOperation extends AsyncTask {
 
 	/**
 	 * Swaps the worker's modified chunks into the live world and recreates the tiles for placed tile-blocks.
+	 *
+	 * @throws BlockSwapException
 	 */
-	private function swapIntoWorld() : ?Selection {
-		$world = Server::getInstance()->getWorldManager()->getWorld($this->worldId);
-		if ($world === null) {
-			return null;
-		}
-
-		# Wrapped before the swap: it reflects what the worker applied and
-		# stays valid whatever happens to the swap below.
-		$undo = Selection::fromRawStates($world, self::ints(self::unpack($this->undoStates)));
-
-		try {
-			foreach ($this->getSerializedChunks() as $chunkHash => $serialized) {
-				World::getXZ($chunkHash, $chunkX, $chunkZ);
+	private function swapIntoWorld(World $world) : void {
+		foreach ($this->getSerializedChunks() as $chunkHash => $serialized) {
+			World::getXZ($chunkHash, $chunkX, $chunkZ);
+			try {
 				$world->setChunk($chunkX, $chunkZ, FastChunkSerializer::deserializeTerrain($serialized));
+			} catch (InvalidArgumentException | BinaryDataException $exception) {
+				throw new BlockSwapException("Could not swap the chunk $chunkX $chunkZ of world " . $this->worldId . ": " . $exception->getMessage(), 0, $exception);
 			}
-			$this->recreateTiles($world, $this->getStatesByChunk());
-		} catch (Throwable $exception) {
-			Server::getInstance()->getLogger()->critical(
-				"AsyncBlockOperation: chunk swap failed for world " . $this->worldId . ": " . $exception::class . ": " . $exception->getMessage()
-			);
 		}
-
-		return $undo;
+		try {
+			$this->recreateTiles($world, $this->getStatesByChunk());
+		} catch (InvalidArgumentException $exception) {
+			throw new BlockSwapException("Could not recreate the tiles of world " . $this->worldId . ": " . $exception->getMessage(), 0, $exception);
+		}
 	}
 
 	/**
