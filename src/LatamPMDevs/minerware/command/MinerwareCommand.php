@@ -30,6 +30,7 @@ use LatamPMDevs\minerware\command\subcommands\HelpCommand;
 use LatamPMDevs\minerware\command\subcommands\JoinCommand;
 use LatamPMDevs\minerware\command\subcommands\JoinPointCommand;
 use LatamPMDevs\minerware\command\subcommands\LanguageCommand;
+use LatamPMDevs\minerware\command\subcommands\LeaderboardCommand;
 use LatamPMDevs\minerware\command\subcommands\StatisticsCommand;
 use LatamPMDevs\minerware\Minerware;
 use pocketmine\command\CommandSender;
@@ -50,6 +51,7 @@ final class MinerwareCommand extends BaseCommand {
 		$this->registerSubcommand(new JoinCommand($this->plugin));
 		$this->registerSubcommand(new JoinPointCommand($this->plugin));
 		$this->registerSubcommand(new LanguageCommand($this->plugin));
+		$this->registerSubcommand(new LeaderboardCommand($this->plugin));
 		$this->registerSubcommand(new StatisticsCommand($this->plugin));
 	}
 

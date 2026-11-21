@@ -67,7 +67,7 @@ final class EventListener implements Listener {
 		foreach ($arena->getPlayers() as $player) {
 			$this->dataManager->addGamesPlayed($player, 1);
 			if ($arena->getPodium()->isWinner($player)) {
-				$this->dataManager->addWins($player, 1);
+				$this->dataManager->addWins($player, 1, Minerware::getInstance()->getLeaderboard()->refresh(...));
 			}
 		}
 	}

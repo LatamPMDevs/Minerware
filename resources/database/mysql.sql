@@ -36,6 +36,10 @@
 			-- # :name string
 			SELECT * FROM MinerwarePlayers WHERE LOWER(name) = LOWER(:name) ORDER BY gamesPlayed DESC LIMIT 1;
 		-- #}
+		-- #{ getTop
+			-- # :limit int
+			SELECT uuid, name, wins FROM MinerwarePlayers WHERE wins > 0 ORDER BY wins DESC, name ASC LIMIT :limit;
+		-- #}
 		-- #{ addWins
 			-- # :uuid string
 			-- # :name string

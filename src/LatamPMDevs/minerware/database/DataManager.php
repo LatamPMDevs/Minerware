@@ -25,6 +25,7 @@ namespace LatamPMDevs\minerware\database;
 use Closure;
 use InvalidArgumentException;
 use IvanCraft623\languages\Language;
+use LatamPMDevs\minerware\leaderboard\LeaderboardEntry;
 use LatamPMDevs\minerware\map\Map;
 use LatamPMDevs\minerware\map\MapManager;
 use LatamPMDevs\minerware\map\world\MapTemplates;
@@ -137,6 +138,26 @@ final class DataManager {
 			"name" => $name
 		], function (array $rows) use ($onSuccess) : void {
 			$onSuccess(isset($rows[0]) ? PlayerData::jsonDeserialize($rows[0]) : null);
+		}, $onError ?? $this->onError);
+	}
+
+	/**
+	 * The players with most wins, best first.
+	 *
+	 * @param callable(list<LeaderboardEntry>) : void $onSuccess
+	 */
+	public function getTopWins(int $limit, callable $onSuccess, ?callable $onError = null) : void {
+		$this->database->executeSelect('data.players.getTop', [
+			"limit" => $limit
+		], static function (array $rows) use ($onSuccess) : void {
+			$entries = [];
+			foreach ($rows as $row) {
+				$entry = LeaderboardEntry::fromRow($row);
+				if ($entry !== null) {
+					$entries[] = $entry;
+				}
+			}
+			$onSuccess($entries);
 		}, $onError ?? $this->onError);
 	}
 

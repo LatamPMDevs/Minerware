@@ -94,6 +94,7 @@ The maps below come with the plugin and are installed on the first run. You can 
 | `/minerware arenas start` | Force-start the arena you are currently in | `minerware.command.arenas` |
 | `/minerware join` | Join a random arena | `minerware.command.join` |
 | `/minerware statistics [user]` | View a player's statistics | `minerware.command.statistics` |
+| `/minerware leaderboard <text\|npc\|remove> [rank]` | Place or remove the wins leaderboard and the top 3 player NPCs | `minerware.command.leaderboard` |
 | `/minerware language [locale]` | Choose (or list) the language you see; it is saved | `minerware.command.language` |
 | `/minerware defaultlanguage <locale>` | Change the default language | `minerware.command.defaultlanguage` |
 | `/minerware help` | Show the list of available commands | `minerware.command.help` |
@@ -130,6 +131,10 @@ Players can join with the command, a sign or an NPC. All of them route into a sh
 * **Command:** `/minerware join`
 * **Sign:** place a sign whose first line is `[Minerware]` (the second line may name a map). Needs `minerware.joinpoint.create`; the sign shows the state and joins on click.
 * **NPC:** `/minerware joinpoint npc [map]` spawns an NPC that joins whoever hits or clicks it. It is saved with the world. `/minerware joinpoint remove` then hit it to remove it; `/minerware joinpoint list` counts them.
+
+### Leaderboard
+
+`/minerware leaderboard text` places the top 10 by wins; `/minerware leaderboard npc <1-3>` places an NPC wearing the skin of that rank. Hitting or clicking either tells the player their own wins; `/minerware leaderboard remove`, then hit it, removes it. Both are saved with the world.
 
 Operators can run `/minerware arenas admin` to start, pause, kick from or close arenas.
 
