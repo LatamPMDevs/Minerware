@@ -103,7 +103,7 @@ abstract class LeaderboardEntity extends PerPlayerTagHuman {
 		$translator = $plugin->getTranslator();
 		if ($plugin->getJoinPointRemovals()->consume($player)) {
 			$this->flagForDespawn();
-			$player->sendMessage($translator->translate($player, "leaderboard.removed"));
+			$player->sendMessage($translator->translate($player, "npc.removed"));
 			return;
 		}
 		DataManager::getInstance()->getPlayerData($player, static function (?PlayerData $data) use ($player, $translator) : void {

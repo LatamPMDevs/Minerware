@@ -22,31 +22,39 @@ declare(strict_types=1);
 
 namespace LatamPMDevs\minerware\command\subcommands;
 
-use CortexPE\Commando\args\RawStringArgument;
 use CortexPE\Commando\BaseCommand;
 use CortexPE\Commando\BaseSubCommand;
+use LatamPMDevs\minerware\Minerware;
 use pocketmine\command\CommandSender;
-
-use function is_string;
+use function spl_object_id;
 
 final class HelpCommand extends BaseSubCommand {
 
-	public function __construct() {
+	public function __construct(private Minerware $plugin) {
 		parent::__construct("help", "Show the list of available commands.");
 		$this->setPermission("minerware.command.help");
 	}
 
 	protected function prepare() : void {
-		$this->registerArgument(0, new RawStringArgument("category", true));
 	}
 
 	/**
 	 * @param array<string, mixed> $args
 	 */
 	public function onRun(CommandSender $sender, string $aliasUsed, array $args) : void {
-		$category = is_string($args["category"] ?? null) ? $args["category"] : "";
-
-		$sender->sendMessage("SOON. Category selected: " . $category);
+		$translator = $this->plugin->getTranslator();
+		$sender->sendMessage($translator->translate($sender, "command.help.header"));
+		$shown = [];
+		foreach ($this->parent->getSubCommands() as $subCommand) {
+			if (isset($shown[spl_object_id($subCommand)]) || !$subCommand->testPermissionSilent($sender)) {
+				continue;
+			}
+			$shown[spl_object_id($subCommand)] = true;
+			$sender->sendMessage($translator->translate($sender, "command.help.line", [
+				"{%name}" => $subCommand->getName(),
+				"{%description}" => $subCommand->getDescription()
+			]));
+		}
 	}
 
 	public function getParent() : BaseCommand {

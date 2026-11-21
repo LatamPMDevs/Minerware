@@ -22,36 +22,33 @@ declare(strict_types=1);
 
 namespace LatamPMDevs\minerware\command\subcommands;
 
-use CortexPE\Commando\args\RawStringArgument;
 use CortexPE\Commando\BaseCommand;
 use CortexPE\Commando\BaseSubCommand;
 use CortexPE\Commando\constraint\InGameRequiredConstraint;
+use LatamPMDevs\minerware\arena\Arena;
 use LatamPMDevs\minerware\arena\ArenaManager;
-use LatamPMDevs\minerware\arena\phase\StartingPhase;
 use LatamPMDevs\minerware\command\args\ChoiceArgument;
 use LatamPMDevs\minerware\form\ArenaAdminForm;
-use LatamPMDevs\minerware\map\MapRegisterer;
 use LatamPMDevs\minerware\Minerware;
 use pocketmine\command\CommandSender;
 use pocketmine\player\Player;
 use function count;
-use function is_string;
+use function implode;
 
-final class ArenasCommand extends BaseSubCommand {
+final class ArenaCommand extends BaseSubCommand {
 
-	private const CREATE = "create";
 	private const START = "start";
 	private const ADMIN = "admin";
+	private const LIST = "list";
 
 	public function __construct(private Minerware $plugin) {
-		parent::__construct("arenas", "Manage all the minigame arenas.");
-		$this->setPermission("minerware.command.arenas");
+		parent::__construct("arena", "Manage the running arenas.");
+		$this->setPermission("minerware.command.arena");
 	}
 
 	protected function prepare() : void {
 		$this->addConstraint(new InGameRequiredConstraint($this));
-		$this->registerArgument(0, new ChoiceArgument("action", self::CREATE, self::START, self::ADMIN));
-		$this->registerArgument(1, new RawStringArgument("world", true));
+		$this->registerArgument(0, new ChoiceArgument("action", self::START, self::ADMIN, self::LIST));
 	}
 
 	/**
@@ -59,55 +56,38 @@ final class ArenasCommand extends BaseSubCommand {
 	 * @param array<string, mixed> $args
 	 */
 	public function onRun(CommandSender $sender, string $aliasUsed, array $args) : void {
-		if (!isset($args["action"])) {
-			$this->sendUsage();
-			return;
-		}
-		switch ($args["action"]) {
-			case self::CREATE:
-				$worldName = $args["world"] ?? null;
-				if (!is_string($worldName) ||
-					!$this->plugin->getServer()->getWorldManager()->loadWorld($worldName, true) ||
-					($world = $this->plugin->getServer()->getWorldManager()->getWorldByName($worldName)) === null
-				) {
-					$sender->sendMessage($this->plugin->getTranslator()->translate(
-						$sender, "command.arguments.worldNotFound", [
-							"{%world}" => is_string($worldName) ? $worldName : "unknown"
-						]
-					));
-					return;
+		$translator = $this->plugin->getTranslator();
+		switch ($args["action"] ?? null) {
+			case self::START:
+				$arena = ArenaManager::getInstance()->getArenaOf($sender);
+				if ($arena === null) {
+					$sender->sendMessage($translator->translate($sender, "command.notInArena"));
+				} elseif (!$arena->forceStart()) {
+					$sender->sendMessage($translator->translate($sender, "game.arena.needMorePlayers"));
 				}
-
-				MapRegisterer::createRegisterer($sender, $world);
-			break;
+				break;
 
 			case self::ADMIN:
 				(new ArenaAdminForm())->sendList($sender);
-			break;
+				break;
 
-			case self::START:
-				$arena = null;
-				foreach (ArenaManager::getInstance()->getArenas() as $a) {
-					if ($a->inGame($sender)) {
-						$arena = $a;
-						break;
-					}
+			case self::LIST:
+				$lines = [];
+				foreach (ArenaManager::getInstance()->getArenas() as $arena) {
+					$lines[] = $translator->translate($sender, "admin.arena", [
+						"{%id}" => $arena->getId(),
+						"{%map}" => $arena->getMap()->getName(),
+						"{%status}" => $arena->getPhase()->getName(),
+						"{%players}" => count($arena->getPlayers()),
+						"{%max}" => Arena::MAX_PLAYERS
+					]);
 				}
+				$sender->sendMessage($lines === [] ? $translator->translate($sender, "admin.noArenas") : implode("\n", $lines));
+				break;
 
-				if ($arena === null) {
-					$sender->sendMessage($this->plugin->getTranslator()->translate($sender, "command.notInArena"));
-					return;
-				}
-
-				if (!$arena->getPhase() instanceof StartingPhase ||
-					count($arena->getPlayers()) < $arena->getMinPlayers()
-				) {
-					$sender->sendMessage($this->plugin->getTranslator()->translate($sender, "game.arena.needMorePlayers"));
-					return;
-				}
-
-				$arena->forceStart();
-			break;
+			default:
+				$this->sendUsage();
+				break;
 		}
 	}
 

@@ -104,7 +104,7 @@ final class LobbyNpc extends PerPlayerTagHuman {
 		$plugin = Minerware::getInstance();
 		if ($plugin->getJoinPointRemovals()->consume($player)) {
 			$this->flagForDespawn();
-			$player->sendMessage($plugin->getTranslator()->translate($player, "joinpoint.removed"));
+			$player->sendMessage($plugin->getTranslator()->translate($player, "npc.removed"));
 			return;
 		}
 		$plugin->getJoiner()->join($player, $this->mapFilter);
@@ -126,8 +126,8 @@ final class LobbyNpc extends PerPlayerTagHuman {
 	private function buildNameTag(?Player $viewer) : string {
 		$translator = Minerware::getInstance()->getTranslator();
 		$stats = $this->stats ??= JoinStats::forMap($this->mapFilter);
-		return $translator->translate($viewer, "joinpoint.npc.title") . "\n" .
-			$translator->translate($viewer, "joinpoint.sign.playing", ["{%players}" => (string) $stats->players]) . "\n" .
-			$translator->translate($viewer, $stats->joinable ? "joinpoint.npc.joinable" : "joinpoint.sign.full");
+		return $translator->translate($viewer, "npc.join.title") . "\n" .
+			$translator->translate($viewer, "status.playing", ["{%players}" => (string) $stats->players]) . "\n" .
+			$translator->translate($viewer, $stats->joinable ? "npc.join.joinable" : "status.full");
 	}
 }

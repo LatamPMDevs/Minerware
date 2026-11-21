@@ -90,11 +90,13 @@ The maps below come with the plugin and are installed on the first run. You can 
 
 | Command | Description | Permission |
 | :--- | :--- | :--- |
-| `/minerware arenas create <world>` | Start the interactive setup of a new arena map | `minerware.command.arenas` |
-| `/minerware arenas start` | Force-start the arena you are currently in | `minerware.command.arenas` |
-| `/minerware join` | Join a random arena | `minerware.command.join` |
+| `/minerware join [map]` | Join an arena, on the map you name if any | `minerware.command.join` |
+| `/minerware arena start` | Force-start the arena you are currently in | `minerware.command.arena` |
+| `/minerware arena admin` | Open the arena admin form | `minerware.command.arena` |
+| `/minerware arena list` | List the running arenas | `minerware.command.arena` |
+| `/minerware map create <world>` | Start the interactive setup of a new map | `minerware.command.map` |
 | `/minerware statistics [user]` | View a player's statistics | `minerware.command.statistics` |
-| `/minerware leaderboard <text\|npc\|remove> [rank]` | Place or remove the wins leaderboard and the top 3 player NPCs | `minerware.command.leaderboard` |
+| `/minerware npc <join\|board\|top\|remove\|list> [map\|rank]` | Place and remove the join NPCs, the wins leaderboard and the top 3 player NPCs | `minerware.command.npc` |
 | `/minerware language [locale]` | Choose (or list) the language you see; it is saved | `minerware.command.language` |
 | `/minerware defaultlanguage <locale>` | Change the default language | `minerware.command.defaultlanguage` |
 | `/minerware help` | Show the list of available commands | `minerware.command.help` |
@@ -110,16 +112,16 @@ The maps below come with the plugin and are installed on the first run. You can 
 2. Drop `Minerware.phar` into your server's `plugins` folder
 3. Start the server — `config.yml` and the language files are generated automatically
 
-### Arena set up
+### Map set up
 
 Requirements:
 
-* Operator or permission: `minerware.command.arenas`
+* Operator or permission: `minerware.command.map`
 * A map world loaded on the server, with a platform of exactly `24x24` blocks
 
 Steps:
 
-1. Run: `/minerware arenas create <world>`
+1. Run: `/minerware map create <world>`
 2. Type `help` in the chat to display the actions list
 3. Type each action in the chat to set it up (`setplatform`, `setcages`, `setspawn`, …)
 4. At the end, type `done` in the chat — the map data and world backup are saved automatically
@@ -129,14 +131,16 @@ Steps:
 Players can join with the command, a sign or an NPC. All of them route into a shared arena; the game starts automatically once enough players are in.
 
 * **Command:** `/minerware join`
-* **Sign:** place a sign whose first line is `[Minerware]` (the second line may name a map). Needs `minerware.joinpoint.create`; the sign shows the state and joins on click.
-* **NPC:** `/minerware joinpoint npc [map]` spawns an NPC that joins whoever hits or clicks it. It is saved with the world. `/minerware joinpoint remove` then hit it to remove it; `/minerware joinpoint list` counts them.
+* **Sign:** place a sign whose first line is `[Minerware]` (the second line may name a map). Needs `minerware.sign.create`; the sign shows the state and joins on click.
+* **NPC:** `/minerware npc join [map]` spawns an NPC that joins whoever hits or clicks it. It is saved with the world.
 
 ### Leaderboard
 
-`/minerware leaderboard text` places the top 10 by wins; `/minerware leaderboard npc <1-3>` places an NPC wearing the skin of that rank. Hitting or clicking either tells the player their own wins; `/minerware leaderboard remove`, then hit it, removes it. Both are saved with the world.
+`/minerware npc board` places the top 10 by wins; `/minerware npc top <1-3>` places an NPC wearing the skin of that rank. Hitting or clicking either tells the player their own wins. Both are saved with the world.
 
-Operators can run `/minerware arenas admin` to start, pause, kick from or close arenas.
+`/minerware npc remove`, then hit an NPC or the leaderboard, removes it; `/minerware npc list` counts them.
+
+Operators can run `/minerware arena admin` to start, pause, kick from or close arenas.
 
 ---
 
@@ -173,7 +177,7 @@ An arena starts counting down once at least <code>minimum-starting-players</code
 
 <details>
 <summary><b>Can I add my own maps?</b></summary>
-<b>Yes!</b> Any world works as long as its platform measures exactly <code>24x24</code> blocks. Load the world on your server and run <code>/minerware arenas create &lt;world&gt;</code> to open the interactive map editor.
+<b>Yes!</b> Any world works as long as its platform measures exactly <code>24x24</code> blocks. Load the world on your server and run <code>/minerware map create &lt;world&gt;</code> to open the interactive map editor.
 </details>
 
 <details>

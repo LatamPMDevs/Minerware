@@ -27,9 +27,8 @@ use CortexPE\Commando\BaseCommand;
 use CortexPE\Commando\BaseSubCommand;
 use LatamPMDevs\minerware\database\DataManager;
 use LatamPMDevs\minerware\database\PlayerData;
-use LatamPMDevs\minerware\form\StatisticsForm;
+use LatamPMDevs\minerware\form\StatisticsView;
 use LatamPMDevs\minerware\Minerware;
-use LatamPMDevs\minerware\utils\Utils;
 use pocketmine\command\CommandSender;
 use pocketmine\player\Player;
 use poggit\libasynql\SqlError;
@@ -63,24 +62,10 @@ final class StatisticsCommand extends BaseSubCommand {
 				$sender->sendMessage($translator->translate($sender, "command.statistics.notFound", ["{%user}" => $user]));
 				return;
 			}
-			if ($sender instanceof Player) {
-				if (!$sender->isConnected()) {
-					return;
-				}
-				(new StatisticsForm())->send($sender, $playerdata);
-			} else {
-				$sender->sendMessage(
-					"§b=== §e" . $translator->translate($sender, "text.statistics.user",
-						["{%user}" => $playerdata->getName()]
-					) . " §b===" . "\n" .
-					"§a" . $translator->translate($sender, "text.statistics.wins") . ": §6" . $playerdata->getWins() . "\n" .
-					"§a" . $translator->translate($sender, "text.statistics.bossGamesWon") . ": §6" . $playerdata->getBossgamesWon() . "\n" .
-					"§a" . $translator->translate($sender, "text.statistics.microgamesWon") . ": §6" . $playerdata->getMicrogamesWon() . "\n" .
-					"§a" . $translator->translate($sender, "text.statistics.gamesPlayed") . ": §6" . $playerdata->getGamesPlayed() . "\n" .
-					"§a" . $translator->translate($sender, "text.statistics.microgamesPlayed") . ": §6" . $playerdata->getMicrogamesPlayed() . "\n" .
-					"§a" . $translator->translate($sender, "text.statistics.timePlayed") . ": §6" . Utils::getTimeTranslated($playerdata->getTimePlayed(), $translator, $sender)
-				);
+			if ($sender instanceof Player && !$sender->isConnected()) {
+				return;
 			}
+			(new StatisticsView())->show($sender, $playerdata);
 		};
 		$onError = function (SqlError $error) use ($sender, $translator) : void {
 			DataManager::getInstance()->onError->__invoke($error);

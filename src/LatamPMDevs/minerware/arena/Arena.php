@@ -221,11 +221,15 @@ final class Arena {
 		return $this->countdown;
 	}
 
-	public function forceStart() : void {
-		if (!$this->phase instanceof StartingPhase) {
-			return;
+	/**
+	 * Starts the countdown to the first game now, if the arena is waiting and has enough players.
+	 */
+	public function forceStart() : bool {
+		if (!$this->phase instanceof StartingPhase || count($this->players) < $this->minPlayers) {
+			return false;
 		}
 		$this->countdown->set(5);
+		return true;
 	}
 
 	public function canJoin() : bool {

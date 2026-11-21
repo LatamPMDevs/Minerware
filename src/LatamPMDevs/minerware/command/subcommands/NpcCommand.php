@@ -27,30 +27,36 @@ use CortexPE\Commando\BaseCommand;
 use CortexPE\Commando\BaseSubCommand;
 use CortexPE\Commando\constraint\InGameRequiredConstraint;
 use LatamPMDevs\minerware\command\args\ChoiceArgument;
+use LatamPMDevs\minerware\entity\object\LeaderboardEntity;
+use LatamPMDevs\minerware\entity\object\LeaderboardText;
 use LatamPMDevs\minerware\entity\object\LobbyNpc;
+use LatamPMDevs\minerware\entity\object\TopPlayerNpc;
 use LatamPMDevs\minerware\map\MapManager;
 use LatamPMDevs\minerware\Minerware;
 use pocketmine\command\CommandSender;
 use pocketmine\entity\Location;
 use pocketmine\player\Player;
+use function ctype_digit;
 use function fmod;
 use function is_string;
 
-final class JoinPointCommand extends BaseSubCommand {
+final class NpcCommand extends BaseSubCommand {
 
-	private const NPC = "npc";
+	private const JOIN = "join";
+	private const BOARD = "board";
+	private const TOP = "top";
 	private const REMOVE = "remove";
 	private const LIST = "list";
 
 	public function __construct(private Minerware $plugin) {
-		parent::__construct("joinpoint", "Manage the NPCs and signs that join players.");
-		$this->setPermission("minerware.command.joinpoint");
+		parent::__construct("npc", "Place and remove the join NPCs, the top player NPCs and the leaderboard.");
+		$this->setPermission("minerware.command.npc");
 	}
 
 	protected function prepare() : void {
 		$this->addConstraint(new InGameRequiredConstraint($this));
-		$this->registerArgument(0, new ChoiceArgument("action", self::NPC, self::REMOVE, self::LIST));
-		$this->registerArgument(1, new RawStringArgument("map", true));
+		$this->registerArgument(0, new ChoiceArgument("action", self::JOIN, self::BOARD, self::TOP, self::REMOVE, self::LIST));
+		$this->registerArgument(1, new RawStringArgument("value", true));
 	}
 
 	/**
@@ -59,48 +65,54 @@ final class JoinPointCommand extends BaseSubCommand {
 	 */
 	public function onRun(CommandSender $sender, string $aliasUsed, array $args) : void {
 		$translator = $this->plugin->getTranslator();
+		$value = is_string($args["value"] ?? null) ? $args["value"] : null;
+		$location = $sender->getLocation();
+		$facing = Location::fromObject($location, $location->getWorld(), fmod($location->getYaw() + 180, 360), 0);
 		switch ($args["action"] ?? null) {
-			case self::NPC:
-				if (!$sender->hasPermission("minerware.joinpoint.create")) {
-					$sender->sendMessage($translator->translate($sender, "joinpoint.noPermission"));
+			case self::JOIN:
+				$map = $value === null ? null : MapManager::getInstance()->getByName($value);
+				if ($value !== null && $map === null) {
+					$sender->sendMessage($translator->translate($sender, "join.mapNotFound"));
 					return;
 				}
-				$mapName = is_string($args["map"] ?? null) ? $args["map"] : null;
-				$map = $mapName === null ? null : MapManager::getInstance()->getByName($mapName);
-				if ($mapName !== null && $map === null) {
-					$sender->sendMessage($translator->translate($sender, "joinpoint.mapNotFound", ["{%map}" => $mapName]));
+				(new LobbyNpc($facing, $sender->getSkin()))->setMapFilter($map?->getName())->spawnToAll();
+				$sender->sendMessage($translator->translate($sender, "npc.join.created"));
+				break;
+
+			case self::BOARD:
+				(new LeaderboardText($facing, LeaderboardEntity::invisibleSkin()))->spawnToAll();
+				$sender->sendMessage($translator->translate($sender, "leaderboard.created"));
+				break;
+
+			case self::TOP:
+				$rank = $value !== null && ctype_digit($value) ? (int) $value : 0;
+				if ($rank < 1 || $rank > TopPlayerNpc::RANKS) {
+					$sender->sendMessage($translator->translate($sender, "leaderboard.rankInvalid", ["{%max}" => TopPlayerNpc::RANKS]));
 					return;
 				}
-				$location = $sender->getLocation();
-				$npc = new LobbyNpc(
-					Location::fromObject($location, $location->getWorld(), fmod($location->getYaw() + 180, 360), 0),
-					$sender->getSkin()
-				);
-				$npc->setMapFilter($map?->getName())->spawnToAll();
-				$sender->sendMessage($translator->translate($sender, "joinpoint.npc.created"));
+				(new TopPlayerNpc($facing, LeaderboardEntity::invisibleSkin()))->setRank($rank)->spawnToAll();
+				$sender->sendMessage($translator->translate($sender, "leaderboard.created"));
 				break;
 
 			case self::REMOVE:
-				if (!$sender->hasPermission("minerware.joinpoint.remove")) {
-					$sender->sendMessage($translator->translate($sender, "joinpoint.noPermission"));
-					return;
-				}
 				$this->plugin->getJoinPointRemovals()->arm($sender);
-				$sender->sendMessage($translator->translate($sender, "joinpoint.remove.armed"));
+				$sender->sendMessage($translator->translate($sender, "npc.remove.armed"));
 				break;
 
 			case self::LIST:
-				$npcs = 0;
+				$counts = [LobbyNpc::class => 0, TopPlayerNpc::class => 0, LeaderboardText::class => 0];
 				foreach ($this->plugin->getServer()->getWorldManager()->getWorlds() as $world) {
 					foreach ($world->getEntities() as $entity) {
-						if ($entity instanceof LobbyNpc) {
-							$npcs++;
+						if (isset($counts[$entity::class])) {
+							$counts[$entity::class]++;
 						}
 					}
 				}
-				$sender->sendMessage($translator->translate($sender, "joinpoint.list", [
-					"{%signs}" => (string) $this->plugin->getJoinSigns()->count(),
-					"{%npcs}" => (string) $npcs
+				$sender->sendMessage($translator->translate($sender, "npc.list", [
+					"{%signs}" => $this->plugin->getJoinSigns()->count(),
+					"{%join}" => $counts[LobbyNpc::class],
+					"{%top}" => $counts[TopPlayerNpc::class],
+					"{%boards}" => $counts[LeaderboardText::class]
 				]));
 				break;
 

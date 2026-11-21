@@ -22,36 +22,30 @@ declare(strict_types=1);
 
 namespace LatamPMDevs\minerware\command\subcommands;
 
-use CortexPE\Commando\args\IntegerArgument;
+use CortexPE\Commando\args\RawStringArgument;
 use CortexPE\Commando\BaseCommand;
 use CortexPE\Commando\BaseSubCommand;
 use CortexPE\Commando\constraint\InGameRequiredConstraint;
 use LatamPMDevs\minerware\command\args\ChoiceArgument;
-use LatamPMDevs\minerware\entity\object\LeaderboardEntity;
-use LatamPMDevs\minerware\entity\object\LeaderboardText;
-use LatamPMDevs\minerware\entity\object\TopPlayerNpc;
+use LatamPMDevs\minerware\map\MapRegisterer;
 use LatamPMDevs\minerware\Minerware;
 use pocketmine\command\CommandSender;
-use pocketmine\entity\Location;
 use pocketmine\player\Player;
-use function fmod;
-use function is_int;
+use function is_string;
 
-final class LeaderboardCommand extends BaseSubCommand {
+final class MapCommand extends BaseSubCommand {
 
-	private const TEXT = "text";
-	private const NPC = "npc";
-	private const REMOVE = "remove";
+	private const CREATE = "create";
 
 	public function __construct(private Minerware $plugin) {
-		parent::__construct("leaderboard", "Manage the wins leaderboard and the top player NPCs.");
-		$this->setPermission("minerware.command.leaderboard");
+		parent::__construct("map", "Create the maps the arenas are played on.");
+		$this->setPermission("minerware.command.map");
 	}
 
 	protected function prepare() : void {
 		$this->addConstraint(new InGameRequiredConstraint($this));
-		$this->registerArgument(0, new ChoiceArgument("action", self::TEXT, self::NPC, self::REMOVE));
-		$this->registerArgument(1, new IntegerArgument("rank", true));
+		$this->registerArgument(0, new ChoiceArgument("action", self::CREATE));
+		$this->registerArgument(1, new RawStringArgument("world", true));
 	}
 
 	/**
@@ -59,34 +53,19 @@ final class LeaderboardCommand extends BaseSubCommand {
 	 * @param array<string, mixed> $args
 	 */
 	public function onRun(CommandSender $sender, string $aliasUsed, array $args) : void {
-		$translator = $this->plugin->getTranslator();
-		$location = $sender->getLocation();
-		$facing = Location::fromObject($location, $location->getWorld(), fmod($location->getYaw() + 180, 360), 0);
-		switch ($args["action"] ?? null) {
-			case self::TEXT:
-				(new LeaderboardText($facing, LeaderboardEntity::invisibleSkin()))->spawnToAll();
-				$sender->sendMessage($translator->translate($sender, "leaderboard.created"));
-				break;
-
-			case self::NPC:
-				$rank = $args["rank"] ?? null;
-				if (!is_int($rank) || $rank < 1 || $rank > TopPlayerNpc::RANKS) {
-					$sender->sendMessage($translator->translate($sender, "leaderboard.rankInvalid", ["{%max}" => TopPlayerNpc::RANKS]));
-					return;
-				}
-				(new TopPlayerNpc($facing, LeaderboardEntity::invisibleSkin()))->setRank($rank)->spawnToAll();
-				$sender->sendMessage($translator->translate($sender, "leaderboard.created"));
-				break;
-
-			case self::REMOVE:
-				$this->plugin->getJoinPointRemovals()->arm($sender);
-				$sender->sendMessage($translator->translate($sender, "leaderboard.remove.armed"));
-				break;
-
-			default:
-				$this->sendUsage();
-				break;
+		if (($args["action"] ?? null) !== self::CREATE) {
+			$this->sendUsage();
+			return;
 		}
+		$worldName = $args["world"] ?? null;
+		$worldManager = $this->plugin->getServer()->getWorldManager();
+		if (!is_string($worldName) || !$worldManager->loadWorld($worldName, true) || ($world = $worldManager->getWorldByName($worldName)) === null) {
+			$sender->sendMessage($this->plugin->getTranslator()->translate($sender, "command.arguments.worldNotFound", [
+				"{%world}" => is_string($worldName) ? $worldName : "unknown"
+			]));
+			return;
+		}
+		MapRegisterer::createRegisterer($sender, $world);
 	}
 
 	public function getParent() : BaseCommand {

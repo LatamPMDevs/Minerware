@@ -11,8 +11,14 @@ permissions:
   minerware.command:
     description: "Minerware main command"
     default: true
-  minerware.command.arenas:
-    description: "Manage minigame arenas"
+  minerware.command.arena:
+    description: "Manage the running arenas"
+    default: op
+  minerware.command.map:
+    description: "Create maps"
+    default: op
+  minerware.command.npc:
+    description: "Place and remove the NPCs and the leaderboard"
     default: op
   minerware.command.credits:
     description: "Show plugin credits"
@@ -32,18 +38,12 @@ permissions:
   minerware.command.statistics:
     description: "View a player's statistics"
     default: true
-  minerware.command.joinpoint:
-    description: "Manage join NPCs and signs"
-    default: op
-  minerware.command.leaderboard:
-    description: "Manage the wins leaderboard and top player NPCs"
-    default: op
   minerware.join:
     description: "Join games from commands, signs and NPCs"
     default: true
-  minerware.joinpoint.create:
-    description: "Create join signs and NPCs"
+  minerware.sign.create:
+    description: "Create join signs"
     default: op
-  minerware.joinpoint.remove:
-    description: "Remove join signs and NPCs"
+  minerware.sign.remove:
+    description: "Remove join signs"
     default: op

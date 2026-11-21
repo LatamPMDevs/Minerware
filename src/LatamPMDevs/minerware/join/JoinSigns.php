@@ -103,9 +103,9 @@ final class JoinSigns implements Listener {
 			return;
 		}
 		$player = $event->getPlayer();
-		if (!$player->hasPermission("minerware.joinpoint.create")) {
+		if (!$player->hasPermission("minerware.sign.create")) {
 			$event->cancel();
-			$player->sendMessage($this->plugin->getTranslator()->translate($player, "joinpoint.noPermission"));
+			$player->sendMessage($this->plugin->getTranslator()->translate($player, "sign.noPermission"));
 			return;
 		}
 		$position = $event->getSign()->getPosition();
@@ -135,9 +135,9 @@ final class JoinSigns implements Listener {
 			return;
 		}
 		$player = $event->getPlayer();
-		if (!$player->hasPermission("minerware.joinpoint.remove")) {
+		if (!$player->hasPermission("minerware.sign.remove")) {
 			$event->cancel();
-			$player->sendMessage($this->plugin->getTranslator()->translate($player, "joinpoint.noPermission"));
+			$player->sendMessage($this->plugin->getTranslator()->translate($player, "sign.noPermission"));
 		}
 	}
 
@@ -175,8 +175,8 @@ final class JoinSigns implements Listener {
 			$stats[$filter ?? ""] ??= JoinStats::forMap($filter);
 			$new = JoinSignFormat::withState(
 				$text,
-				$translator->translate(null, $stats[$filter ?? ""]->joinable ? "joinpoint.sign.joinable" : "joinpoint.sign.full"),
-				$translator->translate(null, "joinpoint.sign.playing", ["{%players}" => (string) $stats[$filter ?? ""]->players])
+				$translator->translate(null, $stats[$filter ?? ""]->joinable ? "sign.joinable" : "status.full"),
+				$translator->translate(null, "status.playing", ["{%players}" => (string) $stats[$filter ?? ""]->players])
 			);
 			if ($new->getLines() !== $text->getLines()) {
 				$sign->setFaceText(true, $new);

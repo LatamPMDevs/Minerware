@@ -26,24 +26,34 @@ use jojoe77777\FormAPI\SimpleForm;
 use LatamPMDevs\minerware\database\PlayerData;
 use LatamPMDevs\minerware\Minerware;
 use LatamPMDevs\minerware\utils\Utils;
+use pocketmine\command\CommandSender;
 use pocketmine\player\Player;
+use function implode;
 
-final class StatisticsForm {
+/**
+ * Shows a player's statistics: as a form to a player, as text to the console.
+ */
+final class StatisticsView {
 
-	public function send(Player $player, PlayerData $playerdata) : void {
-		$plugin = Minerware::getInstance();
-		$translator = $plugin->getTranslator();
+	public function show(CommandSender $to, PlayerData $playerdata) : void {
+		$translator = Minerware::getInstance()->getTranslator();
+		$title = $translator->translate($to, "text.statistics.user", ["{%user}" => $playerdata->getName()]);
+		$lines = [
+			"§a" . $translator->translate($to, "text.statistics.wins") . ": §6" . $playerdata->getWins(),
+			"§a" . $translator->translate($to, "text.statistics.bossGamesWon") . ": §6" . $playerdata->getBossgamesWon(),
+			"§a" . $translator->translate($to, "text.statistics.microgamesWon") . ": §6" . $playerdata->getMicrogamesWon(),
+			"§a" . $translator->translate($to, "text.statistics.gamesPlayed") . ": §6" . $playerdata->getGamesPlayed(),
+			"§a" . $translator->translate($to, "text.statistics.microgamesPlayed") . ": §6" . $playerdata->getMicrogamesPlayed(),
+			"§a" . $translator->translate($to, "text.statistics.timePlayed") . ": §6" . Utils::getTimeTranslated($playerdata->getTimePlayed(), $translator, $to)
+		];
+		if (!$to instanceof Player) {
+			$to->sendMessage("§b=== §e" . $title . " §b===\n" . implode("\n", $lines));
+			return;
+		}
 		$form = new SimpleForm(null);
-		$form->setTitle($plugin->getTranslator()->translate($player, "text.statistics.user", ["{%user}" => $playerdata->getName()]));
-		$form->setContent(
-			"§a" . $translator->translate($player, "text.statistics.wins") . ": §6" . $playerdata->getWins() . "\n" .
-			"§a" . $translator->translate($player, "text.statistics.bossGamesWon") . ": §6" . $playerdata->getBossgamesWon() . "\n" .
-			"§a" . $translator->translate($player, "text.statistics.microgamesWon") . ": §6" . $playerdata->getMicrogamesWon() . "\n" .
-			"§a" . $translator->translate($player, "text.statistics.gamesPlayed") . ": §6" . $playerdata->getGamesPlayed() . "\n" .
-			"§a" . $translator->translate($player, "text.statistics.microgamesPlayed") . ": §6" . $playerdata->getMicrogamesPlayed() . "\n" .
-			"§a" . $translator->translate($player, "text.statistics.timePlayed") . ": §6" . Utils::getTimeTranslated($playerdata->getTimePlayed(), $translator, $player)
-		);
-		$form->addButton($translator->translate($player, "text.close"));
-		$form->sendToPlayer($player);
+		$form->setTitle($title);
+		$form->setContent(implode("\n", $lines));
+		$form->addButton($translator->translate($to, "text.close"));
+		$form->sendToPlayer($to);
 	}
 }
