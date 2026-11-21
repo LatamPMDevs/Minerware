@@ -44,19 +44,14 @@
 
 ## 🗺️ Maps
 
-You can find some maps [here](https://github.com/LatamPMDevs/Minerware/tree/master/maps). The platform of these maps has a measure of `24x24` — you can use custom maps as long as they comply with that measure.
+The maps below come with the plugin and are installed on the first run. You can add your own as long as the platform is exactly `24x24`.
 
-#### Available maps:
-
-| Map | Download |
-| :--- | :--- |
-| City | [City.zip](https://github.com/LatamPMDevs/Minerware/blob/master/maps/City.zip) |
-| Gladiator | [Gladiator.zip](https://github.com/LatamPMDevs/Minerware/blob/master/maps/Gladiator.zip) |
-| Jungle | Bundled: installed on the first run |
-| Jurassic | [Jurassic.zip](https://github.com/LatamPMDevs/Minerware/blob/master/maps/Jurassic.zip) |
-
-> [!NOTE]
-> Download the world, place it in your server's `worlds` folder, and register it in game with [`/minerware arenas create <world>`](#-getting-started).
+| Map |
+| :--- |
+| City |
+| Gladiator |
+| Jungle |
+| Jurassic |
 
 ---
 
