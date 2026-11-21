@@ -22,7 +22,7 @@ declare(strict_types=1);
 
 namespace LatamPMDevs\minerware\item;
 
-use LatamPMDevs\minerware\libs\_5626dbf575c7ee5b\IvanCraft623\languages\Language;
+use LatamPMDevs\minerware\libs\_189c4e77bf695c21\IvanCraft623\languages\Language;
 use pocketmine\block\utils\DyeColor;
 use pocketmine\block\VanillaBlocks;
 use pocketmine\item\enchantment\EnchantmentInstance;

@@ -22,7 +22,7 @@ declare(strict_types=1);
 
 namespace LatamPMDevs\minerware\arena;
 
-use LatamPMDevs\minerware\libs\_5626dbf575c7ee5b\jackmd\scorefactory\ScoreFactory;
+use LatamPMDevs\minerware\libs\_189c4e77bf695c21\jackmd\scorefactory\ScoreFactory;
 use function array_slice;
 
 /**

@@ -22,8 +22,8 @@ declare(strict_types=1);
 
 namespace LatamPMDevs\minerware\arena\microgame\normal;
 
-use LatamPMDevs\minerware\libs\_5626dbf575c7ee5b\IvanCraft623\fakeblocks\FakeBlock;
-use LatamPMDevs\minerware\libs\_5626dbf575c7ee5b\IvanCraft623\fakeblocks\FakeBlockManager;
+use LatamPMDevs\minerware\libs\_189c4e77bf695c21\IvanCraft623\fakeblocks\FakeBlock;
+use LatamPMDevs\minerware\libs\_189c4e77bf695c21\IvanCraft623\fakeblocks\FakeBlockManager;
 use LatamPMDevs\minerware\arena\microgame\CancelsBuildEvents;
 use LatamPMDevs\minerware\arena\microgame\Level;
 use LatamPMDevs\minerware\arena\microgame\LosesInVoid;

@@ -22,7 +22,7 @@ declare(strict_types=1);
 
 namespace LatamPMDevs\minerware\command\args;
 
-use LatamPMDevs\minerware\libs\_5626dbf575c7ee5b\CortexPE\Commando\args\StringEnumArgument;
+use LatamPMDevs\minerware\libs\_189c4e77bf695c21\CortexPE\Commando\args\StringEnumArgument;
 use pocketmine\command\CommandSender;
 use function array_values;
 use function strtolower;

@@ -22,7 +22,7 @@ declare(strict_types=1);
 
 namespace LatamPMDevs\minerware\form;
 
-use LatamPMDevs\minerware\libs\_5626dbf575c7ee5b\jojoe77777\FormAPI\SimpleForm;
+use LatamPMDevs\minerware\libs\_189c4e77bf695c21\jojoe77777\FormAPI\SimpleForm;
 use LatamPMDevs\minerware\arena\Arena;
 use LatamPMDevs\minerware\arena\ArenaManager;
 use LatamPMDevs\minerware\arena\phase\StartingPhase;

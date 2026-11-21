@@ -23,14 +23,14 @@ declare(strict_types=1);
 namespace LatamPMDevs\minerware\database;
 
 use Closure;
-use LatamPMDevs\minerware\libs\_5626dbf575c7ee5b\IvanCraft623\languages\Language;
+use LatamPMDevs\minerware\libs\_189c4e77bf695c21\IvanCraft623\languages\Language;
 use LatamPMDevs\minerware\leaderboard\LeaderboardEntry;
 use LatamPMDevs\minerware\Minerware;
 use pocketmine\player\Player;
 use pocketmine\utils\SingletonTrait;
-use LatamPMDevs\minerware\libs\_5626dbf575c7ee5b\poggit\libasynql\DataConnector;
-use LatamPMDevs\minerware\libs\_5626dbf575c7ee5b\poggit\libasynql\libasynql;
-use LatamPMDevs\minerware\libs\_5626dbf575c7ee5b\poggit\libasynql\SqlError;
+use LatamPMDevs\minerware\libs\_189c4e77bf695c21\poggit\libasynql\DataConnector;
+use LatamPMDevs\minerware\libs\_189c4e77bf695c21\poggit\libasynql\libasynql;
+use LatamPMDevs\minerware\libs\_189c4e77bf695c21\poggit\libasynql\SqlError;
 use function is_string;
 use function mkdir;
 use function time;
