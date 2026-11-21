@@ -34,10 +34,8 @@ use LatamPMDevs\minerware\entity\object\TopPlayerNpc;
 use LatamPMDevs\minerware\map\MapManager;
 use LatamPMDevs\minerware\Minerware;
 use pocketmine\command\CommandSender;
-use pocketmine\entity\Location;
 use pocketmine\player\Player;
 use function ctype_digit;
-use function fmod;
 use function is_string;
 
 final class NpcCommand extends BaseSubCommand {
@@ -67,7 +65,6 @@ final class NpcCommand extends BaseSubCommand {
 		$translator = $this->plugin->getTranslator();
 		$value = is_string($args["value"] ?? null) ? $args["value"] : null;
 		$location = $sender->getLocation();
-		$facing = Location::fromObject($location, $location->getWorld(), fmod($location->getYaw() + 180, 360), 0);
 		switch ($args["action"] ?? null) {
 			case self::JOIN:
 				$map = $value === null ? null : MapManager::getInstance()->getByName($value);
@@ -75,12 +72,12 @@ final class NpcCommand extends BaseSubCommand {
 					$sender->sendMessage($translator->translate($sender, "join.mapNotFound"));
 					return;
 				}
-				(new JoinNpc($facing, $sender->getSkin()))->setMapFilter($map?->getName())->spawnToAll();
+				(new JoinNpc($location, $sender->getSkin()))->setMapFilter($map?->getName())->spawnToAll();
 				$sender->sendMessage($translator->translate($sender, "npc.join.created"));
 				break;
 
 			case self::BOARD:
-				(new LeaderboardText($facing, LeaderboardEntity::invisibleSkin()))->spawnToAll();
+				(new LeaderboardText($location, LeaderboardEntity::invisibleSkin()))->spawnToAll();
 				$sender->sendMessage($translator->translate($sender, "leaderboard.created"));
 				break;
 
@@ -90,7 +87,7 @@ final class NpcCommand extends BaseSubCommand {
 					$sender->sendMessage($translator->translate($sender, "leaderboard.rankInvalid", ["{%max}" => TopPlayerNpc::RANKS]));
 					return;
 				}
-				(new TopPlayerNpc($facing, LeaderboardEntity::invisibleSkin()))->setRank($rank)->spawnToAll();
+				(new TopPlayerNpc($location, LeaderboardEntity::invisibleSkin()))->setRank($rank)->spawnToAll();
 				$sender->sendMessage($translator->translate($sender, "leaderboard.created"));
 				break;
 

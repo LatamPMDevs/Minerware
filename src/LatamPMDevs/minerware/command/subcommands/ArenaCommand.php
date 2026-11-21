@@ -82,7 +82,7 @@ final class ArenaCommand extends BaseSubCommand {
 						"{%max}" => Arena::MAX_PLAYERS
 					]);
 				}
-				$sender->sendMessage($lines === [] ? $translator->translate($sender, "admin.noArenas") : implode("\n", $lines));
+				$sender->sendMessage(count($lines) === 0 ? $translator->translate($sender, "admin.noArenas") : implode("\n", $lines));
 				break;
 
 			default:
