@@ -23,58 +23,54 @@ declare(strict_types=1);
 namespace LatamPMDevs\minerware\arena;
 
 use InvalidArgumentException;
-use LatamPMDevs\minerware\libs\_f6d840b9ca6651cb\jackmd\scorefactory\ScoreFactory;
-use LatamPMDevs\minerware\arena\microgame\Level;
+use LatamPMDevs\minerware\libs\_5626dbf575c7ee5b\jackmd\scorefactory\ScoreFactory;
 use LatamPMDevs\minerware\arena\microgame\Microgame;
-use LatamPMDevs\minerware\arena\microgame\MicrogameManager;
-use LatamPMDevs\minerware\database\DataManager;
-use LatamPMDevs\minerware\event\arena\ArenaChangeStatusEvent;
+use LatamPMDevs\minerware\arena\phase\ArenaPhase;
+use LatamPMDevs\minerware\arena\phase\EndingPhase;
+use LatamPMDevs\minerware\arena\phase\InbetweenPhase;
+use LatamPMDevs\minerware\arena\phase\StartingPhase;
+use LatamPMDevs\minerware\arena\phase\WaitingPhase;
+use LatamPMDevs\minerware\event\arena\ArenaChangePhaseEvent;
 use LatamPMDevs\minerware\event\arena\ArenaCreationEvent;
 use LatamPMDevs\minerware\event\arena\ArenaEndEvent;
 use LatamPMDevs\minerware\event\arena\PlayerJoinArenaEvent;
 use LatamPMDevs\minerware\event\arena\PlayerQuitArenaEvent;
+use LatamPMDevs\minerware\item\SpecialItems;
 use LatamPMDevs\minerware\map\Map;
 use LatamPMDevs\minerware\map\MapWorldGenerator;
+use LatamPMDevs\minerware\map\world\MapTemplates;
 use LatamPMDevs\minerware\Minerware;
-use LatamPMDevs\minerware\tasks\ArenaTask;
-use LatamPMDevs\minerware\utils\AsyncBlockManager;
+use LatamPMDevs\minerware\Settings;
 use LatamPMDevs\minerware\utils\PointHolder;
-use LatamPMDevs\minerware\utils\Selection;
 use LatamPMDevs\minerware\utils\Utils;
-use pocketmine\block\utils\DyeColor;
+use LogicException;
 
+use pocketmine\block\utils\DyeColor;
 use pocketmine\block\VanillaBlocks;
 use pocketmine\event\entity\EntityDamageEvent;
-use pocketmine\event\entity\EntityTeleportEvent;
+use pocketmine\event\HandlerListManager;
 use pocketmine\event\Listener;
-use pocketmine\event\player\PlayerDropItemEvent;
-use pocketmine\event\player\PlayerExhaustEvent;
-use pocketmine\event\player\PlayerQuitEvent;
 use pocketmine\player\GameMode;
 use pocketmine\player\Player;
-use pocketmine\scheduler\CancelTaskException;
-use pocketmine\scheduler\ClosureTask;
 use pocketmine\utils\AssumptionFailedError;
 use pocketmine\world\Position;
 use pocketmine\world\World;
-use RuntimeException;
-use function array_key_first;
 use function array_rand;
-use function array_slice;
 use function count;
 use function implode;
-use function shuffle;
+use function reset;
 use function str_repeat;
 use function time;
 
-final class Arena implements Listener {
+final class Arena {
 
 	public const MAX_PLAYERS = 12;
 
-	public const INBETWEEN_TIME = 5;
-	public const ENDING_TIME = 10;
+	private const BUILD_TIMEOUT = 30.0; //seconds without build activity
 
 	public const NORMAL_MICROGAMES = 15;
+
+	private const LEAVE_ITEM_SLOT = 8; //hotbar
 
 	public const FIRST_PLACE = 1;
 	public const SECOND_PLACE = 2;
@@ -82,7 +78,7 @@ final class Arena implements Listener {
 
 	private Minerware $plugin;
 
-	private Status $status;
+	private ArenaPhase $phase;
 
 	private World $world;
 
@@ -93,45 +89,41 @@ final class Arena implements Listener {
 
 	private PointHolder $pointHolder;
 
-	/** @var Microgame[] */
-	private array $microgamesQueue = [];
+	private MicrogameQueue $queue;
+
+	private StageGate $gate;
+
+	private ScoreboardRenderer $scoreboard;
 
 	private ?Microgame $currentMicrogame = null;
 
-	private int $nextMicrogameIndex = 0;
-
-	private int $countdown = 0;
-
-	private int $countdownTotal = 0;
+	private Countdown $countdown;
 
 	private Cage $winnersCage;
 
 	private Cage $losersCage;
 
-	public bool $areInvisibleBlocksSet = false;
+	private ArenaWalls $walls;
 
-	/**
-	 * Number of async block builds (invisible blocks, cages, microgame stage)
-	 * still draining for this arena. Gameplay is gated on this reaching zero.
-	 */
-	private int $pendingBuilds = 0;
+	private bool $closed = false;
 
-	/** @var array<int, array<int, Player>> */
-	public array $winners = [];
+	private Podium $podium;
 
-	/** @var array<int, Player> */
-	public array $losers = [];
-
-	public ?int $startTime = null;
+	private ?int $startTime = null;
 
 	public function __construct(private string $id, private Map $map) {
 		$this->plugin = Minerware::getInstance();
+		# Built first: it can throw, and nothing has been allocated yet.
+		$this->queue = MicrogameQueue::create($this);
+		$this->gate = new StageGate($this->id);
+		$this->countdown = new Countdown();
+		$this->podium = new Podium();
+		$this->scoreboard = new ScoreboardRenderer();
 		$this->world = MapWorldGenerator::generate($this->map, $this->id);
-		$this->minPlayers = DataManager::getInstance()->getMinimumStartingPlayers();
-		$this->status = Status::WAITING;
+		$this->minPlayers = Settings::getInstance()->getMinimumStartingPlayers();
+		$this->phase = WaitingPhase::getInstance();
 		$this->pointHolder = new PointHolder();
-		$this->plugin->getScheduler()->scheduleRepeatingTask(new ArenaTask($this), 20);
-		$this->plugin->getServer()->getPluginManager()->registerEvents($this, $this->plugin);
+		$this->walls = new ArenaWalls($this->map, $this->world, $this->gate);
 		$this->world->setTime(World::TIME_NOON);
 		$this->world->stopTime();
 		$this->winnersCage = new Cage(
@@ -142,30 +134,35 @@ final class Arena implements Listener {
 			Position::fromObject($this->map->getLosersCage(), $this->world),
 			VanillaBlocks::STAINED_GLASS()->setColor(DyeColor::RED)
 		);
-		$this->winnersCage->setBuildCallbacks($this->onStageBuildStarted(...), $this->onStageBuildSettled(...));
-		$this->losersCage->setBuildCallbacks($this->onStageBuildStarted(...), $this->onStageBuildSettled(...));
-
-		# TODO: More Microgames!
-		$microgameManager = MicrogameManager::getInstance();
-		$normalMicrogames = $microgameManager->getMicrogames();
-		shuffle($normalMicrogames);
-		foreach($normalMicrogames as $microgame) {
-			$this->microgamesQueue[] = new $microgame($this);
-		}
-		$bossMicrogames = $microgameManager->getBossgames();
-		$bossgame = $bossMicrogames[array_rand($bossMicrogames)];
-		$this->microgamesQueue[] = new $bossgame($this);
-
-		$this->plugin->getScheduler()->scheduleRepeatingTask(new ClosureTask(function () : void {
-			if ($this->status === Status::ENDING) {
-				throw new CancelTaskException("Arena is no more in-game");
-			}
-			if ($this->currentMicrogame !== null && $this->currentMicrogame->isRunning() && !$this->isBuildingStage()) {
-				$this->currentMicrogame->tick();
-			};
-		}), 3);
+		$this->winnersCage->setBuildCallbacks($this->gate->started(...), $this->gate->settled(...));
+		$this->losersCage->setBuildCallbacks($this->gate->started(...), $this->gate->settled(...));
 
 		(new ArenaCreationEvent($this))->call();
+	}
+
+	/**
+	 * One second of the arena: the phase of its status, then the scoreboard.
+	 */
+	public function tick() : void {
+		if ($this->closed) {
+			return;
+		}
+		$this->gate->settleStuck(self::BUILD_TIMEOUT);
+		$this->phase->tick($this);
+		if (!$this->closed) {
+			$this->scoreboard->update($this);
+		}
+	}
+
+	/**
+	 * A few ticks of the running microgame, if there is one.
+	 */
+	public function tickMicrogame() : void {
+		$microgame = $this->currentMicrogame;
+		if ($this->closed || $microgame === null || !$microgame->isRunning() || $this->isBuildingStage()) {
+			return;
+		}
+		$microgame->tick();
 	}
 
 	public function getId() : string {
@@ -195,67 +192,50 @@ final class Arena implements Listener {
 		return $this->plugin;
 	}
 
-	public function getStatus() : Status {
-		return $this->status;
+	public function getPhase() : ArenaPhase {
+		return $this->phase;
 	}
 
-	public function setStatus(Status $status) : void {
-		if ($this->status === $status) {
+	public function setPhase(ArenaPhase $phase) : void {
+		if ($this->phase === $phase) {
 			return;
 		}
-		$ev = new ArenaChangeStatusEvent($this->status, $status, $this->getStatusDuration($status), $this);
+		$ev = new ArenaChangePhaseEvent($this->phase, $phase, $phase->getDuration(), $this);
 		$ev->call();
-		$this->status = $ev->getNewStatus();
-		$this->countdown = $this->countdownTotal = $ev->getCountdown();
-		foreach ($this->players as $player) {
-			if (ScoreFactory::hasObjective($player)) {
-				ScoreFactory::removeScoreLines($player, true);
-			}
-		}
+		$this->phase = $ev->getNewPhase();
+		$this->countdown->reset($ev->getCountdown());
 	}
 
-	/**
-	 * Default tick count a status lasts before the arena transitions again.
-	 */
-	public function getStatusDuration(Status $status) : int {
-		return match ($status) {
-			Status::STARTING => DataManager::getInstance()->getArenaStartingTime(),
-			Status::INBETWEEN => self::INBETWEEN_TIME,
-			Status::ENDING => self::ENDING_TIME,
-			default => 0,
-		};
-	}
-
-	public function getCountdown() : int {
+	public function getCountdown() : Countdown {
 		return $this->countdown;
 	}
 
-	public function getCountdownTotal() : int {
-		return $this->countdownTotal;
-	}
-
-	public function setCountdown(int $countdown) : void {
-		$this->countdown = $countdown;
-	}
-
-	public function decrementCountdown() : void {
-		$this->countdown--;
-	}
-
-	public function forceStart() : void {
-		if ($this->status !== Status::STARTING) {
-			return;
+	/**
+	 * Starts the countdown to the first game now, if the arena is waiting and has enough players.
+	 */
+	public function forceStart() : bool {
+		if (!$this->phase instanceof StartingPhase || count($this->players) < $this->minPlayers) {
+			return false;
 		}
-		$this->countdown = 5;
+		$this->countdown->set(5);
+		return true;
 	}
 
-	public function join(Player $player) : void {
+	public function canJoin() : bool {
+		return $this->phase->isLobby() && count($this->players) < self::MAX_PLAYERS;
+	}
+
+	public function join(Player $player) : bool {
+		if (!$this->canJoin() || $this->inGame($player)) {
+			return false;
+		}
 		$ev = new PlayerJoinArenaEvent($player, $this);
 		$ev->call();
 		if ($ev->isCancelled()) {
-			return;
+			return false;
 		}
 		$this->players[$player->getId()] = $player;
+		ArenaManager::getInstance()->bindPlayer($player, $this);
 		foreach ($this->players as $pl) {
 			$pl->sendMessage($this->plugin->getTranslator()->translate(
 				$pl, "game.player.join", [
@@ -267,16 +247,25 @@ final class Arena implements Listener {
 		$player->teleport($this->getRandomSpawn());
 		Utils::initPlayer($player);
 		$player->setGamemode(GameMode::ADVENTURE);
-		if (!$this->areInvisibleBlocksSet) {
-			$this->buildInvisibleBlocks();
-		}
+		$player->getInventory()->setItem(self::LEAVE_ITEM_SLOT, SpecialItems::LEAVE_GAME_BED($this->plugin->getTranslator()->getLanguageOf($player)));
+		$this->walls->raise();
+		return true;
 	}
 
-	public function quit(Player $player) : void {
+	/**
+	 * Lets the player go without moving or telling anyone: they already are in another arena.
+	 */
+	public function release(Player $player) : void {
 		unset($this->players[$player->getId()]);
+		ArenaManager::getInstance()->unbindPlayer($player, $this);
 		$this->winnersCage->removePlayer($player);
 		$this->losersCage->removePlayer($player);
 		$this->pointHolder->removePlayer($player);
+		(new PlayerQuitArenaEvent($player, $this))->call();
+	}
+
+	public function quit(Player $player) : void {
+		$this->release($player);
 		if ($player->isConnected()) {
 			ScoreFactory::removeObjective($player, true);
 		}
@@ -288,7 +277,32 @@ final class Arena implements Listener {
 				]
 			));
 		}
-		(new PlayerQuitArenaEvent($player, $this))->call();
+		if (count($this->players) === 0 && !$this->phase instanceof EndingPhase) {
+			# Nobody is left: let the ENDING countdown tear the arena down.
+			if ($this->currentMicrogame instanceof Listener) {
+				HandlerListManager::global()->unregisterAll($this->currentMicrogame);
+			}
+			$this->setPhase(EndingPhase::getInstance());
+		} elseif (count($this->players) === 1 && !$this->closed && !$this->phase->isLobby() && !$this->phase instanceof EndingPhase) {
+			# One player cannot play against nobody: finish the game now.
+			if ($this->currentMicrogame?->isRunning()) {
+				$this->endCurrentMicrogame();
+			}
+			$this->broadcast("game.arena.endedEarly");
+			$this->end(false);
+		}
+	}
+
+	/**
+	 * Sends every player a translated message, each in their own language.
+	 *
+	 * @param array<string, string|int> $replacements
+	 */
+	public function broadcast(string $key, array $replacements = []) : void {
+		$translator = $this->plugin->getTranslator();
+		foreach ($this->players as $player) {
+			$player->sendMessage($translator->translate($player, $key, $replacements));
+		}
 	}
 
 	public function sendMessage(string $message) : void {
@@ -327,13 +341,12 @@ final class Arena implements Listener {
 		return $this->currentMicrogame;
 	}
 
-	public function getNextMicrogame() : ?Microgame {
-		return $this->microgamesQueue[$this->nextMicrogameIndex] ?? null;
+	public function getQueue() : MicrogameQueue {
+		return $this->queue;
 	}
 
 	public function getNextMicrogameNonNull() : Microgame {
-		return $this->microgamesQueue[$this->nextMicrogameIndex] ?? throw new AssumptionFailedError("Next Microgame is null");
-
+		return $this->queue->peek() ?? throw new AssumptionFailedError("Next Microgame is null");
 	}
 
 	public function getStartTime() : ?int {
@@ -344,125 +357,57 @@ final class Arena implements Listener {
 		if ($this->isBuildingStage()) {
 			return null;
 		}
-		$microgame = $this->getNextMicrogame();
+		$microgame = $this->queue->peek();
 		if ($microgame !== null) {
 			$this->setCurrentMicrogame($microgame);
 			$microgame->start();
-			$this->nextMicrogameIndex++;
+			$this->queue->advance();
 		}
 		return $microgame;
 	}
 
-	public function deleteMap() : void {
-		$worldPath = $this->plugin->getServer()->getDataPath() . "worlds" . DIRECTORY_SEPARATOR . $this->world->getFolderName() . DIRECTORY_SEPARATOR;
-		$this->plugin->getServer()->getWorldManager()->unloadWorld($this->world, true);
-		Utils::removeDir($worldPath);
+	public function isClosed() : bool {
+		return $this->closed;
 	}
 
-	public function updateScoreboard() : void {
-		$translator = $this->plugin->getTranslator();
-		$isBoss = false;
-		$currentMicrogame = $this->getCurrentMicrogame();
-		if ($currentMicrogame !== null && $currentMicrogame->getLevel() === Level::BOSS) {
-			$isBoss = true;
+	/**
+	 * Takes a player out of the arena and sends them to the default world.
+	 */
+	public function kick(Player $player) : void {
+		$this->quit($player);
+		if (!$player->isConnected()) {
+			return;
 		}
+		Utils::initPlayer($player);
+		$player->setGamemode($this->plugin->getServer()->getGamemode());
+		$spawn = $this->plugin->getServer()->getWorldManager()->getDefaultWorld()?->getSafeSpawn();
+		if ($spawn !== null) {
+			$player->teleport($spawn);
+		}
+	}
+
+	/**
+	 * Sends the players away and removes the arena and its world, whatever its state.
+	 */
+	public function close() : void {
+		if ($this->closed) {
+			return;
+		}
+		$this->closed = true;
 		foreach ($this->players as $player) {
-			$lines = [];
-			$remove = false;
-			switch ($this->status) {
-				case Status::WAITING:
-				case Status::STARTING:
-					$lines[] = "§5" . $translator->translate($player, "text.map") . ":";
-					$lines[] = "§f" . $this->map->getName();
-					$lines[] = "§1";
-					$lines[] = "§5" . $translator->translate($player, "text.players") . ":";
-					$lines[] = "§f" . count($this->players) . "/" . self::MAX_PLAYERS;
-					$lines[] = "§2";
-					$lines[] = "§6" . DataManager::getInstance()->getServerIp();
-					break;
-
-				case Status::INBETWEEN:
-				case Status::INGAME:
-					$isOnTop = false;
-					$i = 0;
-					$lines[] = "§5" . $translator->translate($player, "text.scores") . ":";
-					foreach ($this->pointHolder->getOrderedByHigherScore() as $playerId => $point) {
-						$i++;
-						$user = $this->players[$playerId]->getName();
-						if ($user === $player->getName()) {
-							$lines[] = "§f" . "§a" . $point . " §8" . $user;
-							$isOnTop = true;
-						} elseif ($i === 5 && !$isOnTop) {
-							$lines[] = "§f" . "§a" . $this->pointHolder->getPlayerPoints($player) . " §8" . $player->getName();
-						} else {
-							$lines[] = "§f" . "§e" . $point . " §8" . $user;
-						}
-						if ($i === 5) {
-							break;
-						}
-					}
-					$lines[] = "§1";
-					$lines[] = "§5" . $translator->translate($player, "text.microgame") . ":";
-					$lines[] = "§e" . ($this->status === Status::INBETWEEN ? "§fIn-between" : $this->getCurrentMicrogameNonNull()->getName());
-					$lines[] = "§5(§f" . ($isBoss ? "Bossgame" : $this->nextMicrogameIndex . "§5/§f" . (count($this->microgamesQueue) - 1)) . "§5)";
-					$lines[] = "§2";
-					$lines[] = "§6" . DataManager::getInstance()->getServerIp();
-					break;
-
-				default:
-					$remove = true;
-					break;
-			}
-			if ($remove) {
-				ScoreFactory::removeObjective($player, true);
-			} else {
-				if (!ScoreFactory::hasObjective($player)) {
-					ScoreFactory::setObjective($player, '§l§eMinerWare');
-					ScoreFactory::sendObjective($player);
-				}
-				$from = 0;
-				foreach ($lines as $line) {
-					if ($from < 15) {
-						$from++;
-						ScoreFactory::setScoreLine($player, $from, $line);
-					}
-				}
-				ScoreFactory::sendLines($player);
-			}
+			$this->kick($player);
 		}
+		if ($this->currentMicrogame instanceof Listener) {
+			HandlerListManager::global()->unregisterAll($this->currentMicrogame);
+		}
+		ArenaManager::getInstance()->deleteArena($this);
+		MapTemplates::getInstance()->removeInstance($this->world);
 	}
 
 	public function endCurrentMicrogame() : void {
 		$microgame = $this->getCurrentMicrogameNonNull();
 		if ($microgame->isRunning()) {
-			$winners = $microgame->getWinners();
-			$winnersCount = count($winners);
-			$playersCount = count($this->players);
-			foreach ($this->players as $player) {
-				$player->sendMessage("\n§l§e" . $microgame->getName());
-				if ($winnersCount >= $playersCount) {
-					$player->sendMessage($this->plugin->getTranslator()->translate($player, "microgame.nolosers"));
-				} elseif ($winnersCount <= 0) {
-					$player->sendMessage($this->plugin->getTranslator()->translate(
-						$player, "microgame.nowinners", [
-							"{%count}" => $playersCount
-						]
-					));
-				} elseif ($winnersCount <= 3) {
-					$player->sendMessage($this->plugin->getTranslator()->translate(
-						$player, "microgame.winners", [
-							"{%players}" => implode("§a, §8", Utils::getPlayersNames($winners))
-						]
-					));
-				} else {
-					$player->sendMessage($this->plugin->getTranslator()->translate(
-						$player, "microgame.winners2", [
-							"{%winners_count}" => $winnersCount,
-							"{%players_count}" => $playersCount
-						]
-					));
-				}
-			}
+			$microgame->announceResults();
 			$microgame->end();
 			$recompense = $microgame->getRecompensePoints();
 			$showWorthMessage = $recompense > Microgame::DEFAULT_RECOMPENSE_POINTS;
@@ -484,7 +429,7 @@ final class Arena implements Listener {
 				}
 				$player->sendMessage("\n");
 				if ($this->winnersCage->isInCage($player) || $this->losersCage->isInCage($player)) {
-					$this->tpSafePosition($player);
+					$player->teleport($this->getSafePosition($player));
 				}
 			}
 			foreach ($this->world->getEntities() as $entity) {
@@ -494,95 +439,49 @@ final class Arena implements Listener {
 			}
 			$this->setCurrentMicrogame(null);
 		}
-		if ($this->areInvisibleBlocksSet) {
-			$this->unsetInvisibleBlocks();
-		}
+		$this->walls->lower();
 		$this->resetCages();
 	}
 
 	public function start() : void {
-		if ($this->status !== Status::STARTING) {
-			throw new RuntimeException("Arena can only start during the starting status");
+		if (!$this->phase instanceof StartingPhase) {
+			throw new LogicException("Arena can only start during the starting status");
 		}
-		$this->setStatus(Status::INBETWEEN);
+		$this->setPhase(InbetweenPhase::getInstance());
 		$this->getPointHolder()->clear();
 		foreach ($this->players as $player) {
 			$this->pointHolder->addPlayer($player);
 		}
-		if ($this->areInvisibleBlocksSet()) {
-			$this->unsetInvisibleBlocks();
-		}
+		$this->walls->lower();
 		$this->startTime = time();
 	}
 
-	public function end() : void {
-		$this->setStatus(Status::ENDING);
-		$winners = [];
-		$scores = array_slice(Utils::chunkScores($this->pointHolder->getOrderedByHigherScore()), 0, 3);
-		$i = 1;
-		foreach ($scores as $points => $playersIds) {
-			foreach ($playersIds as $id) {
-				$pl = $this->players[$id];
-				$this->addWinner($i, $pl);
-			}
-			$i++;
-		}
+	/**
+	 * @param bool $completed false when the game ends early because the players left
+	 */
+	public function end(bool $completed = true) : void {
+		$this->setPhase(EndingPhase::getInstance());
+		$this->podium->rank($this->players, $this->pointHolder);
 		foreach ($this->players as $player) {
 			$player->sendMessage("§7" . str_repeat("-", 31));
-			foreach ($this->winners as $topPosition => $players) {
+			foreach ($this->podium->getWinners() as $place => $placed) {
 				$player->sendMessage($this->plugin->getTranslator()->translate(
-					$player, "game.arena.top" . $topPosition, [
-						"{%players}" => implode("§a, §8", Utils::getPlayersNames($players)),
-						"{%points}" => $this->pointHolder->getPlayerPoints($players[array_key_first($players)])
+					$player, "game.arena.top" . $place, [
+						"{%players}" => implode("§a, §8", Utils::getPlayersNames($placed)),
+						"{%points}" => $this->pointHolder->getPlayerPoints(reset($placed) ?: throw new AssumptionFailedError("Empty podium place"))
 					]
 				));
 			}
 			$player->sendMessage("§7" . str_repeat("-", 31));
-			if ($this->isWinner($player)) {
+			if ($this->podium->isWinner($player)) {
 				$player->sendMessage($this->plugin->getTranslator()->translate($player, "game.arena.youwin"));
-			} else {
-				$this->addLoser($player);
 			}
 		}
-		(new ArenaEndEvent($this))->call();
+		(new ArenaEndEvent($this, $completed))->call();
 	}
 
-	/**
-	 * @return array<int, array<int, Player>>
-	 */
-	public function getWinners() : array {
-		return $this->winners;
-	}
-
-	public function addWinner(int $topPosition, Player $player) : void {
-		if ($topPosition < self::FIRST_PLACE || $topPosition > self::THIRD_PLACE) {
-			throw new InvalidArgumentException("Invalid top position, must be " . self::FIRST_PLACE . "-" . self::THIRD_PLACE);
-		}
-		$this->winners[$topPosition][$player->getId()] = $player;
-	}
-
-	public function isWinner(Player $player) : bool {
-		foreach ($this->winners as $topPosition => $players) {
-			if (isset($players[$player->getId()])) {
-				return true;
-			}
-		}
-		return false;
-	}
-
-	/**
-	 * @return array<int, Player>
-	 */
-	public function getLosers() : array {
-		return $this->losers;
-	}
-
-	public function addLoser(Player $player) : void {
-		$this->losers[$player->getId()] = $player;
-	}
-
-	public function isLoser(Player $player) : bool {
-		return isset($this->losers[$player->getId()]);
+	public function getPodium() : Podium {
+		return $this->podium;
 	}
 
 	public function getWinnersCage() : Cage {
@@ -624,132 +523,37 @@ final class Arena implements Listener {
 		return $safe;
 	}
 
-	public function tpSafePosition(Player $player) : void {
-		$player->teleport($this->getSafePosition($player));
-	}
-
 	public function getRandomSpawn() : Position {
 		$spawns = $this->map->getSpawns();
 		return Position::fromObject($spawns[array_rand($spawns)], $this->world);
 	}
 
-	public function areInvisibleBlocksSet() : bool {
-		return $this->areInvisibleBlocksSet;
+	public function getWalls() : ArenaWalls {
+		return $this->walls;
+	}
+
+	public function getGate() : StageGate {
+		return $this->gate;
 	}
 
 	/**
-	 * Returns true while one or more async block builds for this arena are still
-	 * draining. Callers that read or mutate the stage (e.g. a microgame tick)
-	 * must not proceed until this returns false.
+	 * Whether async block builds are still draining.
 	 */
 	public function isBuildingStage() : bool {
-		return $this->pendingBuilds > 0;
+		return $this->gate->isBuilding();
 	}
 
 	/**
-	 * Marks one async build as started. Each {@see buildStarted} must be paired
-	 * with exactly one {@see buildSettled}.
+	 * Called by ArenaListener for the damage a player of this arena takes.
 	 */
-	public function onStageBuildStarted() : void {
-		$this->pendingBuilds++;
-	}
-
-	/**
-	 * Marks one async build as finished (its completion callback ran).
-	 */
-	public function onStageBuildSettled() : void {
-		if ($this->pendingBuilds > 0) {
-			$this->pendingBuilds--;
-		}
-	}
-
-	public function buildInvisibleBlocks() : void {
-		$min = $this->map->getPlatformMinPos();
-		$max = $this->map->getPlatformMaxPos();
-		$pos1 = new Position($min->x - 1, $min->y + 30, $min->z - 1, $this->world);
-		$pos2 = new Position($max->x + 1, $min->y + 30, $max->z + 1, $this->world);
-		$pos3 = new Position($pos1->x, $min->y, $pos2->z, $this->world);
-		$pos4 = new Position($pos2->x, $min->y, $pos1->z, $this->world);
-
-		$this->onStageBuildStarted();
-		$selection = new Selection($this->world);
-		$selection->addFill($pos1, $pos3, VanillaBlocks::INVISIBLE_BEDROCK());
-		$selection->addFill($pos3, $pos2, VanillaBlocks::INVISIBLE_BEDROCK());
-		$selection->addFill($pos2, $pos4, VanillaBlocks::INVISIBLE_BEDROCK());
-		$selection->addFill($pos4, $pos1, VanillaBlocks::INVISIBLE_BEDROCK());
-		AsyncBlockManager::getInstance()->executeSet($selection, $this->onStageBuildSettled(...));
-		$this->areInvisibleBlocksSet = true;
-	}
-
-	public function unsetInvisibleBlocks() : void {
-		$min = $this->map->getPlatformMinPos();
-		$max = $this->map->getPlatformMaxPos();
-		$pos1 = new Position($min->x - 1, $min->y + 30, $min->z - 1, $this->world);
-		$pos2 = new Position($max->x + 1, $min->y + 30, $max->z + 1, $this->world);
-		$pos3 = new Position($pos1->x, $min->y, $pos2->z, $this->world);
-		$pos4 = new Position($pos2->x, $min->y, $pos1->z, $this->world);
-
-		$this->onStageBuildStarted();
-		$selection = new Selection($this->world);
-		$selection->addFill($pos1, $pos3, VanillaBlocks::AIR());
-		$selection->addFill($pos3, $pos2, VanillaBlocks::AIR());
-		$selection->addFill($pos2, $pos4, VanillaBlocks::AIR());
-		$selection->addFill($pos4, $pos1, VanillaBlocks::AIR());
-		AsyncBlockManager::getInstance()->executeSet($selection, $this->onStageBuildSettled(...));
-		$this->areInvisibleBlocksSet = false;
-	}
-
-	#Listener
-
-	public function onQuit(PlayerQuitEvent $event) : void {
-		$player = $event->getPlayer();
-		if ($this->inGame($player)) {
-			$this->quit($player);
-		}
-	}
-
-	/**
-	 * @ignoreCancelled
-	 * @priority MONITOR
-	 */
-	public function onWorldChange(EntityTeleportEvent $event) : void {
-		$player = $event->getEntity();
-		if (!$player instanceof Player) return;
-		if ($event->getTo()->getWorld() === $this->world) return;
-		if ($event->getFrom()->world === $event->getTo()->getWorld()) return;
-		if ($this->inGame($player)) {
-			$this->quit($player);
-		}
-	}
-
-	public function onDropItem(PlayerDropItemEvent $event) : void {
-		$player = $event->getPlayer();
-		if ($this->inGame($player)) {
-			$event->cancel();
-		}
-	}
-
-	public function onExhaust(PlayerExhaustEvent $event) : void {
-		$player = $event->getPlayer();
-		if ($player instanceof Player && $this->inGame($player)) {
-			$event->cancel();
-		}
-	}
-
-	public function onDamage(EntityDamageEvent $event) : void {
-		$player = $event->getEntity();
-		if (!$player instanceof Player) return;
-		if (!$this->inGame($player)) return;
+	public function handleDamage(EntityDamageEvent $event, Player $player) : void {
 		if ($this->currentMicrogame === null) {
 			if ($event->getCause() === EntityDamageEvent::CAUSE_VOID) {
 				$player->teleport($this->getRandomSpawn());
 			}
 			$event->cancel();
-		} else {
-			if ($this->currentMicrogame->isLoser($player) ||
-				$this->currentMicrogame->isWinner($player)) {
-				$event->cancel(); //Winners and losers cannot be damaged
-			}
+		} elseif ($this->currentMicrogame->isLoser($player) || $this->currentMicrogame->isWinner($player)) {
+			$event->cancel(); //Winners and losers cannot be damaged
 		}
 	}
 }

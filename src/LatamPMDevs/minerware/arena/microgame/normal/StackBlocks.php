@@ -61,12 +61,7 @@ class StackBlocks extends Microgame implements Listener {
 		return 12.9;
 	}
 
-	public function getRecompensePoints() : int {
-		return self::DEFAULT_RECOMPENSE_POINTS;
-	}
-
 	public function start() : void {
-		$this->plugin->getServer()->getPluginManager()->registerEvents($this, $this->plugin);
 		$dyeColors = DyeColor::getAll();
 		shuffle($dyeColors);
 		$i = 0;
@@ -81,21 +76,14 @@ class StackBlocks extends Microgame implements Listener {
 			}
 			$i++;
 		}
-		if (!$this->arena->areInvisibleBlocksSet()) {
-			$this->arena->buildInvisibleBlocks();
-		}
+		$this->arena->getWalls()->raise();
 		parent::start();
 	}
 
 	public function tick() : void {
 		$timeLeft = $this->getTimeLeft();
 		if ($timeLeft <= 0) {
-			foreach ($this->arena->getPlayers() as $player) {
-				if (!$this->isWinner($player) && !$this->isLoser($player)) {
-					$this->addLoser($player);
-				}
-			}
-			$this->arena->endCurrentMicrogame();
+			$this->endRound();
 			return;
 		}
 		$this->updateTimeBar($timeLeft);
@@ -104,7 +92,7 @@ class StackBlocks extends Microgame implements Listener {
 	public function end() : void {
 		$players = $this->arena->getPlayers();
 		$stacker = null;
-		$stackedBlocks = $this->getStackedBlocksOrderedByHigherScore();
+		$stackedBlocks = Utils::sortScoresDescending($this->stackedBlocks);
 		if ($stackedBlocks !== []) {
 			$stacker = $players[array_key_first($stackedBlocks)] ?? null;
 		}
@@ -144,13 +132,6 @@ class StackBlocks extends Microgame implements Listener {
 
 	public function getStackedBlocks(Player $player) : int {
 		return $this->stackedBlocks[$player->getId()] ?? 0;
-	}
-
-	/**
-	 * @return array<int, int>
-	 */
-	public function getStackedBlocksOrderedByHigherScore() : array {
-		return Utils::sortScoresDescending($this->stackedBlocks);
 	}
 
 	# Listener

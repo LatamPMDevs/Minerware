@@ -22,20 +22,17 @@ declare(strict_types=1);
 
 namespace LatamPMDevs\minerware\arena\microgame\normal;
 
+use LatamPMDevs\minerware\arena\microgame\CancelsBuildEvents;
 use LatamPMDevs\minerware\arena\microgame\Level;
 use LatamPMDevs\minerware\arena\microgame\Microgame;
+use LatamPMDevs\minerware\item\SpecialItems;
 use LatamPMDevs\minerware\utils\Selection;
 use LatamPMDevs\minerware\utils\Utils;
 
 use pocketmine\block\VanillaBlocks;
-use pocketmine\event\block\BlockBreakEvent;
-use pocketmine\event\block\BlockPlaceEvent;
 use pocketmine\event\entity\EntityDamageByEntityEvent;
 use pocketmine\event\entity\EntityDamageEvent;
 use pocketmine\event\Listener;
-use pocketmine\item\enchantment\EnchantmentInstance;
-use pocketmine\item\enchantment\VanillaEnchantments;
-use pocketmine\item\VanillaItems;
 use pocketmine\player\GameMode;
 use pocketmine\player\Player;
 use pocketmine\world\Position;
@@ -44,6 +41,8 @@ use function array_rand;
 use function in_array;
 
 class StandOnDiamond extends Microgame implements Listener {
+
+	use CancelsBuildEvents;
 
 	public const DIAMOND_PLATFORMS = 4;
 
@@ -71,10 +70,6 @@ class StandOnDiamond extends Microgame implements Listener {
 		return 16.9;
 	}
 
-	public function getRecompensePoints() : int {
-		return self::DEFAULT_RECOMPENSE_POINTS;
-	}
-
 	public function start() : void {
 		$map = $this->arena->getMap();
 		$world = $this->arena->getWorld();
@@ -88,12 +83,9 @@ class StandOnDiamond extends Microgame implements Listener {
 			}
 		}
 
-		$knockback = VanillaEnchantments::KNOCKBACK();
 		foreach ($this->arena->getPlayers() as $player) {
 			Utils::initPlayer($player);
-			$stick = VanillaItems::STICK();
-			$stick->setCustomName($this->plugin->getTranslator()->translate($player, "microgame.item.powerstick"));
-			$stick->addEnchantment(new EnchantmentInstance($knockback, self::KNOCKBACK_LEVEL));
+			$stick = SpecialItems::POWER_STICK($this->plugin->getTranslator()->getLanguageOf($player), self::KNOCKBACK_LEVEL);
 			$player->setGamemode(GameMode::ADVENTURE);
 			$player->getInventory()->setItem(0, $stick);
 			$player->getInventory()->setHeldItemIndex(0);
@@ -122,7 +114,7 @@ class StandOnDiamond extends Microgame implements Listener {
 
 	public function end() : void {
 		$players = $this->arena->getPlayers();
-		$hits = $this->getPlayersHitsOrderedByHigherScore();
+		$hits = Utils::sortScoresDescending($this->hitsCount);
 		$hitter = null;
 		if ($hits !== []) {
 			$hitter = $players[array_key_first($hits)] ?? null;
@@ -132,15 +124,11 @@ class StandOnDiamond extends Microgame implements Listener {
 				$player->sendMessage($this->plugin->getTranslator()->translate(
 					$player, "microgame.standondiamond.hitscount", [
 						"{%player}" => $hitter->getName(),
-						"{%hits_count}" => $this->getHits($player)
+						"{%hits_count}" => $this->getHits($hitter)
 					]
 				));
 			}
-			if ($this->isWinner($player)) {
-				$player->sendMessage($this->plugin->getTranslator()->translate($player, "microgame.standondiamond.won"));
-			} elseif ($this->isLoser($player)) {
-				$player->sendMessage($this->plugin->getTranslator()->translate($player, "microgame.threwoffstage"));
-			}
+			$this->sendOutcome($player, "microgame.standondiamond.won", "microgame.threwoffstage");
 		}
 		parent::end();
 	}
@@ -176,26 +164,7 @@ class StandOnDiamond extends Microgame implements Listener {
 		return $this->hitsCount[$player->getId()] ?? 0;
 	}
 
-	/**
-	 * @return array<int, int>
-	 */
-	public function getPlayersHitsOrderedByHigherScore() : array {
-		return Utils::sortScoresDescending($this->hitsCount);
-	}
-
 	# Listener
-
-	public function onBlockBreak(BlockBreakEvent $event) : void {
-		$player = $event->getPlayer();
-		if (!$this->arena->inGame($player)) return;
-		$event->cancel();
-	}
-
-	public function onBlockPlace(BlockPlaceEvent $event) : void {
-		$player = $event->getPlayer();
-		if (!$this->arena->inGame($player)) return;
-		$event->cancel();
-	}
 
 	public function onDamage(EntityDamageEvent $event) : void {
 		$player = $event->getEntity();
@@ -211,9 +180,7 @@ class StandOnDiamond extends Microgame implements Listener {
 		}
 		$event->cancel();
 		if ($event->getCause() === EntityDamageEvent::CAUSE_VOID && !$this->isWinner($player)) {
-			$this->addLoser($player);
-			$this->arena->getLosersCage()->addPlayer($player);
-			$player->sendMessage($this->plugin->getTranslator()->translate($player, "microgame.felloffplatform"));
+			$this->eliminate($player, "microgame.felloffplatform");
 		}
 	}
 }

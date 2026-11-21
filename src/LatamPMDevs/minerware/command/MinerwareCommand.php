@@ -22,12 +22,15 @@ declare(strict_types=1);
 
 namespace LatamPMDevs\minerware\command;
 
-use LatamPMDevs\minerware\libs\_f6d840b9ca6651cb\CortexPE\Commando\BaseCommand;
-use LatamPMDevs\minerware\command\subcommands\ArenasCommand;
+use LatamPMDevs\minerware\libs\_5626dbf575c7ee5b\CortexPE\Commando\BaseCommand;
+use LatamPMDevs\minerware\command\subcommands\ArenaCommand;
 use LatamPMDevs\minerware\command\subcommands\CreditsCommand;
+use LatamPMDevs\minerware\command\subcommands\DefaultLanguageCommand;
 use LatamPMDevs\minerware\command\subcommands\HelpCommand;
 use LatamPMDevs\minerware\command\subcommands\JoinCommand;
 use LatamPMDevs\minerware\command\subcommands\LanguageCommand;
+use LatamPMDevs\minerware\command\subcommands\MapCommand;
+use LatamPMDevs\minerware\command\subcommands\NpcCommand;
 use LatamPMDevs\minerware\command\subcommands\StatisticsCommand;
 use LatamPMDevs\minerware\Minerware;
 use pocketmine\command\CommandSender;
@@ -41,11 +44,14 @@ final class MinerwareCommand extends BaseCommand {
 	}
 
 	protected function prepare() : void {
-		$this->registerSubCommand(new ArenasCommand($this->plugin));
+		$this->registerSubCommand(new ArenaCommand($this->plugin));
 		$this->registerSubCommand(new CreditsCommand($this->plugin));
-		$this->registerSubcommand(new HelpCommand());
-		$this->registerSubcommand(new JoinCommand());
+		$this->registerSubcommand(new DefaultLanguageCommand($this->plugin));
+		$this->registerSubcommand(new HelpCommand($this->plugin));
+		$this->registerSubcommand(new JoinCommand($this->plugin));
 		$this->registerSubcommand(new LanguageCommand($this->plugin));
+		$this->registerSubcommand(new MapCommand($this->plugin));
+		$this->registerSubcommand(new NpcCommand($this->plugin));
 		$this->registerSubcommand(new StatisticsCommand($this->plugin));
 	}
 

@@ -22,16 +22,17 @@ declare(strict_types=1);
 
 namespace LatamPMDevs\minerware\arena\microgame\boss;
 
+use LatamPMDevs\minerware\arena\microgame\CancelsBuildEvents;
 use LatamPMDevs\minerware\arena\microgame\Level;
 use LatamPMDevs\minerware\arena\microgame\Microgame;
 use LatamPMDevs\minerware\utils\Utils;
 
 use pocketmine\block\TNT;
 use pocketmine\block\VanillaBlocks;
+use pocketmine\entity\object\PrimedTNT;
 use pocketmine\entity\projectile\Arrow;
-use pocketmine\event\block\BlockBreakEvent;
-use pocketmine\event\block\BlockPlaceEvent;
 use pocketmine\event\entity\EntityDamageEvent;
+use pocketmine\event\entity\EntityPreExplodeEvent;
 use pocketmine\event\entity\ProjectileHitBlockEvent;
 use pocketmine\event\Listener;
 use pocketmine\item\enchantment\EnchantmentInstance;
@@ -43,6 +44,8 @@ use pocketmine\world\Position;
 
 class BowSpleef extends Microgame implements Listener {
 
+	use CancelsBuildEvents;
+
 	public function getName() : string {
 		return "Bow Spleef";
 	}
@@ -53,10 +56,6 @@ class BowSpleef extends Microgame implements Listener {
 
 	public function getGameDuration() : float {
 		return 120.9;
-	}
-
-	public function getRecompensePoints() : int {
-		return self::BOSS_RECOMPENSE_POINTS;
 	}
 
 	public function start() : void {
@@ -87,12 +86,7 @@ class BowSpleef extends Microgame implements Listener {
 		$timeLeft = $this->getTimeLeft();
 $players = $this->arena->getPlayers();
 		if ($timeLeft <= 0) {
-			foreach ($players as $player) {
-				if (!$this->isLoser($player) && !$this->isWinner($player)) {
-					$this->addWinner($player);
-				}
-			}
-			$this->arena->endCurrentMicrogame();
+			$this->endRound(true);
 			return;
 		}
 		$this->updateTimeBar($timeLeft);
@@ -112,28 +106,23 @@ $players = $this->arena->getPlayers();
 
 	# Listener
 
-	public function onBlockBreak(BlockBreakEvent $event) : void {
-		$player = $event->getPlayer();
-		if (!$this->arena->inGame($player)) return;
-		$event->cancel();
-	}
-
-	public function onBlockPlace(BlockPlaceEvent $event) : void {
-		$player = $event->getPlayer();
-		if (!$this->arena->inGame($player)) return;
-		$event->cancel();
-	}
-
 	public function onDamage(EntityDamageEvent $event) : void {
 		$player = $event->getEntity();
 		if (!$player instanceof Player) return;
 		if (!$this->arena->inGame($player)) return;
-		if ($this->arena->isWinner($player) || $this->arena->isLoser($player)) return;
+		if ($this->isWinner($player) || $this->isLoser($player)) return;
 		$event->cancel();
 		$player->extinguish();
 		if ($event->getCause() === EntityDamageEvent::CAUSE_VOID && !$this->isWinner($player)) {
-			$this->addLoser($player);
-			$this->arena->getLosersCage()->addPlayer($player);
+			$this->lose($player);
+		}
+	}
+
+	public function onExplosion(EntityPreExplodeEvent $event) : void {
+		$entity = $event->getEntity();
+		if ($entity->getWorld() !== $this->arena->getWorld()) return;
+		if ($entity instanceof PrimedTNT) {
+			$event->setBlockBreaking(false);
 		}
 	}
 

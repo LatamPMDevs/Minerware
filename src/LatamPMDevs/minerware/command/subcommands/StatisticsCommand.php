@@ -22,16 +22,19 @@ declare(strict_types=1);
 
 namespace LatamPMDevs\minerware\command\subcommands;
 
-use LatamPMDevs\minerware\libs\_f6d840b9ca6651cb\CortexPE\Commando\args\RawStringArgument;
-use LatamPMDevs\minerware\libs\_f6d840b9ca6651cb\CortexPE\Commando\BaseCommand;
-use LatamPMDevs\minerware\libs\_f6d840b9ca6651cb\CortexPE\Commando\BaseSubCommand;
-use LatamPMDevs\minerware\database\DataManager;
+use LatamPMDevs\minerware\libs\_5626dbf575c7ee5b\CortexPE\Commando\args\RawStringArgument;
+use LatamPMDevs\minerware\libs\_5626dbf575c7ee5b\CortexPE\Commando\BaseCommand;
+use LatamPMDevs\minerware\libs\_5626dbf575c7ee5b\CortexPE\Commando\BaseSubCommand;
 use LatamPMDevs\minerware\database\PlayerData;
-use LatamPMDevs\minerware\form\FormManager;
+use LatamPMDevs\minerware\database\PlayerStorage;
+use LatamPMDevs\minerware\form\StatisticsView;
 use LatamPMDevs\minerware\Minerware;
-use LatamPMDevs\minerware\utils\Utils;
 use pocketmine\command\CommandSender;
 use pocketmine\player\Player;
+use LatamPMDevs\minerware\libs\_5626dbf575c7ee5b\poggit\libasynql\SqlError;
+
+use function is_string;
+use function strcasecmp;
 
 final class StatisticsCommand extends BaseSubCommand {
 
@@ -49,27 +52,31 @@ final class StatisticsCommand extends BaseSubCommand {
 	 */
 	public function onRun(CommandSender $sender, string $aliasUsed, array $args) : void {
 		$translator = $this->plugin->getTranslator();
-		if (!$sender instanceof Player && !isset($args["user"])) {
+		if (!$sender instanceof Player && !is_string($args["user"] ?? null)) {
 			$sender->sendMessage($translator->translate($sender, "command.statistics.noUserProvided"));
 			return;
 		}
-		DataManager::getInstance()->getPlayerData($args["user"] ?? $sender->getName(), function (PlayerData $playerdata) use ($sender, $translator) {
-			if ($sender instanceof Player) {
-				FormManager::getInstance()->sendStatistics($sender, $playerdata);
-			} else {
-				$sender->sendMessage(
-					"§b=== §e" . $translator->translate($sender, "text.statistics.user",
-						["{%user}" => $playerdata->getName()]
-					) . " §b===" . "\n" .
-					"§a" . $translator->translate($sender, "text.statistics.wins") . ": §6" . $playerdata->getWins() . "\n" .
-					"§a" . $translator->translate($sender, "text.statistics.bossGamesWon") . ": §6" . $playerdata->getBossgamesWon() . "\n" .
-					"§a" . $translator->translate($sender, "text.statistics.microgamesWon") . ": §6" . $playerdata->getMicrogamesWon() . "\n" .
-					"§a" . $translator->translate($sender, "text.statistics.gamesPlayed") . ": §6" . $playerdata->getGamesPlayed() . "\n" .
-					"§a" . $translator->translate($sender, "text.statistics.microgamesPlayed") . ": §6" . $playerdata->getMicrogamesPlayed() . "\n" .
-					"§a" . $translator->translate($sender, "text.statistics.timePlayed") . ": §6" . Utils::getTimeTranslated($playerdata->getTimePlayed(), $translator, $sender)
-				);
+		$user = is_string($args["user"] ?? null) ? $args["user"] : $sender->getName();
+		$onSuccess = function (?PlayerData $playerdata) use ($sender, $translator, $user) : void {
+			if ($playerdata === null) {
+				$sender->sendMessage($translator->translate($sender, "command.statistics.notFound", ["{%user}" => $user]));
+				return;
 			}
-		}, null, true);
+			if ($sender instanceof Player && !$sender->isConnected()) {
+				return;
+			}
+			(new StatisticsView())->show($sender, $playerdata);
+		};
+		$onError = function (SqlError $error) use ($sender, $translator) : void {
+			PlayerStorage::getInstance()->onError->__invoke($error);
+			$sender->sendMessage($translator->translate($sender, "command.statistics.error"));
+		};
+		# Someone who never played has no record; only show zeros for yourself.
+		if ($sender instanceof Player && strcasecmp($sender->getName(), $user) === 0) {
+			PlayerStorage::getInstance()->getPlayerData($sender, $onSuccess, $onError, true);
+		} else {
+			PlayerStorage::getInstance()->getPlayerDataByName($user, $onSuccess, $onError);
+		}
 	}
 
 	public function getParent() : BaseCommand {

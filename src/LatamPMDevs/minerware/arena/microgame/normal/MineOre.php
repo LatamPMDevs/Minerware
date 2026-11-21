@@ -24,17 +24,14 @@ namespace LatamPMDevs\minerware\arena\microgame\normal;
 
 use LatamPMDevs\minerware\arena\microgame\Level;
 use LatamPMDevs\minerware\arena\microgame\Microgame;
+use LatamPMDevs\minerware\item\SpecialItems;
 use LatamPMDevs\minerware\utils\Utils;
 
 use pocketmine\block\Block;
 use pocketmine\block\VanillaBlocks;
 use pocketmine\event\block\BlockBreakEvent;
 use pocketmine\event\block\BlockPlaceEvent;
-use pocketmine\event\entity\EntityDamageEvent;
 use pocketmine\event\Listener;
-use pocketmine\item\enchantment\EnchantmentInstance;
-use pocketmine\item\enchantment\VanillaEnchantments;
-use pocketmine\item\VanillaItems;
 use pocketmine\player\GameMode;
 use pocketmine\player\Player;
 use function array_rand;
@@ -74,10 +71,6 @@ class MineOre extends Microgame implements Listener {
 		return 18.9;
 	}
 
-	public function getRecompensePoints() : int {
-		return self::DEFAULT_RECOMPENSE_POINTS;
-	}
-
 	public function start() : void {
 		$ores = self::getOres();
 		$oreKey = array_rand($ores);
@@ -110,12 +103,9 @@ class MineOre extends Microgame implements Listener {
 		}
 
 		$oreItem = $this->ore->asItem();
-		$efficiency = VanillaEnchantments::EFFICIENCY();
 		foreach ($this->arena->getPlayers() as $player) {
 			Utils::initPlayer($player);
-			$pickaxe = VanillaItems::DIAMOND_PICKAXE();
-			$pickaxe->setCustomName($this->plugin->getTranslator()->translate($player, "microgame.item.pickaxe"));
-			$pickaxe->addEnchantment(new EnchantmentInstance($efficiency, self::EFFICIENCY_LEVEL));
+			$pickaxe = SpecialItems::GOD_PICKAXE($this->plugin->getTranslator()->getLanguageOf($player), self::EFFICIENCY_LEVEL);
 			$player->setGamemode(GameMode::SURVIVAL);
 			$player->getInventory()->setItem(0, $pickaxe);
 			$player->getInventory()->setItem(8, $oreItem);
@@ -128,7 +118,7 @@ class MineOre extends Microgame implements Listener {
 		$players = $this->arena->getPlayers();
 		$this->commitStage(function () use ($players) : void {
 			foreach ($players as $player) {
-				$this->arena->tpSafePosition($player);
+				$player->teleport($this->arena->getSafePosition($player));
 			}
 		});
 		$this->arena->getWinnersCage()->set();
@@ -139,12 +129,7 @@ class MineOre extends Microgame implements Listener {
 	public function tick() : void {
 		$timeLeft = $this->getTimeLeft();
 		if ($timeLeft <= 0) {
-			foreach ($this->arena->getPlayers() as $player) {
-				if (!$this->isWinner($player) && !$this->isLoser($player)) {
-					$this->addLoser($player);
-				}
-			}
-			$this->arena->endCurrentMicrogame();
+			$this->endRound();
 			return;
 		}
 		$this->updateTimeBar($timeLeft);
@@ -218,8 +203,7 @@ class MineOre extends Microgame implements Listener {
 			$this->recordOriginalBlock($block);
 		}
 		if ($block->hasSameTypeId($this->ore)) {
-			$this->addWinner($player);
-			$this->arena->getWinnersCage()->addPlayer($player);
+			$this->win($player);
 			$player->sendMessage($this->plugin->getTranslator()->translate($player, "microgame.mineore.oremined"));
 		}
 		$event->setDrops([]);
@@ -232,15 +216,4 @@ class MineOre extends Microgame implements Listener {
 		$event->cancel();
 	}
 
-	public function onDamage(EntityDamageEvent $event) : void {
-		$player = $event->getEntity();
-		if (!$player instanceof Player) return;
-		if (!$this->arena->inGame($player)) return;
-		$event->cancel();
-		if ($event->getCause() === EntityDamageEvent::CAUSE_VOID && !$this->isWinner($player)) {
-			$this->addLoser($player);
-			$this->arena->getLosersCage()->addPlayer($player);
-			$player->sendMessage($this->plugin->getTranslator()->translate($player, "microgame.felloffplatform"));
-		}
-	}
 }

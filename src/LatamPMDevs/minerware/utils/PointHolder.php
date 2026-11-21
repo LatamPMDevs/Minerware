@@ -42,7 +42,7 @@ final class PointHolder {
 	}
 
 	public function addPlayerPoint(Player $player, int $points = 1) : void {
-		$this->points[$player->getId()] += $points;
+		$this->points[$player->getId()] = ($this->points[$player->getId()] ?? 0) + $points;
 	}
 
 	/**

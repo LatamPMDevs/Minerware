@@ -22,15 +22,35 @@ declare(strict_types=1);
 
 namespace LatamPMDevs\minerware;
 
-use LatamPMDevs\minerware\libs\_f6d840b9ca6651cb\CortexPE\Commando\PacketHooker;
-use LatamPMDevs\minerware\libs\_f6d840b9ca6651cb\IvanCraft623\fakeblocks\FakeBlockManager;
-use LatamPMDevs\minerware\libs\_f6d840b9ca6651cb\IvanCraft623\languages\Translator;
-use LatamPMDevs\minerware\libs\_f6d840b9ca6651cb\JackMD\ConfigUpdater\ConfigUpdater;
+use Closure;
+use LatamPMDevs\minerware\libs\_5626dbf575c7ee5b\CortexPE\Commando\PacketHooker;
+use LatamPMDevs\minerware\libs\_5626dbf575c7ee5b\IvanCraft623\fakeblocks\FakeBlockManager;
+use LatamPMDevs\minerware\libs\_5626dbf575c7ee5b\IvanCraft623\languages\Translator;
+use LatamPMDevs\minerware\libs\_5626dbf575c7ee5b\JackMD\ConfigUpdater\ConfigUpdater;
+use LatamPMDevs\minerware\arena\ArenaListener;
 use LatamPMDevs\minerware\arena\ArenaManager;
 use LatamPMDevs\minerware\command\MinerwareCommand;
-use LatamPMDevs\minerware\database\DataManager;
+use LatamPMDevs\minerware\database\PlayerStorage;
+use LatamPMDevs\minerware\entity\object\JoinNpc;
+use LatamPMDevs\minerware\entity\object\LeaderboardText;
+use LatamPMDevs\minerware\entity\object\TopPlayerNpc;
+use LatamPMDevs\minerware\entity\PendingRemovals;
+use LatamPMDevs\minerware\join\Joiner;
+use LatamPMDevs\minerware\join\JoinSigns;
+use LatamPMDevs\minerware\language\LanguageStore;
+use LatamPMDevs\minerware\leaderboard\Leaderboard;
+use LatamPMDevs\minerware\leaderboard\LeaderboardListener;
+use LatamPMDevs\minerware\map\MapStorage;
+use LatamPMDevs\minerware\map\world\MapTemplates;
+use LatamPMDevs\minerware\map\world\MapWorldProviderEntry;
+use pocketmine\entity\EntityDataHelper;
+use pocketmine\entity\EntityFactory;
+use pocketmine\entity\Human;
+use pocketmine\nbt\tag\CompoundTag;
 use pocketmine\plugin\PluginBase;
+use pocketmine\scheduler\ClosureTask;
 use pocketmine\utils\SingletonTrait;
+use pocketmine\world\World;
 
 final class Minerware extends PluginBase {
 	use SingletonTrait {
@@ -38,9 +58,19 @@ final class Minerware extends PluginBase {
 		reset as protected;
 	}
 
-	public const CONFIG_VERSION = 1;
+	public const CONFIG_VERSION = 2;
+
+	private const LEADERBOARD_REFRESH_TICKS = 1200;
 
 	private Translator $translator;
+
+	private Joiner $joiner;
+
+	private PendingRemovals $pendingRemovals;
+
+	private JoinSigns $joinSigns;
+
+	private Leaderboard $leaderboard;
 
 	protected function onLoad() : void {
 		self::setInstance($this);
@@ -49,10 +79,33 @@ final class Minerware extends PluginBase {
 			$this->reloadConfig();
 		}
 
-		DataManager::getInstance();
+		$playerStorage = PlayerStorage::getInstance();
+		MapStorage::getInstance()->install();
+		$languageStore = new LanguageStore($this);
+		$languageStore->saveDefaults();
 		ArenaManager::getInstance();
 		$this->translator = new Translator($this);
-		DataManager::getInstance()->loadLanguages();
+		$this->joiner = new Joiner($this);
+		$this->pendingRemovals = new PendingRemovals();
+		$this->joinSigns = new JoinSigns($this, $this->joiner);
+		$this->leaderboard = new Leaderboard(static fn (Closure $onSuccess, Closure $onError) => $playerStorage->getTopWins(Leaderboard::SIZE, $onSuccess, $onError));
+		# Saved with the world, so registered before any world loads.
+		EntityFactory::getInstance()->register(
+			JoinNpc::class,
+			static fn (World $world, CompoundTag $nbt) : JoinNpc => new JoinNpc(EntityDataHelper::parseLocation($nbt, $world), Human::parseSkinNBT($nbt), $nbt),
+			[JoinNpc::SAVE_ID]
+		);
+		EntityFactory::getInstance()->register(
+			LeaderboardText::class,
+			static fn (World $world, CompoundTag $nbt) : LeaderboardText => new LeaderboardText(EntityDataHelper::parseLocation($nbt, $world), Human::parseSkinNBT($nbt), $nbt),
+			[LeaderboardText::SAVE_ID]
+		);
+		EntityFactory::getInstance()->register(
+			TopPlayerNpc::class,
+			static fn (World $world, CompoundTag $nbt) : TopPlayerNpc => new TopPlayerNpc(EntityDataHelper::parseLocation($nbt, $world), Human::parseSkinNBT($nbt), $nbt),
+			[TopPlayerNpc::SAVE_ID]
+		);
+		$languageStore->load($this->translator);
 		$this->getServer()->getCommandMap()->register("minerware", new MinerwareCommand($this));
 	}
 
@@ -64,21 +117,49 @@ final class Minerware extends PluginBase {
 			FakeBlockManager::register($this);
 		}
 
-		$dataManager = DataManager::getInstance();
-		$dataManager->loadMaps();
-		$this->getServer()->getPluginManager()->registerEvents(new EventListener($dataManager), $this);
+		$this->getServer()->getWorldManager()->getProviderManager()->addProvider(new MapWorldProviderEntry(), "minerware");
+		MapTemplates::getInstance()->cleanupStaleInstances();
+
+		MapStorage::getInstance()->loadAll();
+		$this->getServer()->getPluginManager()->registerEvents(new PlayerDataListener(PlayerStorage::getInstance()), $this);
+		$this->getServer()->getPluginManager()->registerEvents(new ArenaListener(), $this);
+		$this->getServer()->getPluginManager()->registerEvents(new LeaderboardListener($this), $this);
+		$this->joinSigns->enable();
+		$this->leaderboard->refresh();
+		$this->getScheduler()->scheduleRepeatingTask(new ClosureTask($this->leaderboard->refresh(...)), self::LEADERBOARD_REFRESH_TICKS);
+		$arenaManager = ArenaManager::getInstance();
+		$this->getScheduler()->scheduleRepeatingTask(new ClosureTask($arenaManager->tick(...)), 20); //ticks
+		$this->getScheduler()->scheduleRepeatingTask(new ClosureTask($arenaManager->tickMicrogames(...)), 3); //ticks
 	}
 
 	protected function onDisable() : void {
 		foreach (ArenaManager::getInstance()->getArenas() as $arena) {
-			$arena->deleteMap();
+			$arena->close();
 		}
 		$this->getConfig()->set("default-language", $this->translator->getDefaultLanguage()->getLocale());
-		DataManager::getInstance()->closeDatabase();
+		$this->saveConfig();
+		MapTemplates::getInstance()->closeAll();
+		PlayerStorage::getInstance()->close();
 	}
 
 	public function getPrefix() : string {
 		return "§aMinerware§r ";
+	}
+
+	public function getJoiner() : Joiner {
+		return $this->joiner;
+	}
+
+	public function getPendingRemovals() : PendingRemovals {
+		return $this->pendingRemovals;
+	}
+
+	public function getJoinSigns() : JoinSigns {
+		return $this->joinSigns;
+	}
+
+	public function getLeaderboard() : Leaderboard {
+		return $this->leaderboard;
 	}
 
 	public function getTranslator() : Translator {

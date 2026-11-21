@@ -22,9 +22,11 @@ declare(strict_types=1);
 
 namespace LatamPMDevs\minerware\arena\microgame\normal;
 
-use LatamPMDevs\minerware\libs\_f6d840b9ca6651cb\IvanCraft623\fakeblocks\FakeBlock;
-use LatamPMDevs\minerware\libs\_f6d840b9ca6651cb\IvanCraft623\fakeblocks\FakeBlockManager;
+use LatamPMDevs\minerware\libs\_5626dbf575c7ee5b\IvanCraft623\fakeblocks\FakeBlock;
+use LatamPMDevs\minerware\libs\_5626dbf575c7ee5b\IvanCraft623\fakeblocks\FakeBlockManager;
+use LatamPMDevs\minerware\arena\microgame\CancelsBuildEvents;
 use LatamPMDevs\minerware\arena\microgame\Level;
+use LatamPMDevs\minerware\arena\microgame\LosesInVoid;
 
 use LatamPMDevs\minerware\arena\microgame\Microgame;
 use LatamPMDevs\minerware\utils\Selection;
@@ -32,9 +34,6 @@ use LatamPMDevs\minerware\utils\Utils;
 
 use pocketmine\block\VanillaBlocks;
 use pocketmine\block\Water;
-use pocketmine\event\block\BlockBreakEvent;
-use pocketmine\event\block\BlockPlaceEvent;
-use pocketmine\event\entity\EntityDamageEvent;
 use pocketmine\event\Listener;
 use pocketmine\event\player\PlayerInteractEvent;
 use pocketmine\item\LiquidBucket;
@@ -48,6 +47,9 @@ use function morton3d_encode;
 use function mt_rand;
 
 class FillTheTank extends Microgame implements Listener {
+
+	use CancelsBuildEvents;
+	use LosesInVoid;
 
 	/** Should this be configurable? */
 	public const TANK_WATER_Y_POS = 3;
@@ -78,10 +80,6 @@ class FillTheTank extends Microgame implements Listener {
 
 	public function getGameDuration() : float {
 		return 20.9;
-	}
-
-	public function getRecompensePoints() : int {
-		return self::DEFAULT_RECOMPENSE_POINTS;
 	}
 
 	public function addWinner(Player $player) : void {
@@ -116,9 +114,9 @@ class FillTheTank extends Microgame implements Listener {
 
 		#Water platform
 		$waterPos = new Position(
-			mt_rand($minPos->x + 1, $maxPos->x - (self::WATER_PLATFORM_SIZE + 1)),
-			(int) $maxPos->y,
-			mt_rand($minPos->z + 1, $maxPos->z - (self::WATER_PLATFORM_SIZE + 1)),
+			mt_rand($minPos->getFloorX() + 1, $maxPos->getFloorX() - (self::WATER_PLATFORM_SIZE + 1)),
+			$maxPos->getFloorY(),
+			mt_rand($minPos->getFloorZ() + 1, $maxPos->getFloorZ() - (self::WATER_PLATFORM_SIZE + 1)),
 			$world
 		);
 		$waterSize = self::WATER_PLATFORM_SIZE - 1;
@@ -133,12 +131,12 @@ class FillTheTank extends Microgame implements Listener {
 		#Tank
 		do {
 			$this->tankPosition = new Position(
-				mt_rand($minPos->x, $maxPos->x),
-				(int) ($maxPos->y + 1),
-				mt_rand($minPos->z, $maxPos->z),
+				mt_rand($minPos->getFloorX(), $maxPos->getFloorX()),
+				$maxPos->getFloorY() + 1,
+				mt_rand($minPos->getFloorZ(), $maxPos->getFloorZ()),
 				$world
 			);
-		} while (isset($this->waterPlatform[morton3d_encode($this->tankPosition->x, $this->tankPosition->y - 1, $this->tankPosition->z)]));
+		} while (isset($this->waterPlatform[morton3d_encode($this->tankPosition->getFloorX(), $this->tankPosition->getFloorY() - 1, $this->tankPosition->getFloorZ())]));
 		$this->buildTank($selection);
 
 		#FakeBlocks
@@ -201,12 +199,7 @@ class FillTheTank extends Microgame implements Listener {
 		$timeLeft = $this->getTimeLeft();
 		$players = $this->arena->getPlayers();
 		if ($timeLeft <= 0 || count($this->winners) >= count($players)) {
-			foreach ($players as $player) {
-				if (!$this->isWinner($player) && !$this->isLoser($player)) {
-					$this->addLoser($player);
-				}
-			}
-			$this->arena->endCurrentMicrogame();
+			$this->endRound();
 			return;
 		}
 		$this->updateTimeBar($timeLeft);
@@ -215,11 +208,7 @@ class FillTheTank extends Microgame implements Listener {
 	public function end() : void {
 		$players = $this->arena->getPlayers();
 		foreach ($players as $player) {
-			if ($this->isWinner($player)) {
-				$player->sendMessage($this->plugin->getTranslator()->translate($player, "microgame.fillthetank.won"));
-			} elseif ($this->isLoser($player)) {
-				$player->sendMessage($this->plugin->getTranslator()->translate($player, "microgame.fillthetank.lose"));
-			}
+			$this->sendOutcome($player, "microgame.fillthetank.won", "microgame.fillthetank.lose");
 		}
 		foreach ($this->tankFakeblocks as $fakeblock) {
 			$this->fakeblockManeger->destroy($fakeblock);
@@ -252,30 +241,6 @@ class FillTheTank extends Microgame implements Listener {
 
 	# Listener
 
-	public function onBlockBreak(BlockBreakEvent $event) : void {
-		$player = $event->getPlayer();
-		if (!$this->arena->inGame($player)) return;
-		$event->cancel();
-	}
-
-	public function onBlockPlace(BlockPlaceEvent $event) : void {
-		$player = $event->getPlayer();
-		if (!$this->arena->inGame($player)) return;
-		$event->cancel();
-	}
-
-	public function onDamage(EntityDamageEvent $event) : void {
-		$player = $event->getEntity();
-		if (!$player instanceof Player) return;
-		if (!$this->arena->inGame($player)) return;
-		$event->cancel();
-		if ($event->getCause() === EntityDamageEvent::CAUSE_VOID && !$this->isWinner($player)) {
-			$this->addLoser($player);
-			$this->arena->getLosersCage()->addPlayer($player);
-			$player->sendMessage($this->plugin->getTranslator()->translate($player, "microgame.felloffplatform"));
-		}
-	}
-
 	/**
 	 * @ignoreCancelled
 	 * @priority HIGH
@@ -302,8 +267,7 @@ class FillTheTank extends Microgame implements Listener {
 					]
 				));
 				if ($filled >= self::TANK_DEPT) {
-					$this->addWinner($player);
-					$this->arena->getWinnersCage()->addPlayer($player);
+					$this->win($player);
 				}
 			}
 			$event->cancel();

@@ -22,6 +22,7 @@ declare(strict_types=1);
 
 namespace LatamPMDevs\minerware\arena\microgame\boss;
 
+use LatamPMDevs\minerware\arena\microgame\CancelsBuildEvents;
 use LatamPMDevs\minerware\arena\microgame\Level;
 use LatamPMDevs\minerware\arena\microgame\Microgame;
 use LatamPMDevs\minerware\entity\object\FallingBlock;
@@ -34,8 +35,6 @@ use pocketmine\block\VanillaBlocks;
 use pocketmine\entity\effect\EffectInstance;
 use pocketmine\entity\effect\VanillaEffects;
 use pocketmine\entity\Location;
-use pocketmine\event\block\BlockBreakEvent;
-use pocketmine\event\block\BlockPlaceEvent;
 use pocketmine\event\entity\EntityDamageEvent;
 use pocketmine\event\Listener;
 use pocketmine\math\AxisAlignedBB;
@@ -48,6 +47,8 @@ use function ceil;
 use function count;
 
 class TnTRun extends Microgame implements Listener {
+
+	use CancelsBuildEvents;
 
 	public const LAYERS = 4;
 
@@ -71,10 +72,6 @@ class TnTRun extends Microgame implements Listener {
 
 	public function getGameDuration() : float {
 		return 100.9;
-	}
-
-	public function getRecompensePoints() : int {
-		return self::BOSS_RECOMPENSE_POINTS;
 	}
 
 	public function start() : void {
@@ -114,7 +111,7 @@ class TnTRun extends Microgame implements Listener {
 			$player->getInventory()->setHeldItemIndex(0);
 		}
 		$losersCage = $this->arena->getLosersCage();
-		$losersCagePos = $losersCage->getPosition();
+		$losersCagePos = clone $losersCage->getPosition();
 		$losersCagePos->y = $highestPlatformY + self::EXTRA_CAGE_Y_POS;
 		$losersCage->setPosition($losersCagePos);
 
@@ -155,12 +152,7 @@ class TnTRun extends Microgame implements Listener {
 		$timeLeft = $this->getTimeLeft();
 		$players = $this->arena->getPlayers();
 		if ($timeLeft <= 0 || (count($players) - count($this->getLosers()) <= 1)) {
-			foreach ($players as $player) {
-				if (!$this->isLoser($player) && !$this->isWinner($player)) {
-					$this->addWinner($player);
-				}
-			}
-			$this->arena->endCurrentMicrogame();
+			$this->endRound(true);
 			return;
 		}
 		$gameDuration = $this->getGameDuration();
@@ -204,12 +196,7 @@ class TnTRun extends Microgame implements Listener {
 
 	public function end() : void {
 		foreach ($this->arena->getPlayers() as $player) {
-			if ($this->isWinner($player)) {
-				$player->sendMessage($this->plugin->getTranslator()->translate($player, "microgame.tntrun.won"));
-			} elseif ($this->isLoser($player)) {
-				$player->sendMessage($this->plugin->getTranslator()->translate($player, "microgame.threwoffstage"
-				));
-			}
+			$this->sendOutcome($player, "microgame.tntrun.won", "microgame.threwoffstage");
 		}
 		parent::end();
 	}
@@ -221,7 +208,10 @@ class TnTRun extends Microgame implements Listener {
 	public function delayedBlockDestruction(Block $block, int $ticks) : void {
 		$task = new ClosureTask(function () use ($block) : void {
 			$pos = $block->getPosition();
-			$pos->getWorld()->setBlockAt($pos->x, $pos->y, $pos->z, VanillaBlocks::AIR(), false);
+			if (!$this->isRunning() || !$pos->getWorld()->isLoaded()) {
+				return;
+			}
+			$pos->getWorld()->setBlockAt($pos->getFloorX(), $pos->getFloorY(), $pos->getFloorZ(), VanillaBlocks::AIR(), false);
 			$fallingBlock = new FallingBlock(
 				new Location($pos->x + 0.5, $pos->y, $pos->z + 0.5, $pos->getWorld(), 0.0, 0.0),
 				$block
@@ -235,28 +225,15 @@ class TnTRun extends Microgame implements Listener {
 
 	# Listener
 
-	public function onBlockBreak(BlockBreakEvent $event) : void {
-		$player = $event->getPlayer();
-		if (!$this->arena->inGame($player)) return;
-		$event->cancel();
-	}
-
-	public function onBlockPlace(BlockPlaceEvent $event) : void {
-		$player = $event->getPlayer();
-		if (!$this->arena->inGame($player)) return;
-		$event->cancel();
-	}
-
 	public function onDamage(EntityDamageEvent $event) : void {
 		$player = $event->getEntity();
 		if (!$player instanceof Player) return;
 		if (!$this->arena->inGame($player)) return;
-		if ($this->arena->isWinner($player) || $this->arena->isLoser($player)) return;
+		if ($this->isWinner($player) || $this->isLoser($player)) return;
 		$event->cancel();
 		$player->extinguish();
 		if ($event->getCause() === EntityDamageEvent::CAUSE_VOID && !$this->isWinner($player)) {
-			$this->addLoser($player);
-			$this->arena->getLosersCage()->addPlayer($player);
+			$this->lose($player);
 		}
 	}
 }

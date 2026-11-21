@@ -28,24 +28,13 @@ use pocketmine\utils\SingletonTrait;
 use function array_shift;
 
 /**
- * Single entry point for applying {@see Selection}s without blocking the main
- * thread. Submits an {@see AsyncBlockOperation} to PocketMine's async task pool:
- * the per-block mutation runs on a worker thread and the chunks are swapped back
- * into the world on the main thread in the operation's completion pass.
- *
- * Callers that read or mutate the stage afterwards must coordinate through their
- * own build accounting (e.g. {@see LatamPMDevs\minerware\arena\Arena
- * ::isBuildingStage}); this manager is intentionally stateless and fire-and-forget.
+ * Single entry point for applying Selections without blocking the main thread.
  */
 final class AsyncBlockManager {
 
 	use SingletonTrait;
 
-	/**
-	 * @var array<int, list<array{0: Selection, 1: ?Closure}>> world id →
-	 * operations waiting for the in-flight one
-	 * @phpstan-var array<int, list<array{0: Selection, 1: ?Closure(?Selection $undo) : void}>>
-	 */
+	/** @var array<int, list<PendingBlockOperation>> world id → operations waiting for the in-flight one */
 	private array $queued = [];
 
 	/** @var array<int, bool> world id → an operation is currently in flight */
@@ -55,20 +44,8 @@ final class AsyncBlockManager {
 	}
 
 	/**
-	 * Applies a selection asynchronously. Operations on the same world are
-	 * serialized (one in flight at a time): each worker mutates a full copy of
-	 * the affected chunks, so two concurrent operations touching the same chunk
-	 * would overwrite each other wholesale when swapped back. Different worlds
-	 * (arenas) still run in parallel.
+	 * Applies a selection asynchronously.
 	 *
-	 * @param Selection $selection the change set to apply. An empty selection
-	 * is a no-op that settles immediately.
-	 * @param ?Closure $onComplete invoked on the main thread once the modified
-	 * chunks have been swapped into the world, receiving the inverse selection
-	 * (every applied cell's pre-change state) — or null when nothing was
-	 * applied (empty selection, world unloaded mid-queue, or swap failure);
-	 * submit it through this same method to undo the operation. May run
-	 * synchronously (empty selection) or later (one async step).
 	 * @phpstan-param ?Closure(?Selection $undo) : void $onComplete
 	 */
 	public function executeSet(Selection $selection, ?Closure $onComplete = null) : void {
@@ -80,7 +57,7 @@ final class AsyncBlockManager {
 			return;
 		}
 		$worldId = $selection->getWorld()->getId();
-		$this->queued[$worldId][] = [$selection, $onComplete];
+		$this->queued[$worldId][] = new PendingBlockOperation($selection, $onComplete);
 		if (!isset($this->running[$worldId])) {
 			$this->submitNext($worldId);
 		}
@@ -90,7 +67,9 @@ final class AsyncBlockManager {
 		/** @var list<Closure(?Selection $undo) : void> $dropped */
 		$dropped = [];
 		while (isset($this->queued[$worldId]) && $this->queued[$worldId] !== []) {
-			[$selection, $onComplete] = array_shift($this->queued[$worldId]);
+			$pending = array_shift($this->queued[$worldId]);
+			$selection = $pending->selection;
+			$onComplete = $pending->onComplete;
 			$world = $selection->getWorld();
 			if (!$world->isLoaded()) {
 				# The world was unloaded while this operation waited (e.g. the

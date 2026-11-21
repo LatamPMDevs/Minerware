@@ -22,9 +22,14 @@ declare(strict_types=1);
 
 namespace LatamPMDevs\minerware\map;
 
-use LatamPMDevs\minerware\database\DataHolder;
+use InvalidArgumentException;
+use LatamPMDevs\minerware\map\data\MapData;
+use LatamPMDevs\minerware\map\data\MapDataParser;
+use LatamPMDevs\minerware\map\data\PositionData;
 use LatamPMDevs\minerware\utils\Utils;
 use pocketmine\math\Vector3;
+use function array_map;
+use function count;
 
 final class Map {
 
@@ -55,24 +60,75 @@ final class Map {
 
 	private Vector3 $losersCage;
 
-	public function __construct(private DataHolder $data) {
-		$this->name = $data->getString("name");
+	private function __construct() { }
 
-		$platform = $data->getArray("platform");
-		$minMax = Utils::calculateMinAndMaxPos(
-			new Vector3($platform["pos1"]["X"], $platform["pos1"]["Y"], $platform["pos1"]["Z"]),
-			new Vector3($platform["pos2"]["X"], $platform["pos2"]["Y"], $platform["pos2"]["Z"])
-		);
-		$this->platformMinPos = $minMax[0];
-		$this->platformMaxPos = $minMax[1];
-		$this->center = $this->platformMinPos->add(self::PLATFORM_X_SIZE / 2, 0, self::PLATFORM_Z_SIZE / 2);
+	/**
+	 * @param array<string, mixed> $data
+	 * @throws InvalidArgumentException
+	 */
+	public static function fromArray(array $data) : self {
+		return self::fromData(MapDataParser::parse($data));
+	}
 
-		foreach ($data->getArray("spawns") as $spawnData) {
-			$this->spawns[] = new Vector3($spawnData["X"], $spawnData["Y"], $spawnData["Z"]);
+	/**
+	 * @throws InvalidArgumentException
+	 */
+	public static function fromData(MapData $data) : self {
+		$map = new self();
+		if ($data->name === "") {
+			throw new InvalidArgumentException("The map has no name");
 		}
-		$cages = $data->getArray("cages");
-		$this->winnersCage = new Vector3($cages["winners"]["X"], $cages["winners"]["Y"], $cages["winners"]["Z"]);
-		$this->losersCage = new Vector3($cages["losers"]["X"], $cages["losers"]["Y"], $cages["losers"]["Z"]);
+		$map->name = $data->name;
+
+		[$min, $max] = Utils::calculateMinAndMaxPos(self::vector($data->platform->pos1), self::vector($data->platform->pos2));
+		$size = (int) ($max->x - $min->x) + 1;
+		$depth = (int) ($max->z - $min->z) + 1;
+		if ($size !== self::PLATFORM_X_SIZE || $depth !== self::PLATFORM_Z_SIZE) {
+			throw new InvalidArgumentException("The platform must be " . self::PLATFORM_X_SIZE . "x" . self::PLATFORM_Z_SIZE . ", got {$size}x{$depth}");
+		}
+		$map->platformMinPos = $min;
+		$map->platformMaxPos = $max;
+		$map->center = $min->add(self::PLATFORM_X_SIZE / 2, 0, self::PLATFORM_Z_SIZE / 2);
+
+		foreach ($data->spawns as $spawn) {
+			$map->spawns[] = self::vector($spawn);
+		}
+		if (count($map->spawns) === 0) {
+			throw new InvalidArgumentException("The map has no spawns");
+		}
+
+		$map->winnersCage = self::vector($data->cages->winners);
+		$map->losersCage = self::vector($data->cages->losers);
+		return $map;
+	}
+
+	/**
+	 * @return array<string, mixed>
+	 */
+	public function toArray() : array {
+		return [
+			"name" => $this->name,
+			"platform" => [
+				"pos1" => self::fromVector($this->platformMinPos),
+				"pos2" => self::fromVector($this->platformMaxPos)
+			],
+			"spawns" => array_map(self::fromVector(...), $this->spawns),
+			"cages" => [
+				"winners" => self::fromVector($this->winnersCage),
+				"losers" => self::fromVector($this->losersCage)
+			]
+		];
+	}
+
+	private static function vector(PositionData $position) : Vector3 {
+		return new Vector3($position->X, $position->Y, $position->Z);
+	}
+
+	/**
+	 * @return array{X: float, Y: float, Z: float}
+	 */
+	private static function fromVector(Vector3 $v) : array {
+		return ["X" => $v->x, "Y" => $v->y, "Z" => $v->z];
 	}
 
 	public function getName() : string {

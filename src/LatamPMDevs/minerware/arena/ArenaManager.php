@@ -22,24 +22,25 @@ declare(strict_types=1);
 
 namespace LatamPMDevs\minerware\arena;
 
-use LatamPMDevs\minerware\database\DataManager;
+use LatamPMDevs\minerware\join\JoinResult;
 use LatamPMDevs\minerware\map\Map;
 use LatamPMDevs\minerware\map\MapManager;
-use LatamPMDevs\minerware\Minerware;
-use pocketmine\event\HandlerListManager;
+use LatamPMDevs\minerware\map\world\MapWorldException;
+use LatamPMDevs\minerware\Settings;
 use pocketmine\player\Player;
 use pocketmine\utils\SingletonTrait;
-use RuntimeException;
+use function chr;
 use function count;
-use function rand;
-use function range;
-use function shuffle;
+use function random_int;
 
 final class ArenaManager {
 	use SingletonTrait;
 
 	/** @var array<string, Arena> */
 	private array $arenas = [];
+
+	/** @var array<int, Arena> player id => the arena they are in */
+	private array $playerArenas = [];
 
 	/**
 	 * @return array<string, Arena>
@@ -49,51 +50,110 @@ final class ArenaManager {
 	}
 
 	public function getById(string $id) : ?Arena {
-		return (isset($this->arenas[$id]) ? $this->arenas[$id] : null);
+		return $this->arenas[$id] ?? null;
 	}
 
+	/**
+	 * @throws ArenaCreationException
+	 */
 	public function createArena(?Map $map = null) : Arena {
 		$id = $this->generateId();
-		$arena = new Arena($id, $map ?? MapManager::getInstance()->getRandom() ?? throw new RuntimeException("No maps available to create an arena"));
+		$map ??= MapManager::getInstance()->getRandom() ?? throw new ArenaCreationException("No maps available to create an arena");
+		try {
+			$arena = new Arena($id, $map);
+		} catch (MapWorldException $e) {
+			throw new ArenaCreationException("Could not create the world of arena '$id': " . $e->getMessage(), 0, $e);
+		}
 		$this->arenas[$id] = $arena;
 		return $arena;
 	}
 
 	public function deleteArena(Arena $arena) : void {
-		HandlerListManager::global()->unregisterAll($arena);
 		unset($this->arenas[$arena->getId()]);
 	}
 
-	public function getAvailable(?Map $map = null, bool $force = false) : ?Arena {
+	public function getAvailable(?Map $map = null) : ?Arena {
+		$fullest = null;
 		foreach ($this->arenas as $arena) {
-			if (($arena->getStatus() === Status::WAITING || $arena->getStatus() === Status::STARTING) && ($map === null || $arena->getMap() === $map) && count($arena->getPlayers()) < Arena::MAX_PLAYERS) {
-				return $arena;
+			if (!$arena->canJoin() || ($map !== null && $arena->getMap() !== $map)) {
+				continue;
+			}
+			if ($fullest === null || count($arena->getPlayers()) > count($fullest->getPlayers())) {
+				$fullest = $arena;
 			}
 		}
-		if ($force && count($this->arenas) >= DataManager::getInstance()->getMaxRuntimeArenas()) {
+		if ($fullest !== null) {
+			return $fullest;
+		}
+		if (count($this->arenas) >= Settings::getInstance()->getMaxRuntimeArenas()) {
 			return null;
 		}
 		return $this->createArena($map);
 	}
 
 	public function generateId() : string {
-		$az = range("a", "z");
-		shuffle($az);
-
-		$name = "";
-		$name .= $az[0];
-		$name .= $az[1];
-		$name .= rand(10, 99);
-		return $name;
+		do {
+			$id = chr(random_int(97, 122)) . chr(random_int(97, 122)) . random_int(10, 99);
+		} while (isset($this->arenas[$id]));
+		return $id;
 	}
 
-	public function join(Player $player, Arena $arena = null, Map $map = null) : void {
+	/**
+	 * Runs one second of every arena.
+	 */
+	public function tick() : void {
+		foreach ($this->arenas as $arena) {
+			$arena->tick();
+		}
+	}
+
+	/**
+	 * Runs a few ticks of the microgame of every arena.
+	 */
+	public function tickMicrogames() : void {
+		foreach ($this->arenas as $arena) {
+			$arena->tickMicrogame();
+		}
+	}
+
+	public function getArenaOf(Player $player) : ?Arena {
+		return $this->playerArenas[$player->getId()] ?? null;
+	}
+
+	/**
+	 * Called by Arena when a player joins it.
+	 */
+	public function bindPlayer(Player $player, Arena $arena) : void {
+		$this->playerArenas[$player->getId()] = $arena;
+	}
+
+	/**
+	 * Called by Arena when a player leaves it.
+	 */
+	public function unbindPlayer(Player $player, Arena $arena) : void {
+		if (($this->playerArenas[$player->getId()] ?? null) === $arena) {
+			unset($this->playerArenas[$player->getId()]);
+		}
+	}
+
+	/**
+	 * Puts the player in the given arena, or in an available one (on the given map, if any).
+	 *
+	 * @throws ArenaCreationException
+	 */
+	public function place(Player $player, ?Arena $arena = null, ?Map $map = null) : JoinResult {
 		if ($arena === null) {
-			if (MapManager::getInstance()->getCount() === 0 || ($arena = $this->getAvailable($map)) === null) {
-				$player->sendMessage(Minerware::getInstance()->getTranslator()->translate($player, "game.noArenaAvaiable"));
-				return;
+			if (MapManager::getInstance()->getCount() === 0) {
+				return JoinResult::NO_MAPS;
+			}
+			$arena = $this->getAvailable($map);
+			if ($arena === null) {
+				return JoinResult::FULL;
 			}
 		}
-		$arena->join($player);
+		if (!$arena->canJoin()) {
+			return JoinResult::FULL;
+		}
+		return $arena->join($player) ? JoinResult::JOINED : JoinResult::DENIED;
 	}
 }

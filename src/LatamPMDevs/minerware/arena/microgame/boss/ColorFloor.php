@@ -22,9 +22,11 @@ declare(strict_types=1);
 
 namespace LatamPMDevs\minerware\arena\microgame\boss;
 
+use LatamPMDevs\minerware\arena\microgame\CancelsBuildEvents;
 use LatamPMDevs\minerware\arena\microgame\Level;
 use LatamPMDevs\minerware\arena\microgame\Microgame;
 use LatamPMDevs\minerware\entity\projectile\ColorMissile;
+use LatamPMDevs\minerware\item\SpecialItems;
 use LatamPMDevs\minerware\utils\Utils;
 
 use pocketmine\block\Block;
@@ -32,25 +34,26 @@ use pocketmine\block\StainedHardenedClay;
 use pocketmine\block\utils\DyeColor;
 use pocketmine\block\VanillaBlocks;
 use pocketmine\entity\projectile\SplashPotion;
-use pocketmine\event\block\BlockBreakEvent;
-use pocketmine\event\block\BlockPlaceEvent;
 use pocketmine\event\entity\EntityDamageEvent;
 use pocketmine\event\entity\ProjectileHitEvent;
 use pocketmine\event\entity\ProjectileLaunchEvent;
 use pocketmine\event\Listener;
 use pocketmine\event\player\PlayerInteractEvent;
 use pocketmine\item\Hoe;
-use pocketmine\item\PotionType;
 use pocketmine\item\VanillaItems;
 use pocketmine\player\GameMode;
 use pocketmine\player\Player;
 use pocketmine\world\Position;
 use pocketmine\world\sound\ThrowSound;
+use function array_filter;
 use function array_slice;
+use function array_values;
 use function count;
 use function shuffle;
 
 class ColorFloor extends Microgame implements Listener {
+
+	use CancelsBuildEvents;
 
 	public const COLOR_MISSILE_COUNT = 2;
 
@@ -79,10 +82,6 @@ class ColorFloor extends Microgame implements Listener {
 		return 60.9;
 	}
 
-	public function getRecompensePoints() : int {
-		return self::BOSS_RECOMPENSE_POINTS;
-	}
-
 	public function start() : void {
 		$map = $this->arena->getMap();
 		$world = $this->arena->getWorld();
@@ -93,42 +92,32 @@ class ColorFloor extends Microgame implements Listener {
 		$selection->addFill($minPos, $maxPos, VanillaBlocks::STAINED_CLAY());
 		$this->blocksCount = (int) (($maxPos->x - $minPos->x + 1) * ($maxPos->z - $minPos->z + 1));
 
-		$dyeColors = DyeColor::cases();
+		// Players must not have the color white
+		$dyeColors = array_values(array_filter(DyeColor::cases(), static fn (DyeColor $c) => $c !== DyeColor::WHITE));
 		shuffle($dyeColors);
 		$i = 0;
 		foreach ($this->arena->getPlayers() as $player) {
 			Utils::initPlayer($player);
 			$player->setGamemode(GameMode::SURVIVAL);
-			if ($dyeColors[$i] === DyeColor::WHITE) {
-				$i++; // Players must not have the color white
-			}
 			if ($i < count($dyeColors)) {
 				$this->setAssignedColor($player, $dyeColors[$i]);
-				$hoe = VanillaItems::DIAMOND_HOE();
-				$hoe->setCustomName($this->plugin->getTranslator()->translate($player, "microgame.item.colorizer"));
-				$missile = VanillaItems::SPLASH_POTION()->setType(PotionType::LEAPING);
-				$missile->setCustomName($this->plugin->getTranslator()->translate($player, "microgame.item.colormissile"));
-				$missile->setCount(self::COLOR_MISSILE_COUNT);
-				$assignedColor = VanillaBlocks::STAINED_CLAY()->setColor($dyeColors[$i])->asItem();
-				$assignedColor->setCustomName($this->plugin->getTranslator()->translate($player, "microgame.colorfloor.yourcolor"));
-				$player->getInventory()->setItem(0, $hoe);
-				$player->getInventory()->setItem(1, $missile);
-				$player->getInventory()->setItem(8, $assignedColor);
+				$language = $this->plugin->getTranslator()->getLanguageOf($player);
+				$player->getInventory()->setItem(0, SpecialItems::COLORIZER_HOE($language));
+				$player->getInventory()->setItem(1, SpecialItems::COLOR_MISSILE($language, self::COLOR_MISSILE_COUNT));
+				$player->getInventory()->setItem(8, SpecialItems::COLOR_CLAY($language, $dyeColors[$i]));
 				$player->getInventory()->setHeldItemIndex(0);
 			}
 			$i++;
 		}
 		$this->commitStage();
-		if (!$this->arena->areInvisibleBlocksSet()) {
-			$this->arena->buildInvisibleBlocks();
-		}
+		$this->arena->getWalls()->raise();
 		parent::start();
 	}
 
 	public function tick() : void {
 		$timeLeft = $this->getTimeLeft();
 		if ($timeLeft <= 0 || $this->totalColoredBlocks >= $this->blocksCount) {
-			foreach ($this->getColoredBlocksOrderedByHigherScore() as $colorId => $count) {
+			foreach (Utils::sortScoresDescending($this->coloredBlocksCount) as $colorId => $count) {
 				if (count($this->winners) < 3) {
 					$player = $this->assignedPlayer[$colorId] ?? null;
 					if ($player !== null) {
@@ -215,19 +204,13 @@ class ColorFloor extends Microgame implements Listener {
 		if ($blockColor === $color) {
 			return;
 		}
-		if ($blockColor !== DyeColor::WHITE) {
+		if ($blockColor === DyeColor::WHITE) {
+			$this->totalColoredBlocks++;
+		} else {
 			$this->coloredBlocksCount[$blockColor->id()] = $this->getBlocksOfColor($blockColor) - 1;
 		}
 		$this->arena->getWorld()->setBlock($block->getPosition(), VanillaBlocks::STAINED_CLAY()->setColor($color), false);
 		$this->coloredBlocksCount[$color->id()] = $this->getBlocksOfColor($color) + 1;
-		$this->totalColoredBlocks++;
-	}
-
-	/**
-	 * @return array<int, int>
-	 */
-	public function getColoredBlocksOrderedByHigherScore() : array {
-		return Utils::sortScoresDescending($this->coloredBlocksCount);
 	}
 
 	public function getTotalColoredBlocks() : int {
@@ -254,18 +237,6 @@ class ColorFloor extends Microgame implements Listener {
 
 	# Listener
 
-	public function onBlockBreak(BlockBreakEvent $event) : void {
-		$player = $event->getPlayer();
-		if (!$this->arena->inGame($player)) return;
-		$event->cancel();
-	}
-
-	public function onBlockPlace(BlockPlaceEvent $event) : void {
-		$player = $event->getPlayer();
-		if (!$this->arena->inGame($player)) return;
-		$event->cancel();
-	}
-
 	public function onDamage(EntityDamageEvent $event) : void {
 		$player = $event->getEntity();
 		if (!$player instanceof Player) return;
@@ -289,6 +260,9 @@ class ColorFloor extends Microgame implements Listener {
 			$block = $event->getBlock();
 			if ($block instanceof StainedHardenedClay) {
 				$assignedColor = $this->getAssignedColor($player);
+				if ($assignedColor === null) {
+					return;
+				}
 				$blockColor = $block->getColor();
 				if ($blockColor !== DyeColor::WHITE && $blockColor !== $assignedColor) {
 					$player->sendMessage($this->plugin->getTranslator()->translate($player, "microgame.colorfloor.onlymissile"));
@@ -311,7 +285,7 @@ class ColorFloor extends Microgame implements Listener {
 		if (!$player instanceof Player) return;
 		if (!$this->arena->inGame($player)) return;
 		$item = $player->getInventory()->getItemInHand();
-		if (!$item->equals(VanillaItems::SPLASH_POTION()->setType(PotionType::LEAPING), true, false)) return;
+		if ($item->getNamedTag()->getTag(SpecialItems::COLOR_MISSILE) === null) return;
 		if (!$projectile instanceof SplashPotion) return;
 		if ($this->getAssignedColor($player) !== null) {
 			$event->cancel();

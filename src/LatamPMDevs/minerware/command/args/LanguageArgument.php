@@ -22,8 +22,8 @@ declare(strict_types=1);
 
 namespace LatamPMDevs\minerware\command\args;
 
-use LatamPMDevs\minerware\libs\_f6d840b9ca6651cb\CortexPE\Commando\args\StringEnumArgument;
-use LatamPMDevs\minerware\libs\_f6d840b9ca6651cb\IvanCraft623\languages\Language;
+use LatamPMDevs\minerware\libs\_5626dbf575c7ee5b\CortexPE\Commando\args\StringEnumArgument;
+use LatamPMDevs\minerware\libs\_5626dbf575c7ee5b\IvanCraft623\languages\Language;
 use LatamPMDevs\minerware\Minerware;
 use pocketmine\command\CommandSender;
 
@@ -31,7 +31,8 @@ final class LanguageArgument extends StringEnumArgument {
 
 	protected const VALUES = [
 		"en_US" => "en_US",
-		"es_MX" => "es_MX"
+		"es_MX" => "es_MX",
+		"vi_VN" => "vi_VN"
 	];
 
 	public function __construct(private Minerware $plugin) {

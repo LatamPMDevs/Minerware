@@ -22,16 +22,15 @@ declare(strict_types=1);
 
 namespace LatamPMDevs\minerware\arena\microgame\normal;
 
+use LatamPMDevs\minerware\arena\microgame\CancelsBuildEvents;
 use LatamPMDevs\minerware\arena\microgame\Level;
+use LatamPMDevs\minerware\arena\microgame\LosesInVoid;
 use LatamPMDevs\minerware\arena\microgame\Microgame;
 use LatamPMDevs\minerware\utils\Utils;
 
 use pocketmine\block\TNT;
 use pocketmine\block\VanillaBlocks;
 use pocketmine\entity\object\PrimedTNT;
-use pocketmine\event\block\BlockBreakEvent;
-use pocketmine\event\block\BlockPlaceEvent;
-use pocketmine\event\entity\EntityDamageEvent;
 use pocketmine\event\entity\EntityPreExplodeEvent;
 use pocketmine\event\Listener;
 use pocketmine\event\player\PlayerInteractEvent;
@@ -42,6 +41,9 @@ use pocketmine\player\Player;
 use function array_rand;
 
 class IgniteTNT extends Microgame implements Listener {
+
+	use CancelsBuildEvents;
+	use LosesInVoid;
 
 	/** @var array<int, int> */
 	protected array $ignitedTNTs = [];
@@ -60,12 +62,7 @@ class IgniteTNT extends Microgame implements Listener {
 		return 15.9;
 	}
 
-	public function getRecompensePoints() : int {
-		return self::DEFAULT_RECOMPENSE_POINTS;
-	}
-
 	public function start() : void {
-		$this->plugin->getServer()->getPluginManager()->registerEvents($this, $this->plugin);
 
 		$selection = $this->getStageSelection();
 		$minPos = $this->arena->getMap()->getPlatformMinPos();
@@ -95,12 +92,7 @@ class IgniteTNT extends Microgame implements Listener {
 public function tick() : void {
 		$timeLeft = $this->getTimeLeft();
 		if ($timeLeft <= 0) {
-			foreach ($this->arena->getPlayers() as $player) {
-				if (!$this->isLoser($player) && !$this->isWinner($player)) {
-					$this->addLoser($player);
-				}
-			}
-			$this->arena->endCurrentMicrogame();
+			$this->endRound();
 			return;
 		}
 		$this->updateTimeBar($timeLeft);
@@ -114,11 +106,7 @@ public function tick() : void {
 					"{%count}" => $this->totalIgnitedTNTs
 				]
 			));
-			if ($this->isWinner($player)) {
-				$player->sendMessage($this->plugin->getTranslator()->translate($player, "microgame.ignitetnt.won"));
-			} elseif ($this->isLoser($player)) {
-				$player->sendMessage($this->plugin->getTranslator()->translate($player, "microgame.ignitetnt.lose"));
-			}
+			$this->sendOutcome($player, "microgame.ignitetnt.won", "microgame.ignitetnt.lose");
 		}
 		parent::end();
 	}
@@ -127,42 +115,11 @@ public function tick() : void {
 		return $this->ignitedTNTs[$player->getId()] ?? 0;
 	}
 
-	/**
-	 * @return array<int, int>
-	 */
-	public function getIgnitedTNTsOrderedByHigherScore() : array {
-		return Utils::sortScoresDescending($this->ignitedTNTs);
-	}
-
 	public function getTotalIgnitedTNTs() : int {
 		return $this->totalIgnitedTNTs;
 	}
 
 	# Listener
-
-	public function onBlockBreak(BlockBreakEvent $event) : void {
-		$player = $event->getPlayer();
-		if (!$this->arena->inGame($player)) return;
-		$event->cancel();
-	}
-
-	public function onBlockPlace(BlockPlaceEvent $event) : void {
-		$player = $event->getPlayer();
-		if (!$this->arena->inGame($player)) return;
-		$event->cancel();
-	}
-
-	public function onDamage(EntityDamageEvent $event) : void {
-		$player = $event->getEntity();
-		if (!$player instanceof Player) return;
-		if (!$this->arena->inGame($player)) return;
-		$event->cancel();
-		if ($event->getCause() === EntityDamageEvent::CAUSE_VOID && !$this->isWinner($player)) {
-			$this->addLoser($player);
-			$this->arena->getLosersCage()->addPlayer($player);
-			$player->sendMessage($this->plugin->getTranslator()->translate($player, "microgame.felloffplatform"));
-		}
-	}
 
 	/**
 	 * @ignoreCancelled

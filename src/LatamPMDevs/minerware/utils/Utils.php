@@ -23,49 +23,31 @@ declare(strict_types=1);
 namespace LatamPMDevs\minerware\utils;
 
 use InvalidArgumentException;
-use LatamPMDevs\minerware\libs\_f6d840b9ca6651cb\IvanCraft623\languages\Translator;
-use pocketmine\block\Block;
+use LatamPMDevs\minerware\libs\_5626dbf575c7ee5b\IvanCraft623\languages\Translator;
 use pocketmine\block\utils\DyeColor;
 use pocketmine\command\CommandSender;
 use pocketmine\math\Vector2;
 use pocketmine\math\Vector3;
-use pocketmine\network\mcpe\protocol\PlaySoundPacket;
 use pocketmine\player\Player;
 use pocketmine\utils\AssumptionFailedError;
 use pocketmine\utils\TextFormat;
-use pocketmine\utils\Utils as PMUtils;
-use pocketmine\world\format\Chunk;
-use pocketmine\world\Position;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
+use SplFileInfo;
 use ZipArchive;
 use function abs;
 use function array_reverse;
 use function asort;
-use function basename;
 use function ceil;
-use function file_exists;
 use function floor;
 use function implode;
-use function is_array;
-use function is_dir;
-use function is_file;
 use function max;
 use function min;
 use function morton2d_encode;
-use function rmdir;
-use function scandir;
-use function str_repeat;
 use function strlen;
 use function substr;
-use function unlink;
 
 final class Utils {
-
-	public static function calculateParameter(Vector3 $firstPoint, Vector3 $secondPoint) : string {
-		//TODO:: Calculate parameter between $firstPoint and $secondPoint.
-		return "";
-	}
 
 	public static function calculateSize(Vector3 $firstPoint, Vector3 $secondPoint) : string {
 		return (abs($firstPoint->x - $secondPoint->x) + 1) . "x" . (abs($firstPoint->z - $secondPoint->z) + 1);
@@ -73,58 +55,24 @@ final class Utils {
 
 	public static function setZip(string $targetPath, string $zipPath) : bool {
 		$zip = new ZipArchive;
-		$zip->open($zipPath, ZipArchive::CREATE | ZipArchive::OVERWRITE);
+		if ($zip->open($zipPath, ZipArchive::CREATE | ZipArchive::OVERWRITE) !== true) {
+			return false;
+		}
 		$files = new RecursiveIteratorIterator(
 			new RecursiveDirectoryIterator($targetPath),
 			RecursiveIteratorIterator::LEAVES_ONLY
 		);
 		foreach ($files as $file) {
-			if ($file->isFile()) {
+			if ($file instanceof SplFileInfo && $file->isFile()) {
 				$filePath = $file->getRealPath();
 				$relativePath = substr($filePath, strlen($targetPath) + 1);
-				$zip->addFile($filePath, $relativePath);
-			}
-		}
-		$zip->close();
-		return true;
-	}
-
-	public static function playSound(Player $player, string $sound, float $volume = 1, float $pitch = 1) : void {
-		$pk = new PlaySoundPacket();
-		$pk->x = $player->getPosition()->getX();
-		$pk->y = $player->getPosition()->getY();
-		$pk->z = $player->getPosition()->getZ();
-		$pk->soundName = $sound;
-		$pk->volume = $volume;
-		$pk->pitch = $pitch;
-		$player->getNetworkSession()->sendDataPacket($pk);
-	}
-
-	public static function removeDir(string $path) : void {
-		if (!file_exists($path) || basename($path) == "." || basename($path) == "..") {
-			return;
-		}
-		$scandir = scandir($path);
-		if (is_array($scandir)) {
-			foreach ($scandir as $item) {
-				if (is_dir($path . DIRECTORY_SEPARATOR . $item)) {
-					self::removeDir($path . DIRECTORY_SEPARATOR . $item);
-				}
-				if (is_file($path . DIRECTORY_SEPARATOR . $item)) {
-					self::removeFile($path . DIRECTORY_SEPARATOR . $item);
+				if (!$zip->addFile($filePath, $relativePath)) {
+					$zip->close();
+					return false;
 				}
 			}
 		}
-		rmdir($path);
-	}
-
-	public static function removeFile(string $path) : void {
-		unlink($path);
-	}
-
-	public static function getStartingBar(int $colorSticks, int $totalSticks) : string {
-		$leftover = $totalSticks - $colorSticks;
-		return str_repeat("▌", $colorSticks) . "§7" . str_repeat("▌", $leftover);
+		return $zip->close();
 	}
 
 	/**
@@ -152,75 +100,6 @@ final class Utils {
 			$names[] = $player->getName();
 		}
 		return $names;
-	}
-
-	/**
-	 * @return Block[]
-	 */
-	public static function fill(Position $pos1, Vector3 $pos2, Block $block, bool $update = false) : array {
-		$changedBlocks = [];
-		$world = $pos1->getWorld();
-
-		if ($pos2 instanceof Position && $world !== $pos2->getWorld()) {
-			throw new InvalidArgumentException("First and second position must be in the same world!");
-		}
-
-		$minX = min($pos1->x, $pos2->x);
-		$minY = max($world->getMinY(), min($pos1->y, $pos2->y));
-		$minZ = min($pos1->z, $pos2->z);
-
-		$maxX = max($pos1->x, $pos2->x);
-		$maxY = min($world->getMaxY(), max($pos1->y, $pos2->y));
-		$maxZ = max($pos1->z, $pos2->z);
-
-		for ($x = $minX; $x <= $maxX; ++$x) {
-			for ($z = $minZ; $z <= $maxZ; ++$z) {
-				$world->loadChunk($x >> Chunk::COORD_BIT_SIZE, $z >> Chunk::COORD_BIT_SIZE);
-				for ($y = $minY; $y <= $maxY; ++$y) {
-					$changedBlocks[] = $world->getBlockAt((int) $x, (int) $y, (int) $z);
-					$world->setBlockAt((int) $x, (int) $y, (int) $z, $block, $update);
-				}
-			}
-		}
-		return $changedBlocks;
-	}
-
-	/**
-	 * @return Block[]
-	 */
-	public static function fillCircle(Position $center, float $radius, Block $block, bool $update = false) : array {
-		if ($radius < 1) {
-			throw new InvalidArgumentException("Invalid radius size ($radius)");
-		}
-
-		$changedBlocks = [];
-		$world = $center->getWorld();
-		$y = (int) $center->y;
-		$rSqrt = $radius ** 2;
-		$rInt = (int) ceil($radius);
-		for ($x = -$rInt; $x <= $rInt; $x++) {
-			for ($z = -$rInt; $z <= $rInt; $z++) {
-				if (($x ** 2) + ($z ** 2) <= $rSqrt) {
-					$b = $world->getBlockAt((int) ($x + $center->x), $y, (int) ($z + $center->z));
-					$changedBlocks[] = $b;
-					$world->setBlock($b->getPosition(), $block, $update);
-				}
-			}
-		}
-		return $changedBlocks;
-	}
-
-	public static function buildCage(Position $center, Block $block) : void {
-		$world = $center->getWorld();
-		$pos1 = new Position($center->x + 3, $center->y, $center->z + 3, $world);
-		$pos2 = new Position($center->x - 3, $center->y, $center->z - 3, $world);
-		self::fill($pos1, $pos2, $block, false);
-		$pos3 = new Position($center->x + 3, $center->y + 4, $center->z - 3, $world);
-		self::fill($pos1, $pos3, $block, false);
-		self::fill($pos3, $pos2, $block, false);
-		$pos4 = new Position($center->x - 3, $center->y + 4, $center->z + 3, $world);
-		self::fill($pos2, $pos4, $block, false);
-		self::fill($pos4, $pos1, $block, false);
 	}
 
 	public static function initPlayer(Player $player) : void {
@@ -308,18 +187,6 @@ final class Utils {
 			DyeColor::YELLOW => TextFormat::YELLOW,
 			default => TextFormat::WHITE
 		};
-	}
-
-	public static function resolvePath(string $folder, string $path) : string {
-		if ($path[0] === "/") {
-			return $path;
-		}
-		if (PMUtils::getOS() === "win") {
-			if ($path[0] === "\\" || $path[1] === ":") {
-				return $path;
-			}
-		}
-		return $folder . $path;
 	}
 
 	/**

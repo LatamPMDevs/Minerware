@@ -22,34 +22,18 @@ declare(strict_types=1);
 
 namespace LatamPMDevs\minerware\map;
 
-use LatamPMDevs\minerware\Minerware;
-use pocketmine\utils\AssumptionFailedError;
+use LatamPMDevs\minerware\map\world\MapTemplates;
+use LatamPMDevs\minerware\map\world\MapWorldException;
 use pocketmine\world\World;
-use ZipArchive;
-use function mkdir;
 
 final class MapWorldGenerator {
 
-	public static function getZip(Map $map) : string {
-		return Minerware::getInstance()->getDataFolder() . "database" . DIRECTORY_SEPARATOR . "backups" . DIRECTORY_SEPARATOR . $map->getName() . ".zip";
-	}
-
+	/**
+	 * Creates the volatile world of an arena from the template of the map.
+	 *
+	 * @throws MapWorldException
+	 */
 	public static function generate(Map $map, string $uniqueId) : World {
-		$worldPath = Minerware::getInstance()->getServer()->getDataPath() . "worlds" . DIRECTORY_SEPARATOR . $map->getName() . "-" . $uniqueId . DIRECTORY_SEPARATOR;
-
-		# Create files
-		@mkdir($worldPath);
-		$backup = self::getZip($map);
-		$zip = new ZipArchive();
-		$zip->open($backup);
-		$zip->extractTo($worldPath);
-		$zip->close();
-
-		# Get World
-		if (Minerware::getInstance()->getServer()->getWorldManager()->loadWorld($map->getName() . "-" . $uniqueId, true)) {
-			return Minerware::getInstance()->getServer()->getWorldManager()->getWorldByName($map->getName() . "-" . $uniqueId);
-		}
-
-		throw new AssumptionFailedError("Error Generating world");
+		return MapTemplates::getInstance()->createInstance($map, $uniqueId);
 	}
 }

@@ -22,25 +22,25 @@ declare(strict_types=1);
 
 namespace LatamPMDevs\minerware\command\subcommands;
 
-use LatamPMDevs\minerware\libs\_f6d840b9ca6651cb\CortexPE\Commando\BaseCommand;
-use LatamPMDevs\minerware\libs\_f6d840b9ca6651cb\CortexPE\Commando\BaseSubCommand;
-use LatamPMDevs\minerware\libs\_f6d840b9ca6651cb\CortexPE\Commando\constraint\InGameRequiredConstraint;
-use LatamPMDevs\minerware\arena\ArenaManager;
+use LatamPMDevs\minerware\libs\_5626dbf575c7ee5b\CortexPE\Commando\args\RawStringArgument;
+use LatamPMDevs\minerware\libs\_5626dbf575c7ee5b\CortexPE\Commando\BaseCommand;
+use LatamPMDevs\minerware\libs\_5626dbf575c7ee5b\CortexPE\Commando\BaseSubCommand;
+use LatamPMDevs\minerware\libs\_5626dbf575c7ee5b\CortexPE\Commando\constraint\InGameRequiredConstraint;
+use LatamPMDevs\minerware\Minerware;
 use pocketmine\command\CommandSender;
 use pocketmine\player\Player;
+use function is_string;
 
 final class JoinCommand extends BaseSubCommand {
 
-	public function __construct() {
-		parent::__construct("join", "Join a random arena.");
+	public function __construct(private Minerware $plugin) {
+		parent::__construct("join", "Join an arena, on the map you choose if you name one.");
 		$this->setPermission("minerware.command.join");
 	}
 
-	/**
-	 * @deprecated
-	 */
 	protected function prepare() : void {
 		$this->addConstraint(new InGameRequiredConstraint($this));
+		$this->registerArgument(0, new RawStringArgument("map", true));
 	}
 
 	/**
@@ -48,7 +48,7 @@ final class JoinCommand extends BaseSubCommand {
 	 * @param array<string, mixed> $args
 	 */
 	public function onRun(CommandSender $sender, string $aliasUsed, array $args) : void {
-		ArenaManager::getInstance()->join($sender);
+		$this->plugin->getJoiner()->join($sender, is_string($args["map"] ?? null) ? $args["map"] : null);
 	}
 
 	public function getParent() : BaseCommand {
