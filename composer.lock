@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "a609ea3ef7b8f3cb4b56981cf0aedf52",
+    "content-hash": "7bb84dbeaaf060785e01046c86d8a4ef",
     "packages": [
         {
             "name": "adhocore/json-comment",
@@ -115,6 +115,320 @@
                 "source": "https://github.com/axolotl-plugin-orphanage/ScoreFactory/tree/3.3.1"
             },
             "time": "2026-11-21T06:15:07+00:00"
+        },
+        {
+            "name": "axolotl-pm/bedrock-block-upgrade-schema",
+            "version": "5.5.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/axolotl-pm/BedrockBlockUpgradeSchema.git",
+                "reference": "25b40fbb4866caab71d21793ddbe9636acc1fb05"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/axolotl-pm/BedrockBlockUpgradeSchema/zipball/25b40fbb4866caab71d21793ddbe9636acc1fb05",
+                "reference": "25b40fbb4866caab71d21793ddbe9636acc1fb05",
+                "shasum": ""
+            },
+            "type": "library",
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "CC0-1.0"
+            ],
+            "description": "Schemas describing how to upgrade saved block data in older Minecraft: Bedrock Edition world saves",
+            "support": {
+                "issues": "https://github.com/axolotl-pm/BedrockBlockUpgradeSchema/issues",
+                "source": "https://github.com/axolotl-pm/BedrockBlockUpgradeSchema/tree/5.5.0"
+            },
+            "time": "2026-10-27T22:27:16+00:00"
+        },
+        {
+            "name": "axolotl-pm/bedrock-data",
+            "version": "6.10.0+bedrock-1.26.60",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/axolotl-pm/BedrockData.git",
+                "reference": "aeb5f24894f1873dde6f7b4f39490ad85ce59094"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/axolotl-pm/BedrockData/zipball/aeb5f24894f1873dde6f7b4f39490ad85ce59094",
+                "reference": "aeb5f24894f1873dde6f7b4f39490ad85ce59094",
+                "shasum": ""
+            },
+            "type": "library",
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "CC0-1.0"
+            ],
+            "description": "Blobs of data generated from Minecraft: Bedrock Edition, used by PocketMine-MP",
+            "support": {
+                "issues": "https://github.com/axolotl-pm/BedrockData/issues",
+                "source": "https://github.com/axolotl-pm/BedrockData/tree/bedrock-1.26.60"
+            },
+            "time": "2026-10-27T22:46:26+00:00"
+        },
+        {
+            "name": "axolotl-pm/bedrock-item-upgrade-schema",
+            "version": "1.20.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/axolotl-pm/BedrockItemUpgradeSchema.git",
+                "reference": "1945fa451cfba4a0aa7b738da697f7e5687d7b45"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/axolotl-pm/BedrockItemUpgradeSchema/zipball/1945fa451cfba4a0aa7b738da697f7e5687d7b45",
+                "reference": "1945fa451cfba4a0aa7b738da697f7e5687d7b45",
+                "shasum": ""
+            },
+            "type": "library",
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "CC0-1.0"
+            ],
+            "description": "JSON schemas for upgrading items found in older Minecraft: Bedrock world saves",
+            "support": {
+                "issues": "https://github.com/axolotl-pm/BedrockItemUpgradeSchema/issues",
+                "source": "https://github.com/axolotl-pm/BedrockItemUpgradeSchema/tree/1.20.0"
+            },
+            "time": "2026-10-27T22:38:27+00:00"
+        },
+        {
+            "name": "axolotl-pm/bedrock-protocol",
+            "version": "64.0.1+bedrock-1.26.60",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/axolotl-pm/BedrockProtocol.git",
+                "reference": "cfbe298338c41fe3b15a46b41be1e2a62aebf825"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/axolotl-pm/BedrockProtocol/zipball/cfbe298338c41fe3b15a46b41be1e2a62aebf825",
+                "reference": "cfbe298338c41fe3b15a46b41be1e2a62aebf825",
+                "shasum": ""
+            },
+            "require": {
+                "ext-encoding": "~1.0.0",
+                "ext-json": "*",
+                "php": "^8.1",
+                "pocketmine/binaryutils": "^0.2.0",
+                "pocketmine/color": "^0.2.0 || ^0.3.0",
+                "pocketmine/math": "^0.3.0 || ^0.4.0 || ^1.0.0",
+                "pocketmine/nbt": "^1.0.0",
+                "ramsey/uuid": "^4.1"
+            },
+            "require-dev": {
+                "phpstan/phpstan": "2.1.0",
+                "phpstan/phpstan-phpunit": "^2.0.0",
+                "phpstan/phpstan-strict-rules": "^2.0.0",
+                "phpunit/phpunit": "^9.5 || ^10.0 || ^11.0"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "pocketmine\\network\\mcpe\\protocol\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "LGPL-3.0"
+            ],
+            "description": "An implementation of the Minecraft: Bedrock Edition protocol in PHP",
+            "support": {
+                "issues": "https://github.com/axolotl-pm/BedrockProtocol/issues",
+                "source": "https://github.com/axolotl-pm/BedrockProtocol/tree/64.0.1+bedrock-1.26.60"
+            },
+            "time": "2026-11-14T01:53:43+00:00"
+        },
+        {
+            "name": "axolotl-pm/nethernet",
+            "version": "0.3.2",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/axolotl-pm/NetherNet.git",
+                "reference": "16c25367f0bb310215b71cad3393b3b451891b16"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/axolotl-pm/NetherNet/zipball/16c25367f0bb310215b71cad3393b3b451891b16",
+                "reference": "16c25367f0bb310215b71cad3393b3b451891b16",
+                "shasum": ""
+            },
+            "require": {
+                "ext-encoding": "~1.0.0",
+                "ext-hash": "*",
+                "ext-json": "*",
+                "ext-openssl": "*",
+                "ext-sockets": "*",
+                "ext-webrtc": "*",
+                "php": "^8.1",
+                "php-64bit": "*",
+                "php-ipv6": "*",
+                "pocketmine/log": "^0.4.0"
+            },
+            "require-dev": {
+                "phpstan/phpstan": "2.1.46",
+                "phpstan/phpstan-phpunit": "^2.0.0",
+                "phpstan/phpstan-strict-rules": "^2.0.0",
+                "phpunit/phpunit": "^10.5.24"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "pocketmine\\nethernet\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "LGPL-3.0-or-later"
+            ],
+            "description": "A NetherNet (WebRTC) transport implementation written in PHP",
+            "support": {
+                "issues": "https://github.com/axolotl-pm/NetherNet/issues",
+                "source": "https://github.com/axolotl-pm/NetherNet/tree/0.3.2"
+            },
+            "time": "2026-11-01T04:33:35+00:00"
+        },
+        {
+            "name": "axolotl-pm/pocketmine-mp",
+            "version": "5.51.2",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/axolotl-pm/PocketMine-MP.git",
+                "reference": "208bd1202ccbda139b67b2ca9088d8eb08549b66"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/axolotl-pm/PocketMine-MP/zipball/208bd1202ccbda139b67b2ca9088d8eb08549b66",
+                "reference": "208bd1202ccbda139b67b2ca9088d8eb08549b66",
+                "shasum": ""
+            },
+            "require": {
+                "adhocore/json-comment": "~1.2.0",
+                "axolotl-pm/bedrock-block-upgrade-schema": "~5.5.0+bedrock-1.26.60",
+                "axolotl-pm/bedrock-data": "~6.10.0+bedrock-1.26.60",
+                "axolotl-pm/bedrock-item-upgrade-schema": "~1.20.0+bedrock-1.26.60",
+                "axolotl-pm/bedrock-protocol": "~64.0.0+bedrock-1.26.60",
+                "axolotl-pm/nethernet": "^0.3.2",
+                "axolotl-pm/xoroshiro128pp": "^0.1.0",
+                "composer-runtime-api": "^2.0",
+                "ext-chunkutils2": "^0.3.1",
+                "ext-crypto": "^0.3.1",
+                "ext-ctype": "*",
+                "ext-curl": "*",
+                "ext-date": "*",
+                "ext-encoding": "~1.0.0",
+                "ext-gmp": "*",
+                "ext-hash": "*",
+                "ext-igbinary": "^3.0.1",
+                "ext-json": "*",
+                "ext-leveldb": "^0.2.1 || ^0.3.0",
+                "ext-mbstring": "*",
+                "ext-morton": "^0.1.0",
+                "ext-openssl": "*",
+                "ext-pcre": "*",
+                "ext-phar": "*",
+                "ext-pmmpthread": "^6.1.0",
+                "ext-reflection": "*",
+                "ext-simplexml": "*",
+                "ext-sockets": "*",
+                "ext-spl": "*",
+                "ext-yaml": ">=2.0.0",
+                "ext-zip": "*",
+                "ext-zlib": ">=1.2.11",
+                "netresearch/jsonmapper": "~v6.0.0",
+                "php": "^8.1",
+                "php-64bit": "*",
+                "pocketmine/binaryutils": "^0.2.1",
+                "pocketmine/callback-validator": "~1.0.4",
+                "pocketmine/color": "^0.3.0",
+                "pocketmine/errorhandler": "^0.7.0",
+                "pocketmine/log": "^0.4.0",
+                "pocketmine/math": "~1.0.0",
+                "pocketmine/nbt": "~1.2.0",
+                "pocketmine/raklib": "~1.2.0",
+                "pocketmine/raklib-ipc": "~1.0.0",
+                "pocketmine/snooze": "^0.5.0",
+                "ramsey/uuid": "~4.9.0",
+                "symfony/filesystem": "~6.4.0"
+            },
+            "replace": {
+                "pocketmine/pocketmine-mp": "*",
+                "symfony/polyfill-ctype": "*",
+                "symfony/polyfill-mbstring": "*"
+            },
+            "require-dev": {
+                "phpstan/phpstan": "2.1.46",
+                "phpstan/phpstan-phpunit": "^2.0.0",
+                "phpstan/phpstan-strict-rules": "^2.0.0",
+                "phpunit/phpunit": "^10.5.24"
+            },
+            "type": "project",
+            "autoload": {
+                "files": [
+                    "src/CoreConstants.php"
+                ],
+                "psr-4": {
+                    "pocketmine\\": [
+                        "src/",
+                        "generated/"
+                    ]
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "LGPL-3.0"
+            ],
+            "description": "A server software for Minecraft: Bedrock Edition written in PHP",
+            "homepage": "https://pmmp.io",
+            "support": {
+                "issues": "https://github.com/axolotl-pm/PocketMine-MP/issues",
+                "source": "https://github.com/axolotl-pm/PocketMine-MP/tree/5.51.2"
+            },
+            "time": "2026-11-14T03:56:46+00:00"
+        },
+        {
+            "name": "axolotl-pm/xoroshiro128pp",
+            "version": "0.1.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/axolotl-pm/Xoroshiro128PP.git",
+                "reference": "02e3fb6bbfa53e0025c08b08e5e83b092cdef3eb"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/axolotl-pm/Xoroshiro128PP/zipball/02e3fb6bbfa53e0025c08b08e5e83b092cdef3eb",
+                "reference": "02e3fb6bbfa53e0025c08b08e5e83b092cdef3eb",
+                "shasum": ""
+            },
+            "require": {
+                "ext-gmp": "*",
+                "php": "^8.1",
+                "php-64bit": "*"
+            },
+            "require-dev": {
+                "phpstan/phpstan": "2.2.8",
+                "phpstan/phpstan-phpunit": "^2.0.0",
+                "phpstan/phpstan-strict-rules": "^2.0.0",
+                "phpunit/phpunit": "^10.5.24"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "pocketmine\\xoroshiro128pp\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "LGPL-3.0"
+            ],
+            "description": "Xoroshiro128++ random number generator for PocketMine-MP",
+            "support": {
+                "issues": "https://github.com/axolotl-pm/Xoroshiro128PP/issues",
+                "source": "https://github.com/axolotl-pm/Xoroshiro128PP/tree/0.1.0"
+            },
+            "time": "2026-08-25T14:15:14+00:00"
         },
         {
             "name": "brick/math",
@@ -439,16 +753,16 @@
         },
         {
             "name": "netresearch/jsonmapper",
-            "version": "v5.0.1",
+            "version": "v6.0.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/cweiske/jsonmapper.git",
-                "reference": "980674efdda65913492d29a8fd51c82270dd37bb"
+                "reference": "31226dd465e3e38f5a8f66ef1393cd8daad248dd"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/cweiske/jsonmapper/zipball/980674efdda65913492d29a8fd51c82270dd37bb",
-                "reference": "980674efdda65913492d29a8fd51c82270dd37bb",
+                "url": "https://api.github.com/repos/cweiske/jsonmapper/zipball/31226dd465e3e38f5a8f66ef1393cd8daad248dd",
+                "reference": "31226dd465e3e38f5a8f66ef1393cd8daad248dd",
                 "shasum": ""
             },
             "require": {
@@ -456,11 +770,13 @@
                 "ext-pcre": "*",
                 "ext-reflection": "*",
                 "ext-spl": "*",
-                "php": ">=7.1"
+                "php": ">=8.1"
             },
             "require-dev": {
+                "phpstan/phpstan": "^2.2",
                 "phpunit/phpunit": "~7.5 || ~8.0 || ~9.0 || ~10.0",
-                "squizlabs/php_codesniffer": "~3.5"
+                "psr/log": "^3.0",
+                "squizlabs/php_codesniffer": "^4.0"
             },
             "type": "library",
             "autoload": {
@@ -484,138 +800,9 @@
             "support": {
                 "email": "cweiske@cweiske.de",
                 "issues": "https://github.com/cweiske/jsonmapper/issues",
-                "source": "https://github.com/cweiske/jsonmapper/tree/v5.0.1"
+                "source": "https://github.com/cweiske/jsonmapper/tree/v6.0.0"
             },
-            "time": "2026-02-22T16:28:03+00:00"
-        },
-        {
-            "name": "pocketmine/bedrock-block-upgrade-schema",
-            "version": "5.2.0",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/opencollab-incubator/BedrockBlockUpgradeSchema.git",
-                "reference": "5d7889c9a1cdf9e3cd814d2a104ad69b75116ec7"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/opencollab-incubator/BedrockBlockUpgradeSchema/zipball/5d7889c9a1cdf9e3cd814d2a104ad69b75116ec7",
-                "reference": "5d7889c9a1cdf9e3cd814d2a104ad69b75116ec7",
-                "shasum": ""
-            },
-            "type": "library",
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "CC0-1.0"
-            ],
-            "description": "Schemas describing how to upgrade saved block data in older Minecraft: Bedrock Edition world saves",
-            "support": {
-                "issues": "https://github.com/pmmp/BedrockBlockUpgradeSchema/issues",
-                "source": "https://github.com/pmmp/BedrockBlockUpgradeSchema/tree/5.2.0"
-            },
-            "abandoned": true,
-            "time": "2025-10-02T13:22:10+00:00"
-        },
-        {
-            "name": "pocketmine/bedrock-data",
-            "version": "6.7.0+bedrock-1.26.30",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/pmmp/BedrockData.git",
-                "reference": "bdb44a48fb6beffb6e9f6864f06d2232eb62b6a3"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/pmmp/BedrockData/zipball/bdb44a48fb6beffb6e9f6864f06d2232eb62b6a3",
-                "reference": "bdb44a48fb6beffb6e9f6864f06d2232eb62b6a3",
-                "shasum": ""
-            },
-            "type": "library",
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "CC0-1.0"
-            ],
-            "description": "Blobs of data generated from Minecraft: Bedrock Edition, used by PocketMine-MP",
-            "support": {
-                "issues": "https://github.com/pmmp/BedrockData/issues",
-                "source": "https://github.com/pmmp/BedrockData/tree/bedrock-1.26.30"
-            },
-            "abandoned": true,
-            "time": "2026-06-22T19:41:55+00:00"
-        },
-        {
-            "name": "pocketmine/bedrock-item-upgrade-schema",
-            "version": "1.17.0",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/pmmp/BedrockItemUpgradeSchema.git",
-                "reference": "e19685d2e7e76eb7446115c556df34e5d627d072"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/pmmp/BedrockItemUpgradeSchema/zipball/e19685d2e7e76eb7446115c556df34e5d627d072",
-                "reference": "e19685d2e7e76eb7446115c556df34e5d627d072",
-                "shasum": ""
-            },
-            "type": "library",
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "CC0-1.0"
-            ],
-            "description": "JSON schemas for upgrading items found in older Minecraft: Bedrock world saves",
-            "support": {
-                "issues": "https://github.com/pmmp/BedrockItemUpgradeSchema/issues",
-                "source": "https://github.com/pmmp/BedrockItemUpgradeSchema/tree/1.17.0"
-            },
-            "abandoned": true,
-            "time": "2026-05-06T13:12:04+00:00"
-        },
-        {
-            "name": "pocketmine/bedrock-protocol",
-            "version": "58.0.1+bedrock-1.26.30",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/pmmp/BedrockProtocol.git",
-                "reference": "8eb5a390a8d913ee54b97ac71f42899ecbb5c419"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/pmmp/BedrockProtocol/zipball/8eb5a390a8d913ee54b97ac71f42899ecbb5c419",
-                "reference": "8eb5a390a8d913ee54b97ac71f42899ecbb5c419",
-                "shasum": ""
-            },
-            "require": {
-                "ext-encoding": "~1.0.0",
-                "ext-json": "*",
-                "php": "^8.1",
-                "pocketmine/binaryutils": "^0.2.0",
-                "pocketmine/color": "^0.2.0 || ^0.3.0",
-                "pocketmine/math": "^0.3.0 || ^0.4.0 || ^1.0.0",
-                "pocketmine/nbt": "^1.0.0",
-                "ramsey/uuid": "^4.1"
-            },
-            "require-dev": {
-                "phpstan/phpstan": "2.1.0",
-                "phpstan/phpstan-phpunit": "^2.0.0",
-                "phpstan/phpstan-strict-rules": "^2.0.0",
-                "phpunit/phpunit": "^9.5 || ^10.0 || ^11.0"
-            },
-            "type": "library",
-            "autoload": {
-                "psr-4": {
-                    "pocketmine\\network\\mcpe\\protocol\\": "src/"
-                }
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "LGPL-3.0"
-            ],
-            "description": "An implementation of the Minecraft: Bedrock Edition protocol in PHP",
-            "support": {
-                "issues": "https://github.com/pmmp/BedrockProtocol/issues",
-                "source": "https://github.com/pmmp/BedrockProtocol/tree/58.0.1+bedrock-1.26.30"
-            },
-            "abandoned": true,
-            "time": "2026-07-05T17:46:09+00:00"
+            "time": "2026-06-29T16:03:16+00:00"
         },
         {
             "name": "pocketmine/binaryutils",
@@ -919,112 +1106,6 @@
             "time": "2025-09-19T18:09:30+00:00"
         },
         {
-            "name": "pocketmine/pocketmine-mp",
-            "version": "5.44.3",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/pmmp/PocketMine-MP.git",
-                "reference": "51c8777b46683d24cfd29fe650205c22c262b678"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/pmmp/PocketMine-MP/zipball/51c8777b46683d24cfd29fe650205c22c262b678",
-                "reference": "51c8777b46683d24cfd29fe650205c22c262b678",
-                "shasum": ""
-            },
-            "require": {
-                "adhocore/json-comment": "~1.2.0",
-                "composer-runtime-api": "^2.0",
-                "ext-chunkutils2": "^0.3.1",
-                "ext-crypto": "^0.3.1",
-                "ext-ctype": "*",
-                "ext-curl": "*",
-                "ext-date": "*",
-                "ext-encoding": "~1.0.0",
-                "ext-gmp": "*",
-                "ext-hash": "*",
-                "ext-igbinary": "^3.0.1",
-                "ext-json": "*",
-                "ext-leveldb": "^0.2.1 || ^0.3.0",
-                "ext-mbstring": "*",
-                "ext-morton": "^0.1.0",
-                "ext-openssl": "*",
-                "ext-pcre": "*",
-                "ext-phar": "*",
-                "ext-pmmpthread": "^6.1.0",
-                "ext-reflection": "*",
-                "ext-simplexml": "*",
-                "ext-sockets": "*",
-                "ext-spl": "*",
-                "ext-yaml": ">=2.0.0",
-                "ext-zip": "*",
-                "ext-zlib": ">=1.2.11",
-                "netresearch/jsonmapper": "~v5.0.0",
-                "php": "^8.1",
-                "php-64bit": "*",
-                "pocketmine/bedrock-block-upgrade-schema": "~5.2.0+bedrock-1.21.110",
-                "pocketmine/bedrock-data": "~6.7.0+bedrock-1.26.30",
-                "pocketmine/bedrock-item-upgrade-schema": "~1.17.0+bedrock-1.26.20",
-                "pocketmine/bedrock-protocol": "~58.0.0+bedrock-1.26.30",
-                "pocketmine/binaryutils": "^0.2.1",
-                "pocketmine/callback-validator": "~1.0.4",
-                "pocketmine/color": "^0.3.0",
-                "pocketmine/errorhandler": "^0.7.0",
-                "pocketmine/log": "^0.4.0",
-                "pocketmine/math": "~1.0.0",
-                "pocketmine/nbt": "~1.2.0",
-                "pocketmine/raklib": "~1.2.0",
-                "pocketmine/raklib-ipc": "~1.0.0",
-                "pocketmine/snooze": "^0.5.0",
-                "ramsey/uuid": "~4.9.0",
-                "symfony/filesystem": "~6.4.0"
-            },
-            "replace": {
-                "symfony/polyfill-ctype": "*",
-                "symfony/polyfill-mbstring": "*"
-            },
-            "require-dev": {
-                "phpstan/phpstan": "2.1.46",
-                "phpstan/phpstan-phpunit": "^2.0.0",
-                "phpstan/phpstan-strict-rules": "^2.0.0",
-                "phpunit/phpunit": "^10.5.24"
-            },
-            "type": "project",
-            "autoload": {
-                "files": [
-                    "src/CoreConstants.php"
-                ],
-                "psr-4": {
-                    "pocketmine\\": [
-                        "src/",
-                        "generated/"
-                    ]
-                }
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "LGPL-3.0"
-            ],
-            "description": "A server software for Minecraft: Bedrock Edition written in PHP",
-            "homepage": "https://pmmp.io",
-            "support": {
-                "issues": "https://github.com/pmmp/PocketMine-MP/issues",
-                "source": "https://github.com/pmmp/PocketMine-MP/tree/5.44.3"
-            },
-            "funding": [
-                {
-                    "url": "https://github.com/pmmp/PocketMine-MP#donate",
-                    "type": "custom"
-                },
-                {
-                    "url": "https://www.patreon.com/pocketminemp",
-                    "type": "patreon"
-                }
-            ],
-            "abandoned": true,
-            "time": "2026-07-06T20:54:59+00:00"
-        },
-        {
             "name": "pocketmine/raklib",
             "version": "1.2.1",
             "source": {
@@ -1229,20 +1310,20 @@
         },
         {
             "name": "ramsey/uuid",
-            "version": "4.9.3",
+            "version": "4.9.4",
             "source": {
                 "type": "git",
                 "url": "https://github.com/ramsey/uuid.git",
-                "reference": "1df15849d00943a67d677dc9cfd80795f038c9f8"
+                "reference": "75d73f48d02797c2c285a7e9f348fadc0102ffe2"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/ramsey/uuid/zipball/1df15849d00943a67d677dc9cfd80795f038c9f8",
-                "reference": "1df15849d00943a67d677dc9cfd80795f038c9f8",
+                "url": "https://api.github.com/repos/ramsey/uuid/zipball/75d73f48d02797c2c285a7e9f348fadc0102ffe2",
+                "reference": "75d73f48d02797c2c285a7e9f348fadc0102ffe2",
                 "shasum": ""
             },
             "require": {
-                "brick/math": ">=0.8.16 <=0.18",
+                "brick/math": "^0.8.16 || ^0.9 || ^0.10 || ^0.11 || ^0.12 || ^0.13 || ^0.14 || ^0.15 || ^0.16 || ^0.17 || ^0.18 || ^0.19 || ^0.20 || ^1.0",
                 "php": "^8.0",
                 "ramsey/collection": "^1.2 || ^2.0"
             },
@@ -1301,9 +1382,9 @@
             ],
             "support": {
                 "issues": "https://github.com/ramsey/uuid/issues",
-                "source": "https://github.com/ramsey/uuid/tree/4.9.3"
+                "source": "https://github.com/ramsey/uuid/tree/4.9.4"
             },
-            "time": "2026-06-18T03:57:49+00:00"
+            "time": "2026-09-16T11:39:30+00:00"
         },
         {
             "name": "sof3/await-generator",
@@ -1415,12 +1496,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/filesystem.git",
-                "reference": "6dabf41c21957a2060f101bd7bf7e322989866bd"
+                "reference": "9c54f695d2fcfb0bb21c8003b7a038bc631aa2e9"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/filesystem/zipball/6dabf41c21957a2060f101bd7bf7e322989866bd",
-                "reference": "6dabf41c21957a2060f101bd7bf7e322989866bd",
+                "url": "https://api.github.com/repos/symfony/filesystem/zipball/9c54f695d2fcfb0bb21c8003b7a038bc631aa2e9",
+                "reference": "9c54f695d2fcfb0bb21c8003b7a038bc631aa2e9",
                 "shasum": ""
             },
             "require": {
@@ -1477,7 +1558,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2026-08-23T07:59:31+00:00"
+            "time": "2026-11-04T08:16:31+00:00"
         }
     ],
     "packages-dev": [
@@ -4419,12 +4500,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/deprecation-contracts.git",
-                "reference": "f3202fa1b5097b0af062dc978b32ecf63404e31d"
+                "reference": "feb1edf4e546af3b85c5caebe8359a20db230ca3"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/deprecation-contracts/zipball/f3202fa1b5097b0af062dc978b32ecf63404e31d",
-                "reference": "f3202fa1b5097b0af062dc978b32ecf63404e31d",
+                "url": "https://api.github.com/repos/symfony/deprecation-contracts/zipball/feb1edf4e546af3b85c5caebe8359a20db230ca3",
+                "reference": "feb1edf4e546af3b85c5caebe8359a20db230ca3",
                 "shasum": ""
             },
             "require": {
@@ -4438,7 +4519,7 @@
                     "name": "symfony/contracts"
                 },
                 "branch-alias": {
-                    "dev-main": "3.7-dev"
+                    "dev-main": "3.8-dev"
                 }
             },
             "autoload": {
@@ -4483,7 +4564,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2026-06-05T06:23:12+00:00"
+            "time": "2026-09-16T14:15:10+00:00"
         },
         {
             "name": "symfony/finder",
@@ -4809,12 +4890,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/polyfill-php80.git",
-                "reference": "dfb55726c3a76ea3b6459fcfda1ec2d80a682411"
+                "reference": "9c6a5d6b01ca51d486c813e9a9c0ed55f208bb74"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/polyfill-php80/zipball/dfb55726c3a76ea3b6459fcfda1ec2d80a682411",
-                "reference": "dfb55726c3a76ea3b6459fcfda1ec2d80a682411",
+                "url": "https://api.github.com/repos/symfony/polyfill-php80/zipball/9c6a5d6b01ca51d486c813e9a9c0ed55f208bb74",
+                "reference": "9c6a5d6b01ca51d486c813e9a9c0ed55f208bb74",
                 "shasum": ""
             },
             "require": {
@@ -4886,7 +4967,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2026-04-10T16:19:22+00:00"
+            "time": "2026-09-25T15:50:05+00:00"
         },
         {
             "name": "symfony/polyfill-php81",
@@ -5056,12 +5137,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/process.git",
-                "reference": "b9f3d9ddf67543b92dbfa6d210c407d7a7982781"
+                "reference": "f83dad5ec04a56948a97f4a86141fe81998233ba"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/process/zipball/b9f3d9ddf67543b92dbfa6d210c407d7a7982781",
-                "reference": "b9f3d9ddf67543b92dbfa6d210c407d7a7982781",
+                "url": "https://api.github.com/repos/symfony/process/zipball/f83dad5ec04a56948a97f4a86141fe81998233ba",
+                "reference": "f83dad5ec04a56948a97f4a86141fe81998233ba",
                 "shasum": ""
             },
             "require": {
@@ -5113,7 +5194,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2026-09-02T12:35:55+00:00"
+            "time": "2026-10-25T12:09:24+00:00"
         },
         {
             "name": "symfony/service-contracts",
