@@ -25,13 +25,12 @@ namespace LatamPMDevs\minerware\arena\microgame\normal;
 use LatamPMDevs\minerware\arena\microgame\CancelsBuildEvents;
 use LatamPMDevs\minerware\arena\microgame\Level;
 use LatamPMDevs\minerware\arena\microgame\Microgame;
+use LatamPMDevs\minerware\item\SpecialItems;
 use LatamPMDevs\minerware\utils\Utils;
 
 use pocketmine\event\entity\EntityDamageByEntityEvent;
 use pocketmine\event\entity\EntityDamageEvent;
 use pocketmine\event\Listener;
-use pocketmine\item\enchantment\EnchantmentInstance;
-use pocketmine\item\enchantment\VanillaEnchantments;
 use pocketmine\item\VanillaItems;
 use pocketmine\player\GameMode;
 use pocketmine\player\Player;
@@ -63,12 +62,9 @@ class LastKnightStanding extends Microgame implements Listener {
 		$chestplate = VanillaItems::IRON_CHESTPLATE();
 		$leggings = VanillaItems::LEATHER_PANTS();
 		$boots = VanillaItems::LEATHER_BOOTS();
-		$sharpness = VanillaEnchantments::SHARPNESS();
 		foreach ($this->arena->getPlayers() as $player) {
 			Utils::initPlayer($player);
-			$sword = VanillaItems::DIAMOND_SWORD();
-			$sword->setCustomName($this->plugin->getTranslator()->translate($player, "microgame.item.sword"));
-			$sword->addEnchantment(new EnchantmentInstance($sharpness, self::SHARPNESS_LEVEL));
+			$sword = SpecialItems::ETERNITY_SWORD($this->plugin->getTranslator()->getLanguageOf($player), self::SHARPNESS_LEVEL);
 			$player->setGamemode(GameMode::ADVENTURE);
 			$player->getInventory()->setItem(0, $sword);
 			$player->getArmorInventory()->setItem($helmet->getArmorSlot(), $helmet);

@@ -24,6 +24,7 @@ namespace LatamPMDevs\minerware\arena\microgame\normal;
 
 use LatamPMDevs\minerware\arena\microgame\Level;
 use LatamPMDevs\minerware\arena\microgame\Microgame;
+use LatamPMDevs\minerware\item\SpecialItems;
 use LatamPMDevs\minerware\utils\Utils;
 
 use pocketmine\block\Block;
@@ -31,9 +32,6 @@ use pocketmine\block\VanillaBlocks;
 use pocketmine\event\block\BlockBreakEvent;
 use pocketmine\event\block\BlockPlaceEvent;
 use pocketmine\event\Listener;
-use pocketmine\item\enchantment\EnchantmentInstance;
-use pocketmine\item\enchantment\VanillaEnchantments;
-use pocketmine\item\VanillaItems;
 use pocketmine\player\GameMode;
 use pocketmine\player\Player;
 use function array_rand;
@@ -105,12 +103,9 @@ class MineOre extends Microgame implements Listener {
 		}
 
 		$oreItem = $this->ore->asItem();
-		$efficiency = VanillaEnchantments::EFFICIENCY();
 		foreach ($this->arena->getPlayers() as $player) {
 			Utils::initPlayer($player);
-			$pickaxe = VanillaItems::DIAMOND_PICKAXE();
-			$pickaxe->setCustomName($this->plugin->getTranslator()->translate($player, "microgame.item.pickaxe"));
-			$pickaxe->addEnchantment(new EnchantmentInstance($efficiency, self::EFFICIENCY_LEVEL));
+			$pickaxe = SpecialItems::GOD_PICKAXE($this->plugin->getTranslator()->getLanguageOf($player), self::EFFICIENCY_LEVEL);
 			$player->setGamemode(GameMode::SURVIVAL);
 			$player->getInventory()->setItem(0, $pickaxe);
 			$player->getInventory()->setItem(8, $oreItem);

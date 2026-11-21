@@ -25,6 +25,7 @@ namespace LatamPMDevs\minerware\arena\microgame\normal;
 use LatamPMDevs\minerware\arena\microgame\CancelsBuildEvents;
 use LatamPMDevs\minerware\arena\microgame\Level;
 use LatamPMDevs\minerware\arena\microgame\Microgame;
+use LatamPMDevs\minerware\item\SpecialItems;
 use LatamPMDevs\minerware\utils\Utils;
 
 use pocketmine\block\utils\DyeColor;
@@ -33,9 +34,6 @@ use pocketmine\block\Wool;
 use pocketmine\event\entity\EntityDamageByEntityEvent;
 use pocketmine\event\entity\EntityDamageEvent;
 use pocketmine\event\Listener;
-use pocketmine\item\enchantment\EnchantmentInstance;
-use pocketmine\item\enchantment\VanillaEnchantments;
-use pocketmine\item\VanillaItems;
 use pocketmine\player\GameMode;
 use pocketmine\player\Player;
 use function array_key_first;
@@ -91,12 +89,9 @@ class StandOnColor extends Microgame implements Listener {
 		}
 
 		$woolItem = VanillaBlocks::WOOL()->setColor($this->color)->asItem();
-		$knockback = VanillaEnchantments::KNOCKBACK();
 		foreach ($this->arena->getPlayers() as $player) {
 			Utils::initPlayer($player);
-			$stick = VanillaItems::STICK();
-			$stick->setCustomName($this->plugin->getTranslator()->translate($player, "microgame.item.powerstick"));
-			$stick->addEnchantment(new EnchantmentInstance($knockback, self::KNOCKBACK_LEVEL));
+			$stick = SpecialItems::POWER_STICK($this->plugin->getTranslator()->getLanguageOf($player), self::KNOCKBACK_LEVEL);
 			$player->setGamemode(GameMode::ADVENTURE);
 			$player->getInventory()->setItem(0, $stick);
 			$player->getInventory()->setItem(8, $woolItem);

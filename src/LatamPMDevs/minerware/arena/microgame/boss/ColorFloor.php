@@ -26,6 +26,7 @@ use LatamPMDevs\minerware\arena\microgame\CancelsBuildEvents;
 use LatamPMDevs\minerware\arena\microgame\Level;
 use LatamPMDevs\minerware\arena\microgame\Microgame;
 use LatamPMDevs\minerware\entity\projectile\ColorMissile;
+use LatamPMDevs\minerware\item\SpecialItems;
 use LatamPMDevs\minerware\utils\Utils;
 
 use pocketmine\block\Block;
@@ -39,7 +40,6 @@ use pocketmine\event\entity\ProjectileLaunchEvent;
 use pocketmine\event\Listener;
 use pocketmine\event\player\PlayerInteractEvent;
 use pocketmine\item\Hoe;
-use pocketmine\item\PotionType;
 use pocketmine\item\VanillaItems;
 use pocketmine\player\GameMode;
 use pocketmine\player\Player;
@@ -101,16 +101,10 @@ class ColorFloor extends Microgame implements Listener {
 			$player->setGamemode(GameMode::SURVIVAL);
 			if ($i < count($dyeColors)) {
 				$this->setAssignedColor($player, $dyeColors[$i]);
-				$hoe = VanillaItems::DIAMOND_HOE();
-				$hoe->setCustomName($this->plugin->getTranslator()->translate($player, "microgame.item.colorizer"));
-				$missile = VanillaItems::SPLASH_POTION()->setType(PotionType::LEAPING);
-				$missile->setCustomName($this->plugin->getTranslator()->translate($player, "microgame.item.colormissile"));
-				$missile->setCount(self::COLOR_MISSILE_COUNT);
-				$assignedColor = VanillaBlocks::STAINED_CLAY()->setColor($dyeColors[$i])->asItem();
-				$assignedColor->setCustomName($this->plugin->getTranslator()->translate($player, "microgame.colorfloor.yourcolor"));
-				$player->getInventory()->setItem(0, $hoe);
-				$player->getInventory()->setItem(1, $missile);
-				$player->getInventory()->setItem(8, $assignedColor);
+				$language = $this->plugin->getTranslator()->getLanguageOf($player);
+				$player->getInventory()->setItem(0, SpecialItems::COLORIZER_HOE($language));
+				$player->getInventory()->setItem(1, SpecialItems::COLOR_MISSILE($language, self::COLOR_MISSILE_COUNT));
+				$player->getInventory()->setItem(8, SpecialItems::COLOR_CLAY($language, $dyeColors[$i]));
 				$player->getInventory()->setHeldItemIndex(0);
 			}
 			$i++;
@@ -298,7 +292,7 @@ class ColorFloor extends Microgame implements Listener {
 		if (!$player instanceof Player) return;
 		if (!$this->arena->inGame($player)) return;
 		$item = $player->getInventory()->getItemInHand();
-		if (!$item->equals(VanillaItems::SPLASH_POTION()->setType(PotionType::LEAPING), true, false)) return;
+		if ($item->getNamedTag()->getTag(SpecialItems::COLOR_MISSILE) === null) return;
 		if (!$projectile instanceof SplashPotion) return;
 		if ($this->getAssignedColor($player) !== null) {
 			$event->cancel();

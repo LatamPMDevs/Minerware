@@ -25,6 +25,7 @@ namespace LatamPMDevs\minerware\arena\microgame\normal;
 use LatamPMDevs\minerware\arena\microgame\CancelsBuildEvents;
 use LatamPMDevs\minerware\arena\microgame\Level;
 use LatamPMDevs\minerware\arena\microgame\Microgame;
+use LatamPMDevs\minerware\item\SpecialItems;
 use LatamPMDevs\minerware\utils\Selection;
 use LatamPMDevs\minerware\utils\Utils;
 
@@ -32,9 +33,6 @@ use pocketmine\block\VanillaBlocks;
 use pocketmine\event\entity\EntityDamageByEntityEvent;
 use pocketmine\event\entity\EntityDamageEvent;
 use pocketmine\event\Listener;
-use pocketmine\item\enchantment\EnchantmentInstance;
-use pocketmine\item\enchantment\VanillaEnchantments;
-use pocketmine\item\VanillaItems;
 use pocketmine\player\GameMode;
 use pocketmine\player\Player;
 use pocketmine\world\Position;
@@ -85,12 +83,9 @@ class StandOnDiamond extends Microgame implements Listener {
 			}
 		}
 
-		$knockback = VanillaEnchantments::KNOCKBACK();
 		foreach ($this->arena->getPlayers() as $player) {
 			Utils::initPlayer($player);
-			$stick = VanillaItems::STICK();
-			$stick->setCustomName($this->plugin->getTranslator()->translate($player, "microgame.item.powerstick"));
-			$stick->addEnchantment(new EnchantmentInstance($knockback, self::KNOCKBACK_LEVEL));
+			$stick = SpecialItems::POWER_STICK($this->plugin->getTranslator()->getLanguageOf($player), self::KNOCKBACK_LEVEL);
 			$player->setGamemode(GameMode::ADVENTURE);
 			$player->getInventory()->setItem(0, $stick);
 			$player->getInventory()->setHeldItemIndex(0);
