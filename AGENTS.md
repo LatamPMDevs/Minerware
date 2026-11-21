@@ -46,7 +46,7 @@ Extend `Microgame`; implement `getName`, `getLevel` (`NORMAL`/`BOSS`, sets the p
 
 ## Joining (`join/`)
 
-All entries go through `Joiner::join()`/`tryJoin()` (permission, already in arena, `join-cooldown`, map filter) and return a `JoinResult`. `JoinSigns` (`[Minerware]` sign), `JoinNpc` (saved entity, registered in `onLoad()`), `/minerware join`. `/minerware npc` places and removes the NPCs and the leaderboard.
+All entries go through `Joiner::join()` (permission, already in arena, `join-cooldown`, map filter) and return a `JoinResult`. `JoinSigns` (`[Minerware]` sign), `JoinNpc` (saved entity, registered in `onLoad()`), `/minerware join`. `/minerware npc` places and removes the NPCs and the leaderboard.
 
 ## Other
 

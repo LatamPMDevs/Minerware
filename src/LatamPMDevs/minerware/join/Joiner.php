@@ -45,7 +45,23 @@ final class Joiner {
 
 	public function __construct(private readonly Minerware $plugin) { }
 
-	public function tryJoin(Player $player, ?string $mapName = null) : JoinResult {
+	/**
+	 * Puts the player in an arena, on the given map if any, and tells them when it did not work.
+	 */
+	public function join(Player $player, ?string $mapName = null) : JoinResult {
+		$result = $this->attempt($player, $mapName);
+		$this->notify($player, $result);
+		return $result;
+	}
+
+	/**
+	 * Puts the players of a game that ended in a new arena. They already asked to play, so there is no permission or cooldown.
+	 */
+	public function requeue(Player $player) : void {
+		$this->notify($player, ArenaManager::getInstance()->place($player));
+	}
+
+	private function attempt(Player $player, ?string $mapName) : JoinResult {
 		if (!$player->hasPermission("minerware.join")) {
 			return JoinResult::DENIED;
 		}
@@ -62,27 +78,18 @@ final class Joiner {
 		if ($mapName !== null) {
 			$map = MapManager::getInstance()->getByName($mapName);
 			if ($map === null) {
-				return JoinResult::NO_MAPS;
+				return JoinResult::MAP_NOT_FOUND;
 			}
 		}
 		try {
-			return $arenaManager->join($player, null, $map);
+			return $arenaManager->place($player, null, $map);
 		} catch (RuntimeException $e) {
 			$this->plugin->getLogger()->error("Could not create an arena: " . $e->getMessage());
 			return JoinResult::ERROR;
 		}
 	}
 
-	/**
-	 * Joins and tells the player when it did not work.
-	 */
-	public function join(Player $player, ?string $mapName = null) : JoinResult {
-		$result = $this->tryJoin($player, $mapName);
-		$this->notify($player, $result);
-		return $result;
-	}
-
-	public function notify(Player $player, JoinResult $result) : void {
+	private function notify(Player $player, JoinResult $result) : void {
 		$key = $result->getMessageKey();
 		if ($key === null) {
 			return;

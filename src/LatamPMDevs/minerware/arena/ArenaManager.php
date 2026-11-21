@@ -133,7 +133,7 @@ final class ArenaManager {
 	 *
 	 * @throws RuntimeException
 	 */
-	public function join(Player $player, ?Arena $arena = null, ?Map $map = null) : JoinResult {
+	public function place(Player $player, ?Arena $arena = null, ?Map $map = null) : JoinResult {
 		if ($arena === null) {
 			if (MapManager::getInstance()->getCount() === 0) {
 				return JoinResult::NO_MAPS;

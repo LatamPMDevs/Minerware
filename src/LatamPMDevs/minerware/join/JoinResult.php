@@ -27,6 +27,7 @@ enum JoinResult {
 	case JOINED;
 	case ALREADY_IN_ARENA;
 	case NO_MAPS;
+	case MAP_NOT_FOUND;
 	case FULL;
 	case COOLDOWN;
 	case DENIED;
@@ -40,6 +41,7 @@ enum JoinResult {
 			self::JOINED => null,
 			self::ALREADY_IN_ARENA => "join.alreadyInArena",
 			self::NO_MAPS => "join.noMaps",
+			self::MAP_NOT_FOUND => "join.mapNotFound",
 			self::FULL => "join.full",
 			self::COOLDOWN => "join.cooldown",
 			self::DENIED => "join.denied",
