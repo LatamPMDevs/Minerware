@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "db6b8be7d81e7d417b9ec36d7a196da9",
+    "content-hash": "a609ea3ef7b8f3cb4b56981cf0aedf52",
     "packages": [
         {
             "name": "adhocore/json-comment",
@@ -1360,22 +1360,23 @@
         },
         {
             "name": "sof3/libasynql",
-            "version": "4.2.3",
+            "version": "dev-master",
             "source": {
                 "type": "git",
                 "url": "https://github.com/poggit/libasynql.git",
-                "reference": "270f8ae93e3271206eadd42ca81862ab9a54f322"
+                "reference": "0cb1cb8"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/poggit/libasynql/zipball/270f8ae93e3271206eadd42ca81862ab9a54f322",
-                "reference": "270f8ae93e3271206eadd42ca81862ab9a54f322",
+                "url": "https://api.github.com/repos/poggit/libasynql/zipball/0cb1cb8",
+                "reference": "0cb1cb8",
                 "shasum": ""
             },
             "require": {
                 "pocketmine/pocketmine-mp": "^5.0.0-BETA4",
                 "sof3/await-generator": "^2.0.0 || ^3.0.0"
             },
+            "default-branch": true,
             "bin": [
                 "libasynql/cli/def.php",
                 "libasynql/cli/fx.php"
@@ -1404,9 +1405,9 @@
             ],
             "support": {
                 "issues": "https://github.com/poggit/libasynql/issues",
-                "source": "https://github.com/poggit/libasynql/tree/4.2.3"
+                "source": "https://github.com/poggit/libasynql/tree/master"
             },
-            "time": "2024-04-28T03:17:16+00:00"
+            "time": "2026-02-08T06:23:05+00:00"
         },
         {
             "name": "symfony/filesystem",
@@ -5342,7 +5343,14 @@
             "time": "2025-11-17T20:03:58+00:00"
         }
     ],
-    "aliases": [],
+    "aliases": [
+        {
+            "package": "sof3/libasynql",
+            "version": "9999999-dev",
+            "alias": "4.2.4",
+            "alias_normalized": "4.2.4.0"
+        }
+    ],
     "minimum-stability": "dev",
     "stability-flags": {
         "axolotl-plugin-orphanage/scorefactory": 20,
@@ -5350,7 +5358,8 @@
         "ifera-mc/config-updater": 20,
         "ivancraft623/fakeblocks": 20,
         "ivancraft623/languages": 20,
-        "latampmdevs/formapi": 20
+        "latampmdevs/formapi": 20,
+        "sof3/libasynql": 20
     },
     "prefer-stable": false,
     "prefer-lowest": false,
