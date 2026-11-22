@@ -75,7 +75,7 @@ final class ArenaCommand extends BaseSubCommand {
 				$lines = [];
 				foreach (ArenaManager::getInstance()->getArenas() as $arena) {
 					$lines[] = $translator->translate($sender, "admin.arena", [
-						"{%id}" => $arena->getId(),
+						"{%id}" => $arena->getShortId(),
 						"{%map}" => $arena->getMap()->getName(),
 						"{%status}" => $arena->getPhase()->getName(),
 						"{%players}" => count($arena->getPlayers()),

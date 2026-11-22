@@ -143,7 +143,7 @@ final class Minerware extends PluginBase {
 	}
 
 	public function getPrefix() : string {
-		return "§aMinerware§r ";
+		return "§l§6Minerware§r";
 	}
 
 	public function getJoiner() : Joiner {

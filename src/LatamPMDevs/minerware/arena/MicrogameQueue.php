@@ -22,10 +22,13 @@ declare(strict_types=1);
 
 namespace LatamPMDevs\minerware\arena;
 
+use InvalidArgumentException;
 use LatamPMDevs\minerware\arena\microgame\Microgame;
 use LatamPMDevs\minerware\arena\microgame\MicrogameManager;
+use LogicException;
 use pocketmine\utils\AssumptionFailedError;
 use function array_rand;
+use function array_slice;
 use function count;
 use function shuffle;
 
@@ -74,6 +77,32 @@ final class MicrogameQueue {
 	 */
 	public function getPosition() : int {
 		return $this->position;
+	}
+
+	/**
+	 * Keeps only this many normal microgames before the boss game. Only before the first one starts.
+	 */
+	public function limit(int $normal) : void {
+		if ($this->position > 0) {
+			throw new LogicException("The queue has already started");
+		}
+		if ($normal < 1 || $normal > $this->getNormalCount()) {
+			throw new InvalidArgumentException("The queue holds from 1 to " . $this->getNormalCount() . " microgames, $normal given.");
+		}
+		$boss = $this->games[count($this->games) - 1];
+		$this->games = [...array_slice($this->games, 0, $normal), $boss];
+	}
+
+	/**
+	 * Plays this microgame next: it takes the place of the next normal one, or comes before the boss game.
+	 */
+	public function setNext(Microgame $microgame) : void {
+		if ($this->peek() === null) {
+			throw new LogicException("There is no microgame left");
+		}
+		# Before the boss game nothing is replaced: the boss game stays last.
+		$replaced = $this->position === $this->getNormalCount() ? 0 : 1;
+		$this->games = [...array_slice($this->games, 0, $this->position), $microgame, ...array_slice($this->games, $this->position + $replaced)];
 	}
 
 	/**

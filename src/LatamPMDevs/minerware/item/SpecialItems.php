@@ -39,6 +39,7 @@ final class SpecialItems {
 	public const LEAVE_GAME = "minerware:leave_game";
 	public const EDITOR_ROD = "minerware:editor_rod";
 	public const COLOR_MISSILE = "minerware:color_missile";
+	public const ADMIN_PANEL = "minerware:admin_panel";
 
 	private function __construct() {
 		# Static collection
@@ -46,6 +47,10 @@ final class SpecialItems {
 
 	public static function LEAVE_GAME_BED(Language $language) : Item {
 		return self::create(VanillaBlocks::BED()->setColor(DyeColor::RED)->asItem(), self::LEAVE_GAME, $language, "item.leave");
+	}
+
+	public static function ADMIN_PANEL(Language $language) : Item {
+		return self::create(VanillaItems::COMPASS(), self::ADMIN_PANEL, $language, "item.admin");
 	}
 
 	public static function EDITOR_BLAZE_ROD(Language $language) : Item {

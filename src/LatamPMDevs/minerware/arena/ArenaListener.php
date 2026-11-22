@@ -22,6 +22,7 @@ declare(strict_types=1);
 
 namespace LatamPMDevs\minerware\arena;
 
+use LatamPMDevs\minerware\form\ArenaAdminForm;
 use LatamPMDevs\minerware\item\SpecialItems;
 use pocketmine\event\entity\EntityDamageEvent;
 use pocketmine\event\entity\EntityTeleportEvent;
@@ -98,7 +99,13 @@ final class ArenaListener implements Listener {
 		if (ArenaManager::getInstance()->getArenaOf($player) === null) {
 			return;
 		}
-		if ($item->getNamedTag()->getTag(SpecialItems::LEAVE_GAME) !== null) {
+		$arena = ArenaManager::getInstance()->getArenaOf($player);
+		if ($item->getNamedTag()->getTag(SpecialItems::ADMIN_PANEL) !== null) {
+			$event->cancel();
+			if ($arena->getPhase()->isLobby() && $player->hasPermission("minerware.command.arena")) {
+				(new ArenaAdminForm())->sendArena($player, $arena);
+			}
+		} elseif ($item->getNamedTag()->getTag(SpecialItems::LEAVE_GAME) !== null) {
 			$event->cancel();
 			$spawn = $player->getServer()->getWorldManager()->getDefaultWorld()?->getSafeSpawn();
 			if ($spawn !== null) {
