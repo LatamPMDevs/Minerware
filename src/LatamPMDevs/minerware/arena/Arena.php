@@ -23,7 +23,7 @@ declare(strict_types=1);
 namespace LatamPMDevs\minerware\arena;
 
 use InvalidArgumentException;
-use LatamPMDevs\minerware\libs\_189c4e77bf695c21\jackmd\scorefactory\ScoreFactory;
+use LatamPMDevs\minerware\libs\_eec78460fd20c565\jackmd\scorefactory\ScoreFactory;
 use LatamPMDevs\minerware\arena\microgame\Microgame;
 use LatamPMDevs\minerware\arena\phase\ArenaPhase;
 use LatamPMDevs\minerware\arena\phase\EndingPhase;
@@ -57,6 +57,7 @@ use pocketmine\world\Position;
 use pocketmine\world\World;
 use function array_rand;
 use function count;
+use function explode;
 use function implode;
 use function reset;
 use function str_repeat;
@@ -71,6 +72,7 @@ final class Arena {
 	public const NORMAL_MICROGAMES = 15;
 
 	private const LEAVE_ITEM_SLOT = 8; //hotbar
+	private const ADMIN_ITEM_SLOT = 4; //hotbar
 
 	public const FIRST_PLACE = 1;
 	public const SECOND_PLACE = 2;
@@ -111,6 +113,8 @@ final class Arena {
 
 	private ?int $startTime = null;
 
+	private ArenaRules $rules;
+
 	public function __construct(private string $id, private Map $map) {
 		$this->plugin = Minerware::getInstance();
 		# Built first: it can throw, and nothing has been allocated yet.
@@ -121,6 +125,7 @@ final class Arena {
 		$this->scoreboard = new ScoreboardRenderer();
 		$this->world = MapWorldGenerator::generate($this->map, $this->id);
 		$this->minPlayers = Settings::getInstance()->getMinimumStartingPlayers();
+		$this->rules = new ArenaRules();
 		$this->phase = WaitingPhase::getInstance();
 		$this->pointHolder = new PointHolder();
 		$this->walls = new ArenaWalls($this->map, $this->world, $this->gate);
@@ -173,6 +178,24 @@ final class Arena {
 		return $this->world;
 	}
 
+	/**
+	 * The first part of the id, what people see and say.
+	 */
+	public function getShortId() : string {
+		return explode("-", $this->id)[0];
+	}
+
+	public function getRules() : ArenaRules {
+		return $this->rules;
+	}
+
+	/**
+	 * Tells everyone in the arena what an admin wrote.
+	 */
+	public function sendAnnouncement(string $text) : void {
+		$this->broadcast("admin.announcement", ["{%message}" => $text]);
+	}
+
 	public function getMap() : Map {
 		return $this->map;
 	}
@@ -200,7 +223,8 @@ final class Arena {
 		if ($this->phase === $phase) {
 			return;
 		}
-		$ev = new ArenaChangePhaseEvent($this->phase, $phase, $phase->getDuration(), $this);
+		$duration = $phase instanceof StartingPhase ? $this->rules->getStartingTime() : $phase->getDuration();
+		$ev = new ArenaChangePhaseEvent($this->phase, $phase, $duration, $this);
 		$ev->call();
 		$this->phase = $ev->getNewPhase();
 		$this->countdown->reset($ev->getCountdown());
@@ -247,7 +271,11 @@ final class Arena {
 		$player->teleport($this->getRandomSpawn());
 		Utils::initPlayer($player);
 		$player->setGamemode(GameMode::ADVENTURE);
-		$player->getInventory()->setItem(self::LEAVE_ITEM_SLOT, SpecialItems::LEAVE_GAME_BED($this->plugin->getTranslator()->getLanguageOf($player)));
+		$language = $this->plugin->getTranslator()->getLanguageOf($player);
+		$player->getInventory()->setItem(self::LEAVE_ITEM_SLOT, SpecialItems::LEAVE_GAME_BED($language));
+		if ($player->hasPermission("minerware.command.arena")) {
+			$player->getInventory()->setItem(self::ADMIN_ITEM_SLOT, SpecialItems::ADMIN_PANEL($language));
+		}
 		$this->walls->raise();
 		return true;
 	}

@@ -22,8 +22,8 @@ declare(strict_types=1);
 
 namespace LatamPMDevs\minerware\language;
 
-use LatamPMDevs\minerware\libs\_189c4e77bf695c21\IvanCraft623\languages\Language;
-use LatamPMDevs\minerware\libs\_189c4e77bf695c21\IvanCraft623\languages\Translator;
+use LatamPMDevs\minerware\libs\_eec78460fd20c565\IvanCraft623\languages\Language;
+use LatamPMDevs\minerware\libs\_eec78460fd20c565\IvanCraft623\languages\Translator;
 use LatamPMDevs\minerware\Minerware;
 use LatamPMDevs\minerware\Settings;
 use pocketmine\utils\AssumptionFailedError;

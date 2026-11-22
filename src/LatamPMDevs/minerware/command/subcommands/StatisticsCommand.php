@@ -22,16 +22,16 @@ declare(strict_types=1);
 
 namespace LatamPMDevs\minerware\command\subcommands;
 
-use LatamPMDevs\minerware\libs\_189c4e77bf695c21\CortexPE\Commando\args\RawStringArgument;
-use LatamPMDevs\minerware\libs\_189c4e77bf695c21\CortexPE\Commando\BaseCommand;
-use LatamPMDevs\minerware\libs\_189c4e77bf695c21\CortexPE\Commando\BaseSubCommand;
+use LatamPMDevs\minerware\libs\_eec78460fd20c565\CortexPE\Commando\args\RawStringArgument;
+use LatamPMDevs\minerware\libs\_eec78460fd20c565\CortexPE\Commando\BaseCommand;
+use LatamPMDevs\minerware\libs\_eec78460fd20c565\CortexPE\Commando\BaseSubCommand;
 use LatamPMDevs\minerware\database\PlayerData;
 use LatamPMDevs\minerware\database\PlayerStorage;
 use LatamPMDevs\minerware\form\StatisticsView;
 use LatamPMDevs\minerware\Minerware;
 use pocketmine\command\CommandSender;
 use pocketmine\player\Player;
-use LatamPMDevs\minerware\libs\_189c4e77bf695c21\poggit\libasynql\SqlError;
+use LatamPMDevs\minerware\libs\_eec78460fd20c565\poggit\libasynql\SqlError;
 
 use function is_string;
 use function strcasecmp;

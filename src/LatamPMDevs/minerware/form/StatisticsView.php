@@ -22,7 +22,7 @@ declare(strict_types=1);
 
 namespace LatamPMDevs\minerware\form;
 
-use LatamPMDevs\minerware\libs\_189c4e77bf695c21\jojoe77777\FormAPI\SimpleForm;
+use LatamPMDevs\minerware\libs\_eec78460fd20c565\jojoe77777\FormAPI\SimpleForm;
 use LatamPMDevs\minerware\database\PlayerData;
 use LatamPMDevs\minerware\Minerware;
 use LatamPMDevs\minerware\utils\Utils;
@@ -39,12 +39,12 @@ final class StatisticsView {
 		$translator = Minerware::getInstance()->getTranslator();
 		$title = $translator->translate($to, "text.statistics.user", ["{%user}" => $playerdata->getName()]);
 		$lines = [
-			"§a" . $translator->translate($to, "text.statistics.wins") . ": §6" . $playerdata->getWins(),
-			"§a" . $translator->translate($to, "text.statistics.bossGamesWon") . ": §6" . $playerdata->getBossgamesWon(),
-			"§a" . $translator->translate($to, "text.statistics.microgamesWon") . ": §6" . $playerdata->getMicrogamesWon(),
-			"§a" . $translator->translate($to, "text.statistics.gamesPlayed") . ": §6" . $playerdata->getGamesPlayed(),
-			"§a" . $translator->translate($to, "text.statistics.microgamesPlayed") . ": §6" . $playerdata->getMicrogamesPlayed(),
-			"§a" . $translator->translate($to, "text.statistics.timePlayed") . ": §6" . Utils::getTimeTranslated($playerdata->getTimePlayed(), $translator, $to)
+			$translator->translate($to, "text.statistics.wins") . ": §6" . $playerdata->getWins(),
+			$translator->translate($to, "text.statistics.bossGamesWon") . ": §6" . $playerdata->getBossgamesWon(),
+			$translator->translate($to, "text.statistics.microgamesWon") . ": §6" . $playerdata->getMicrogamesWon(),
+			$translator->translate($to, "text.statistics.gamesPlayed") . ": §6" . $playerdata->getGamesPlayed(),
+			$translator->translate($to, "text.statistics.microgamesPlayed") . ": §6" . $playerdata->getMicrogamesPlayed(),
+			$translator->translate($to, "text.statistics.timePlayed") . ": §6" . Utils::getTimeTranslated($playerdata->getTimePlayed(), $translator, $to)
 		];
 		if (!$to instanceof Player) {
 			$to->sendMessage("§b=== §e" . $title . " §b===\n" . implode("\n", $lines));

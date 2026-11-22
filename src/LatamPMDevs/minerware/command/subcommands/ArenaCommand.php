@@ -22,9 +22,9 @@ declare(strict_types=1);
 
 namespace LatamPMDevs\minerware\command\subcommands;
 
-use LatamPMDevs\minerware\libs\_189c4e77bf695c21\CortexPE\Commando\BaseCommand;
-use LatamPMDevs\minerware\libs\_189c4e77bf695c21\CortexPE\Commando\BaseSubCommand;
-use LatamPMDevs\minerware\libs\_189c4e77bf695c21\CortexPE\Commando\constraint\InGameRequiredConstraint;
+use LatamPMDevs\minerware\libs\_eec78460fd20c565\CortexPE\Commando\BaseCommand;
+use LatamPMDevs\minerware\libs\_eec78460fd20c565\CortexPE\Commando\BaseSubCommand;
+use LatamPMDevs\minerware\libs\_eec78460fd20c565\CortexPE\Commando\constraint\InGameRequiredConstraint;
 use LatamPMDevs\minerware\arena\Arena;
 use LatamPMDevs\minerware\arena\ArenaManager;
 use LatamPMDevs\minerware\command\args\ChoiceArgument;
@@ -75,7 +75,7 @@ final class ArenaCommand extends BaseSubCommand {
 				$lines = [];
 				foreach (ArenaManager::getInstance()->getArenas() as $arena) {
 					$lines[] = $translator->translate($sender, "admin.arena", [
-						"{%id}" => $arena->getId(),
+						"{%id}" => $arena->getShortId(),
 						"{%map}" => $arena->getMap()->getName(),
 						"{%status}" => $arena->getPhase()->getName(),
 						"{%players}" => count($arena->getPlayers()),

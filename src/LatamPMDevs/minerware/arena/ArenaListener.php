@@ -22,6 +22,7 @@ declare(strict_types=1);
 
 namespace LatamPMDevs\minerware\arena;
 
+use LatamPMDevs\minerware\form\ArenaAdminForm;
 use LatamPMDevs\minerware\item\SpecialItems;
 use pocketmine\event\entity\EntityDamageEvent;
 use pocketmine\event\entity\EntityTeleportEvent;
@@ -29,7 +30,6 @@ use pocketmine\event\inventory\InventoryTransactionEvent;
 use pocketmine\event\Listener;
 use pocketmine\event\player\PlayerDropItemEvent;
 use pocketmine\event\player\PlayerExhaustEvent;
-use pocketmine\event\player\PlayerInteractEvent;
 use pocketmine\event\player\PlayerItemUseEvent;
 use pocketmine\event\player\PlayerQuitEvent;
 use pocketmine\item\Item;
@@ -77,11 +77,11 @@ final class ArenaListener implements Listener {
 		}
 	}
 
+	/**
+	 * The client repeats its interact packets while an item is held down, so items are used from this event
+	 * only: it is fired once per use, and what an item opens would otherwise be stacked.
+	 */
 	public function onItemUse(PlayerItemUseEvent $event) : void {
-		$this->useSpecialItem($event->getPlayer(), $event->getItem(), $event);
-	}
-
-	public function onInteract(PlayerInteractEvent $event) : void {
 		$this->useSpecialItem($event->getPlayer(), $event->getItem(), $event);
 	}
 
@@ -95,11 +95,17 @@ final class ArenaListener implements Listener {
 		}
 	}
 
-	private function useSpecialItem(Player $player, Item $item, PlayerItemUseEvent|PlayerInteractEvent $event) : void {
+	private function useSpecialItem(Player $player, Item $item, PlayerItemUseEvent $event) : void {
 		if (ArenaManager::getInstance()->getArenaOf($player) === null) {
 			return;
 		}
-		if ($item->getNamedTag()->getTag(SpecialItems::LEAVE_GAME) !== null) {
+		$arena = ArenaManager::getInstance()->getArenaOf($player);
+		if ($item->getNamedTag()->getTag(SpecialItems::ADMIN_PANEL) !== null) {
+			$event->cancel();
+			if ($arena->getPhase()->isLobby() && $player->hasPermission("minerware.command.arena")) {
+				(new ArenaAdminForm())->sendArena($player, $arena);
+			}
+		} elseif ($item->getNamedTag()->getTag(SpecialItems::LEAVE_GAME) !== null) {
 			$event->cancel();
 			$spawn = $player->getServer()->getWorldManager()->getDefaultWorld()?->getSafeSpawn();
 			if ($spawn !== null) {

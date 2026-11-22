@@ -42,7 +42,6 @@ final class PlayerDataListener implements Listener {
 	 */
 	public function onPlayerJoin(PlayerJoinEvent $event) : void {
 		$player = $event->getPlayer();
-		Minerware::getInstance()->getLogger()->debug($player->getName() . " is " . $player->getUniqueId()->toString() . " (xuid '" . $player->getXuid() . "')");
 		$this->storage->getPlayerLanguage($player, function (?string $locale) use ($player) : void {
 			if ($locale === null || !$player->isConnected()) {
 				return;
