@@ -41,7 +41,7 @@ final class WaitingPhase extends LobbyPhase {
 		}
 		$translator = $arena->getPlugin()->getTranslator();
 		foreach ($players as $player) {
-			$player->sendTip($translator->translate($player, "game.arena.needMorePlayers"));
+			$player->sendTip($translator->translate($player, "game.arena.needMorePlayers.tip"));
 		}
 	}
 }
